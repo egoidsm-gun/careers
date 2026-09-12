@@ -45,9 +45,8 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 .nav.solid{background:rgba(11,11,12,.86);backdrop-filter:saturate(160%) blur(18px);-webkit-backdrop-filter:saturate(160%) blur(18px);border-bottom-color:var(--line)}
 .nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav);max-width:none;padding:0 32px}
 .brk{display:none}
-.logo{display:flex;align-items:center;gap:12px;flex:none}
+.logo{display:flex;align-items:center;flex:none}
 .logo img{height:26px;width:auto}
-.logo .tag{font-family:var(--disp);font-size:17px;letter-spacing:.14em;color:#fff;line-height:1;padding-top:4px}
 .menu{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:0 40px;list-style:none;display:flex;align-items:center;gap:40px;height:var(--pill);border-radius:999px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .menu li{position:relative;height:100%;display:flex;align-items:center}
 .menu li>a{font-family:var(--disp);font-size:21px;letter-spacing:.06em;color:#cfcfcf;line-height:1;display:flex;align-items:center;height:100%;white-space:nowrap;transition:color .15s;padding-top:2px}
@@ -60,19 +59,13 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 .nav-right{display:flex;align-items:center;gap:10px;flex:none}
 .nav-cta{height:var(--pill);padding:0 28px;border-radius:5px;background:var(--acc);color:#fff;font-family:var(--disp);font-size:22px;letter-spacing:.06em;display:inline-flex;align-items:center;justify-content:center;line-height:1;padding-top:3px;transition:.15s;white-space:nowrap}
 .nav-cta:hover{background:var(--acc2)}
-.sq{width:var(--pill);height:var(--pill);border-radius:5px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);display:inline-flex;align-items:center;justify-content:center;color:#fff;transition:.15s;flex:none;padding:0}
-.sq:hover{background:#2a2a2d}
-.sq svg{width:20px;height:20px;display:block}
 @media (max-width:1179px){
   .nav .wrap{padding:0 18px;gap:12px}
   .menu{position:static;transform:none;margin:0 auto;padding:0 20px;gap:20px;max-width:100%;overflow-x:auto;scrollbar-width:none}
   .menu::-webkit-scrollbar{display:none}
   .menu li>a{font-size:15px;letter-spacing:.05em}
   .logo img{height:22px}
-  .logo .tag{font-size:14px;padding-top:3px}
-  .nav-right{gap:8px}
   .nav-cta{padding:0 16px;font-size:18px}
-  .sq svg{width:17px;height:17px}
   .dd{position:fixed;left:16px;right:16px;top:calc(var(--nav) + 4px);transform:none;min-width:0}
   .menu li{position:static}
   .menu li:hover .dd,.menu li:focus-within .dd,.menu li.open .dd{transform:none}
@@ -85,21 +78,6 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
   .brk{display:block;order:3;flex-basis:100%;height:0}
   .menu{order:4;margin:0 auto}
 }
-
-/* ---------- 포지션 검색 오버레이 ---------- */
-.sov{position:fixed;inset:0;z-index:120;background:rgba(11,11,12,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:none;padding:calc(var(--nav) + 32px) 24px 48px;overflow:auto}
-.sov.open{display:block}
-.sov .in{max-width:800px;margin:0 auto}
-.sov form{display:flex;gap:14px;align-items:center;border-bottom:2px solid var(--fg);padding-bottom:14px}
-.sov form svg{width:26px;height:26px;flex:none;color:var(--acc)}
-.sov input{flex:1;min-width:0;background:none;border:0;color:#fff;font:inherit;font-size:clamp(22px,3.2vw,36px);font-weight:700;letter-spacing:-.02em;outline:none;padding:0}
-.sov input::placeholder{color:#5a5752;font-weight:600}
-.sov input::-webkit-search-cancel-button{display:none}
-.sov .x{flex:none;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:18px;display:inline-flex;align-items:center;justify-content:center}
-.sov .x:hover{background:rgba(255,255,255,.16)}
-.sov .hint{color:var(--mute);font-size:14px;margin:16px 0 8px}
-.sov .hint b{color:var(--acc)}
-.sov .more{margin-top:24px}
 
 /* ---------- 하위 탭 바 ---------- */
 .subtabs{position:sticky;top:var(--nav);z-index:90;background:rgba(11,11,12,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
@@ -348,7 +326,7 @@ a.row:hover .t{color:var(--acc)}
 /* ---------- 인쇄(컬처덱 PDF 저장) ---------- */
 @media print{
   body{background:#fff;color:#111}
-  .nav,.subtabs,.foot,.toc,.btn,.sov,.scrollhint{display:none!important}
+  .nav,.subtabs,.foot,.toc,.btn,.scrollhint{display:none!important}
   body.sub main{padding-top:0}
   .memo{display:block;padding:0}
   .memo p,.memo ul,.val ul,.kv dd,.tenets li{color:#222}
