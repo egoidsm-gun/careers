@@ -24,13 +24,24 @@
 
 <header class="nav" id="nav">
   <div class="wrap">
-    <a class="logo" href="{{home}}" aria-label="egoidsm 홈"><img src="{{root}}assets/img/logo.png" alt="egoidsm"></a>
+    <a class="logo" href="{{home}}" aria-label="egoidsm 채용 홈"><img src="{{root}}assets/img/logo.png" alt="egoidsm"><span class="tag">JOBS</span></a>
     <ul class="menu">{{nav}}</ul>
-    <a class="btn nav-cta" href="{{root}}recruiting/">채용 중인 포지션</a>
-    <button class="burger" id="burger" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
+    <div class="nav-right">
+      <a class="nav-cta" href="{{root}}recruiting/">RECRUITING</a>
+      <button class="sq search" id="sbtn" type="button" aria-label="포지션 검색" aria-controls="sov" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>
+      <button class="sq burger" id="burger" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
+    </div>
   </div>
 </header>
 <div class="mmenu" id="mmenu">{{mobile}}</div>
+<div class="sov" id="sov" role="dialog" aria-modal="true" aria-label="포지션 검색">
+  <div class="in">
+    <form id="sform" role="search" autocomplete="off"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="sinput" type="search" placeholder="포지션 · 브랜드 · 직군 검색" aria-label="검색어"><button class="x" id="sclose" type="button" aria-label="검색 닫기">✕</button></form>
+    <p class="hint">지금 열려 있는 공고 <b data-jobs-count></b>개 중에서 찾습니다. 지원은 나인하이어 공고 페이지에서 이어집니다.</p>
+    <div class="list" id="sres"></div>
+    <div class="more"><a class="btn ghost sm arrow" href="{{root}}recruiting/">채용 중인 공고 전체 보기</a></div>
+  </div>
+</div>
 
 <main id="main">
 {{subtabs}}

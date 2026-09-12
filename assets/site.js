@@ -99,7 +99,9 @@
   function renderList(el, list, key) {
     if (!el) return;
     if (!list.length) {
-      el.innerHTML = '<div class="empty">' + (key && key !== 'all' ? BRAND_LABEL[key] + '에는 지금 열린 공고가 없습니다. ' : '지금은 열린 공고가 없습니다. ') + '인재풀에 남겨두시면 자리가 열릴 때 먼저 연락드립니다.</div>';
+      var msg = key === 'search' ? '검색 결과가 없습니다. 다른 키워드로 찾아보세요. '
+        : (key && key !== 'all' ? BRAND_LABEL[key] + '에는 지금 열린 공고가 없습니다. ' : '지금은 열린 공고가 없습니다. ');
+      el.innerHTML = '<div class="empty">' + msg + '인재풀에 남겨두시면 자리가 열릴 때 먼저 연락드립니다.</div>';
       return;
     }
     el.innerHTML = list.map(function (j) {
@@ -109,6 +111,43 @@
         (j.types && j.types.length ? '<span>' + esc(j.types.join(' · ')) + '</span>' : '') +
         '</div></div><span class="ar">↗</span></a>';
     }).join('');
+  }
+
+  /* ---------- 포지션 검색 오버레이 (넷플릭스 바의 돋보기 자리) ---------- */
+  var sov = document.getElementById('sov'), sbtn = document.getElementById('sbtn'), sclose = document.getElementById('sclose'),
+    sinput = document.getElementById('sinput'), sres = document.getElementById('sres'), sform = document.getElementById('sform');
+  var stimer = null;
+  function runSearch() {
+    var q = (sinput.value || '').trim().toLowerCase();
+    loadJobs().then(function (jobs) {
+      var list = q ? jobs.filter(function (j) {
+        return [j.title, j.aff, j.group, (j.types || []).join(' ')].join(' ').toLowerCase().indexOf(q) > -1;
+      }) : jobs;
+      renderList(sres, list, q ? 'search' : 'all');
+    });
+  }
+  function openSearch() {
+    if (!sov) return;
+    if (mmenu && mmenu.classList.contains('open')) { mmenu.classList.remove('open'); burger && burger.setAttribute('aria-expanded', 'false'); }
+    sov.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    sbtn && sbtn.setAttribute('aria-expanded', 'true');
+    setTimeout(function () { sinput.focus(); }, 40);
+    runSearch();
+  }
+  function closeSearch() {
+    if (!sov) return;
+    sov.classList.remove('open');
+    document.body.style.overflow = '';
+    sbtn && sbtn.setAttribute('aria-expanded', 'false');
+  }
+  if (sov) {
+    sbtn && sbtn.addEventListener('click', openSearch);
+    sclose && sclose.addEventListener('click', closeSearch);
+    document.querySelectorAll('[data-open-search]').forEach(function (b) { b.addEventListener('click', openSearch); });
+    sform && sform.addEventListener('submit', function (e) { e.preventDefault(); runSearch(); });
+    sinput && sinput.addEventListener('input', function () { clearTimeout(stimer); stimer = setTimeout(runSearch, 120); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sov.classList.contains('open')) closeSearch(); });
   }
 
   var containers = document.querySelectorAll('[data-jobs]');
