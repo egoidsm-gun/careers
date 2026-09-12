@@ -36,53 +36,55 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 .arrow::after{content:"→";margin-left:6px;transition:.18s}
 .arrow:hover::after{transform:translateX(4px)}
 
-/* ---------- 상단 내비 (넷플릭스 잡스 바: 좌 로고 · 중앙 알약 탭 · 우 사각 버튼) ---------- */
+/* ---------- 상단 내비 (넷플릭스 잡스 바: 좌 로고 · 중앙 알약 탭 · 우 사각 버튼) ----------
+   햄버거 메뉴 없음 — 알약은 모든 폭에서 보인다. 넓으면 정중앙, 중간 폭이면 한 줄 안에서 가운데, 좁으면 둘째 줄. */
 :root{--nav:96px;--pill:58px}
-@media (max-width:1180px){:root{--nav:72px;--pill:46px}}
+@media (max-width:1179px){:root{--nav:72px;--pill:44px}}
+@media (max-width:639px){:root{--nav:114px;--pill:42px}}
 .nav{position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:100;transition:background .3s,border-color .3s;background:linear-gradient(180deg,rgba(0,0,0,.8),rgba(0,0,0,0));border-bottom:1px solid transparent}
 .nav.solid{background:rgba(11,11,12,.86);backdrop-filter:saturate(160%) blur(18px);-webkit-backdrop-filter:saturate(160%) blur(18px);border-bottom-color:var(--line)}
 .nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav);max-width:none;padding:0 32px}
-.logo{display:flex;align-items:center;gap:12px}
+.brk{display:none}
+.logo{display:flex;align-items:center;gap:12px;flex:none}
 .logo img{height:26px;width:auto}
 .logo .tag{font-family:var(--disp);font-size:17px;letter-spacing:.14em;color:#fff;line-height:1;padding-top:4px}
 .menu{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:0 40px;list-style:none;display:flex;align-items:center;gap:40px;height:var(--pill);border-radius:999px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .menu li{position:relative;height:100%;display:flex;align-items:center}
 .menu li>a{font-family:var(--disp);font-size:21px;letter-spacing:.06em;color:#cfcfcf;line-height:1;display:flex;align-items:center;height:100%;white-space:nowrap;transition:color .15s;padding-top:2px}
 .menu li>a:hover,.menu li.on>a{color:#fff}
-.menu li>a i{display:none}
 .dd{position:absolute;top:calc(100% + 10px);left:50%;transform:translate(-50%,8px);min-width:220px;background:#1c1c1e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:8px;opacity:0;visibility:hidden;transition:.18s;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .dd::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
 .menu li:hover .dd,.menu li:focus-within .dd,.menu li.open .dd{opacity:1;visibility:visible;transform:translate(-50%,0)}
 .dd a{display:block;padding:11px 14px;border-radius:10px;font-size:15px;font-weight:600;color:#e8e5de;white-space:nowrap}
 .dd a:hover{background:rgba(255,255,255,.07);color:var(--acc)}
-.nav-right{display:flex;align-items:center;gap:10px}
+.nav-right{display:flex;align-items:center;gap:10px;flex:none}
 .nav-cta{height:var(--pill);padding:0 28px;border-radius:5px;background:var(--acc);color:#fff;font-family:var(--disp);font-size:22px;letter-spacing:.06em;display:inline-flex;align-items:center;justify-content:center;line-height:1;padding-top:3px;transition:.15s;white-space:nowrap}
 .nav-cta:hover{background:var(--acc2)}
 .sq{width:var(--pill);height:var(--pill);border-radius:5px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);display:inline-flex;align-items:center;justify-content:center;color:#fff;transition:.15s;flex:none;padding:0}
 .sq:hover{background:#2a2a2d}
 .sq svg{width:20px;height:20px;display:block}
-.burger{display:none;flex-direction:column;justify-content:center;align-items:center;gap:6px}
-.burger span{display:block;width:20px;height:2px;background:#fff;transition:.25s}
-.burger[aria-expanded="true"] span:first-child{transform:translateY(4px) rotate(45deg)}
-.burger[aria-expanded="true"] span:last-child{transform:translateY(-4px) rotate(-45deg)}
-@media (max-width:1180px){
-  .nav .wrap{padding:0 18px}
-  .menu{display:none}
+@media (max-width:1179px){
+  .nav .wrap{padding:0 18px;gap:12px}
+  .menu{position:static;transform:none;margin:0 auto;padding:0 20px;gap:20px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+  .menu::-webkit-scrollbar{display:none}
+  .menu li>a{font-size:15px;letter-spacing:.05em}
   .logo img{height:22px}
   .logo .tag{font-size:14px;padding-top:3px}
+  .nav-right{gap:8px}
   .nav-cta{padding:0 16px;font-size:18px}
-  .sq.search{display:none}
-  .burger{display:inline-flex}
+  .sq svg{width:17px;height:17px}
+  .dd{position:fixed;left:16px;right:16px;top:calc(var(--nav) + 4px);transform:none;min-width:0}
+  .menu li{position:static}
+  .menu li:hover .dd,.menu li:focus-within .dd,.menu li.open .dd{transform:none}
+  .dd::before{display:none}
 }
-@media (max-width:360px){.nav-cta{display:none}}
-.mmenu{position:fixed;inset:0;background:#0b0b0c;z-index:99;padding:calc(var(--nav) + 12px) 24px 40px;overflow:auto;display:none}
-.mmenu.open{display:block}
-.mm-search{width:100%;display:flex;align-items:center;gap:12px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px 16px;color:var(--fg2);font-size:16px;font-weight:600;margin-bottom:8px;text-align:left}
-.mm-search svg{width:18px;height:18px;flex:none}
-.mm-group{border-bottom:1px solid var(--line);padding:18px 0}
-.mm-group .disp{display:block;font-size:34px;color:var(--fg);line-height:1.1;margin-bottom:6px}
-.mm-group .sub{display:block;padding:8px 0;color:var(--fg2);font-size:17px;font-weight:500}
-.nav-cta.mm-cta{width:100%;margin-top:28px;height:56px;font-size:22px}
+@media (max-width:639px){
+  .nav .wrap{flex-wrap:wrap;align-content:center;row-gap:10px;padding:0 16px}
+  .logo{order:1}
+  .nav-right{order:2;margin-left:auto}
+  .brk{display:block;order:3;flex-basis:100%;height:0}
+  .menu{order:4;margin:0 auto}
+}
 
 /* ---------- 포지션 검색 오버레이 ---------- */
 .sov{position:fixed;inset:0;z-index:120;background:rgba(11,11,12,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:none;padding:calc(var(--nav) + 32px) 24px 48px;overflow:auto}
@@ -129,18 +131,6 @@ body.sub main{padding-top:var(--nav)}
 .mission em{font-style:normal;color:var(--acc)}
 .goals{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 40px;margin-top:40px;color:var(--fg2);font-size:16px}
 .goals span b{color:var(--acc);font-family:var(--disp);letter-spacing:.1em;font-size:18px;margin-right:8px}
-
-/* 탐색 타일 */
-.explore{padding:24px 0 120px}
-.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 26px 26px;min-height:220px;display:flex;flex-direction:column;transition:.2s;overflow:hidden}
-.tile:hover{border-color:var(--acc);transform:translateY(-3px)}
-.tile .disp{font-size:30px;color:var(--fg);line-height:1;letter-spacing:.05em}
-.tile p{margin:12px 0 0;color:var(--fg2);font-size:15px;line-height:1.6}
-.tile .go{margin-top:auto;padding-top:20px;color:var(--acc);font-weight:700;font-size:14px}
-.tile .cnt{position:absolute;right:22px;top:20px;font-family:var(--disp);font-size:44px;color:var(--acc);line-height:1}
-@media (max-width:980px){.tiles{grid-template-columns:1fr 1fr}}
-@media (max-width:560px){.tiles{grid-template-columns:1fr}.tile{min-height:0}}
 
 /* ---------- 서브 페이지 공통 ---------- */
 .phero{padding:80px 0 56px;border-bottom:1px solid var(--line)}
@@ -358,7 +348,7 @@ a.row:hover .t{color:var(--acc)}
 /* ---------- 인쇄(컬처덱 PDF 저장) ---------- */
 @media print{
   body{background:#fff;color:#111}
-  .nav,.subtabs,.foot,.toc,.btn,.mmenu,.scrollhint{display:none!important}
+  .nav,.subtabs,.foot,.toc,.btn,.sov,.scrollhint{display:none!important}
   body.sub main{padding-top:0}
   .memo{display:block;padding:0}
   .memo p,.memo ul,.val ul,.kv dd,.tenets li{color:#222}

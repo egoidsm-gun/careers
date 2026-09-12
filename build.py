@@ -92,10 +92,6 @@ def post_cards(posts, cat, n):
     return '\n'.join(out) or '<p class="mute">아직 글이 없습니다.</p>'
 
 
-SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
-               'aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>')
-
-
 def render_nav(root, section):
     """가운데 알약 탭 — RECRUITING은 오른쪽 사각 버튼이므로 알약에서 뺀다."""
     items = []
@@ -110,17 +106,6 @@ def render_nav(root, section):
                 for h, l in n['subs']) + '</div>'
         items.append(f'<li class="{cls.strip()}"><a href="{href(root, n["href"])}">{esc(n["label"])}</a>{dd}</li>')
     return ''.join(items)
-
-
-def render_mobile(root):
-    out = [f'<button class="mm-search" type="button" data-open-search>{SEARCH_ICON}포지션 검색</button>']
-    for n in NAV:
-        subs = ''.join(
-            f'<a class="sub" href="{href(root, h)}"{" target=\"_blank\" rel=\"noopener\"" if h.startswith("http") else ""}>{esc(l)}</a>'
-            for h, l in n['subs'])
-        out.append(f'<div class="mm-group"><a class="disp" href="{href(root, n["href"])}">{esc(n["label"])}</a>{subs}</div>')
-    out.append(f'<a class="nav-cta mm-cta" href="{root}recruiting/">RECRUITING</a>')
-    return ''.join(out)
 
 
 def render_subtabs(root, meta):
@@ -167,7 +152,6 @@ def main():
                 .replace('{{canonical}}', SITE + path)
                 .replace('{{bodyclass}}', meta.get('bodyclass', 'sub'))
                 .replace('{{nav}}', render_nav(root, meta.get('section')))
-                .replace('{{mobile}}', render_mobile(root))
                 .replace('{{subtabs}}', render_subtabs(root, meta))
                 .replace('{{content}}', body)
                 .replace('{{v}}', version)

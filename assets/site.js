@@ -8,16 +8,6 @@
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  var burger = document.getElementById('burger'), mmenu = document.getElementById('mmenu');
-  if (burger && mmenu) {
-    burger.addEventListener('click', function () {
-      var open = mmenu.classList.toggle('open');
-      burger.setAttribute('aria-expanded', open);
-      burger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
-      document.body.style.overflow = open ? 'hidden' : '';
-      if (open) nav.classList.add('solid');
-    });
-  }
   // 터치 기기: 드롭다운 있는 탭은 첫 탭에 펼치고, 두 번째 탭에 이동
   var touch = window.matchMedia('(hover: none)').matches;
   document.querySelectorAll('.menu li.has-dd > a').forEach(function (a) {
@@ -128,7 +118,6 @@
   }
   function openSearch() {
     if (!sov) return;
-    if (mmenu && mmenu.classList.contains('open')) { mmenu.classList.remove('open'); burger && burger.setAttribute('aria-expanded', 'false'); }
     sov.classList.add('open');
     document.body.style.overflow = 'hidden';
     sbtn && sbtn.setAttribute('aria-expanded', 'true');
@@ -144,7 +133,6 @@
   if (sov) {
     sbtn && sbtn.addEventListener('click', openSearch);
     sclose && sclose.addEventListener('click', closeSearch);
-    document.querySelectorAll('[data-open-search]').forEach(function (b) { b.addEventListener('click', openSearch); });
     sform && sform.addEventListener('submit', function (e) { e.preventDefault(); runSearch(); });
     sinput && sinput.addEventListener('input', function () { clearTimeout(stimer); stimer = setTimeout(runSearch, 120); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sov.classList.contains('open')) closeSearch(); });
