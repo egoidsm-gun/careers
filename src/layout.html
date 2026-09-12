@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<meta name="description" content="{{desc}}">
+<meta name="robots" content="noindex"><!-- 정식 도메인(egoidsm.com) 연결 시 이 줄 삭제 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{title}}">
+<meta property="og:description" content="{{desc}}">
+<meta property="og:image" content="{{og}}">
+<meta property="og:url" content="{{canonical}}">
+<meta name="theme-color" content="#0b0b0c">
+<link rel="icon" href="{{root}}assets/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap">
+<link rel="stylesheet" href="{{root}}assets/site.css?v={{v}}">
+</head>
+<body class="{{bodyclass}}">
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="logo" href="{{home}}" aria-label="egoidsm 홈"><img src="{{root}}assets/img/logo.png" alt="egoidsm"></a>
+    <ul class="menu">{{nav}}</ul>
+    <a class="btn nav-cta" href="{{root}}recruiting/">채용 중인 포지션</a>
+    <button class="burger" id="burger" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
+  </div>
+</header>
+<div class="mmenu" id="mmenu">{{mobile}}</div>
+
+<main id="main">
+{{subtabs}}
+{{content}}
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="f1">
+      <img src="{{root}}assets/img/logo.png" alt="egoidsm" class="flogo">
+      <p>브랜드의 강력한 자아를 만드는 창조자<br><span class="disp">Lifestyle consumer goods · House of brands</span></p>
+    </div>
+    <div class="f2">
+      <div><b class="disp">ONLY AT egoidsm</b><a href="{{root}}about/">회사소개</a><a href="{{root}}benefit/">베네핏</a><a href="{{root}}growth/">성장</a></div>
+      <div><b class="disp">BRAND</b><a href="{{root}}brand/gulgang/">굴뚝강아지</a><a href="{{root}}brand/mnms/">미뇽맨션</a><a href="{{root}}brand/vasol/">바쏠</a><a href="{{root}}brand/huug/">휴그</a><a href="{{root}}brand/feura/">퓌라</a><a href="{{root}}brand/faverse/">페이버스</a></div>
+      <div><b class="disp">CONTENTS</b><a href="{{root}}contents/">콘텐츠</a><a href="https://egoidsmblog.com/" target="_blank" rel="noopener">BLOG ↗</a><a href="https://www.instagram.com/egoidsm_hr/" target="_blank" rel="noopener">Instagram ↗</a><a href="https://youtu.be/oTEzjS_2iDo" target="_blank" rel="noopener">YouTube ↗</a></div>
+      <div><b class="disp">RECRUITING</b><a href="{{root}}recruiting/">채용 중인 포지션</a><a href="{{root}}recruiting/#process">크루 합류 여정</a><a href="mailto:recruit@egoidsm.com">recruit@egoidsm.com</a></div>
+    </div>
+    <div class="f3">
+      <span>© 2026 주식회사 에고이즘</span>
+      <span>사업자등록번호 270-86-03084</span>
+      <span>서울특별시 성동구 성수동2가 275-16 제일빌딩 7F</span>
+      <a href="mailto:admin@egoidsm.com">admin@egoidsm.com</a>
+      <a href="{{root}}privacy/">개인정보처리방침</a>
+    </div>
+  </div>
+</footer>
+<script src="{{root}}assets/site.js?v={{v}}" defer></script>
+</body>
+</html>
