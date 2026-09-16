@@ -19,7 +19,7 @@
     'body.editing [data-e]:focus{outline:2px solid #ED6D20;outline-offset:3px;background:rgba(237,109,32,.07)}',
     'body.editing .hero .lines span,body.editing .hero .lead,body.editing .hero .btns,body.editing .hero .eyebrow{animation:none;opacity:1;transform:none}',
     "#ed-bar{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:1000;display:flex;align-items:center;gap:8px;background:#141416;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:8px 10px 8px 18px;box-shadow:0 20px 60px rgba(0,0,0,.6);font:600 14px/1 'Pretendard Variable',Pretendard,-apple-system,sans-serif;color:#f4f2ed;white-space:nowrap}",
-    "#ed-bar .ed-tag{color:#ED6D20;font-family:'Bebas Neue',sans-serif;letter-spacing:.14em;font-size:17px;margin-right:4px}",
+    "#ed-bar .ed-tag{color:#ED6D20;font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.12em;font-size:13px;margin-right:4px}",
     '#ed-bar .ed-n{color:#cfcbc3;margin-right:6px}',
     '#ed-bar button{font:inherit;border:1px solid rgba(255,255,255,.18);background:transparent;color:#f4f2ed;border-radius:999px;padding:9px 14px;cursor:pointer}',
     '#ed-bar button:hover{border-color:#fff}',
