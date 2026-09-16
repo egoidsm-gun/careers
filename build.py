@@ -215,6 +215,8 @@ def scan_editable(text, key, root):
 
 
 def main():
+    global NAV
+    NAV = json.loads(NAV_FILE.read_text())
     force = '--refresh' in sys.argv
     posts = fetch_blog(force)
     interviews = [p for p in posts if p['cat'] == '크루 인터뷰'] + LEGACY_INTERVIEWS

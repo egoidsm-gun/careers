@@ -8,6 +8,7 @@
   var BASE = window.__EGO_BASE || './';
   var CFG = { owner: 'egoidsm-gun', repo: 'careers', branch: 'main' };
   var TOKEN_KEY = 'ego_edit_token';
+  var DEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);  // 내 맥의 편집 서버에서 열었나
   var main = document.getElementById('main');
   var key = main && main.getAttribute('data-editkey');
   var rootPrefix = (main && main.getAttribute('data-root')) || '';
@@ -100,7 +101,7 @@
       var id = el.getAttribute('data-e'), it = byId[id];
       if (!it) return bad.push(id);
       var fi = it[4] || 0, kind = it[5] || 'html';
-      (files[fi] = files[fi] || []).push({ s: it[1], e: it[2], expect: it[3], kind: kind, html: kind === 'json' ? jsonText(el) : clean(el.innerHTML) });
+      (files[fi] = files[fi] || []).push({ id: id, s: it[1], e: it[2], expect: it[3], kind: kind, html: kind === 'json' ? jsonText(el) : clean(el.innerHTML) });
     });
     return { files: files, bad: bad };
   }
@@ -145,6 +146,19 @@
     var pl = plan(ch);
     if (pl.bad.length) return toast('알 수 없는 요소가 있어 저장을 멈췄어요. 새로고침 후 다시 시도해 주세요.', true);
     saving = true;
+    if (DEV) {  // 로컬 편집 서버: 소스 반영 → 재빌드 → GitHub push까지 서버가 한다
+      toast('저장 중…', false, true);
+      fetch('/__save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ files: map.files, root: rootPrefix, patches: pl.files }) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j.ok) throw new Error(j.error || '저장 실패');
+          locked = true;
+          toast('반영됐어요 — 새로 불러옵니다. (GitHub에도 올라가는 중, 사이트엔 1~2분 뒤)', false, true);
+          setTimeout(function () { location.reload(); }, 800);
+        })
+        .catch(function (e) { saving = false; toast(e.message || String(e), true, true); });
+      return;
+    }
     getToken().then(function (token) {
       if (!token) { saving = false; return; }
       toast('저장 중…', false, true);
@@ -240,8 +254,7 @@
   toast('편집 모드 — 점선 친 글자를 눌러 고치고 [저장]을 누르세요. 줄바꿈은 Enter.', false);
   }
 
-  var DEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-  if (DEV && !localStorage.getItem(TOKEN_KEY)) { init(); toast('로컬 검증 모드 — 편집은 되지만 저장은 토큰이 있어야 해요.', false, true); return; }
+  if (DEV && !localStorage.getItem(TOKEN_KEY)) { init(); toast('편집 모드 — 점선 친 글자를 눌러 고치고 [저장]. 저장하면 바로 반영되고 GitHub에도 올라가요.', false); return; }
   getToken().then(function (token) {
     if (!token) { leave(); return; }
     toast('권한 확인 중…', false, true);
