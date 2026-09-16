@@ -1,6 +1,19 @@
 (function () {
   'use strict';
 
+  /* ---------- 편집 모드(#edit): 편집기 스크립트만 따로 불러온다 ---------- */
+  var BASE = (function () {
+    var s = document.currentScript;
+    if (!s) { var all = document.querySelectorAll('script[src]'); s = all[all.length - 1]; }
+    return (s && s.src || '').replace(/assets\/site\.js.*$/, '');
+  })();
+  window.__EGO_BASE = BASE;
+  if (location.hash === '#edit') {
+    var es = document.createElement('script');
+    es.src = BASE + 'assets/edit.js?v=' + Date.now();
+    document.body.appendChild(es);
+  }
+
   /* ---------- 내비 ---------- */
   var nav = document.getElementById('nav');
   var isHome = document.body.classList.contains('home');
