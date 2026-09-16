@@ -79,28 +79,68 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
   .menu{order:4;margin:0 auto}
 }
 
-/* ---------- 홈 스크린 ---------- */
+/* ---------- 홈: 출항 (아이덴트 → 별 → 거대 글자 → 스크롤 핀) ---------- */
 body.sub main{padding-top:var(--nav)}
-.screen{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden;isolation:isolate}
-.screen .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.6;z-index:-2;transform:scale(1.02)}
-.screen::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(11,11,12,.55) 0%,rgba(11,11,12,.15) 35%,rgba(11,11,12,.35) 70%,var(--bg) 100%)}
-.screen .wrap{width:100%;padding-top:calc(var(--nav) + 48px);padding-bottom:96px}
+:root{--t0:1.75s}                      /* 히어로 글자가 뜨는 시각 = 아이덴트가 걷히는 순간 */
+html.ident-seen{--t0:.5s}              /* 같은 세션 재방문: 짧게 */
+html.ident-off{--t0:0s}                /* 편집 모드·JS 없음 */
+#stars{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.ident{position:fixed;inset:0;z-index:300;background:#000;pointer-events:none;animation:identOut .7s 1.25s cubic-bezier(.4,0,.2,1) forwards}
+.ident-line{position:absolute;left:50%;top:50%;height:2px;width:0;transform:translate(-50%,-50%);background:var(--acc2);box-shadow:0 0 18px 2px rgba(255,138,61,.9),0 0 70px 10px rgba(237,109,32,.45);animation:identLine .75s .1s cubic-bezier(.2,.8,.2,1) forwards}
+.ident-glow{position:absolute;left:50%;top:50%;width:140vmax;height:60vmax;transform:translate(-50%,-50%) scaleY(.04);background:radial-gradient(ellipse at 50% 55%,rgba(255,138,61,.95) 0%,rgba(237,109,32,.55) 18%,rgba(237,109,32,.12) 42%,transparent 65%);opacity:0;filter:blur(6px);animation:identGlow 1.35s .45s cubic-bezier(.2,.7,.2,1) forwards}
+html.ident-seen .ident{animation:identOut .5s .3s forwards}
+html.ident-seen .ident-line{animation-duration:.4s;animation-delay:0s}
+html.ident-seen .ident-glow{animation:identGlow .7s .1s forwards}
+html.ident-off .ident{display:none}
+@keyframes identLine{to{width:clamp(240px,62vw,900px)}}
+@keyframes identGlow{0%{opacity:0;transform:translate(-50%,-50%) scaleY(.04)}45%{opacity:1}100%{opacity:0;transform:translate(-50%,-64%) scale(1.25,1.5)}}
+@keyframes identOut{to{opacity:0;visibility:hidden}}
+
+.screen{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden}
+.screen .wrap{width:100%;padding-top:calc(var(--nav) + 40px);padding-bottom:96px}
 .screen.center .wrap{text-align:center}
-.screen.center .lead{margin:0 auto}
-.lines span{display:block}
-.hero .lines span{opacity:0;transform:translateY(28px);animation:rise 1s cubic-bezier(.2,.7,.1,1) forwards}
-.hero .lines span:nth-child(2){animation-delay:.12s}
-.hero .lines span:nth-child(3){animation-delay:.24s}
-.hero .lead,.hero .btns,.hero .eyebrow{opacity:0;animation:rise 1s .4s cubic-bezier(.2,.7,.1,1) forwards}
-.hero .eyebrow{animation-delay:0s}
+.giant{font-size:clamp(40px,8.6vw,132px);line-height:.98;letter-spacing:-.045em;font-weight:800;margin:0;color:var(--fg)}
+.giant.acc{color:var(--acc)}
+.w{display:inline-block}
+
+/* 히어로: 별 위에 거대 글자, 아래에 일출의 잔광 */
+.hero{isolation:isolate}
+.hero .giant{font-size:clamp(46px,10.4vw,164px)}
+.hero::before{content:"";position:absolute;left:50%;bottom:-32vh;width:150vw;height:72vh;transform:translateX(-50%);z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 100%,rgba(237,109,32,.34),rgba(237,109,32,.08) 42%,transparent 70%)}
+html.js .hero::before{opacity:0;animation:fadein 1.8s var(--t0) forwards}
+html.js .hero .eyebrow,html.js .hero .w{opacity:0;transform:translateY(.45em);animation:rise .95s cubic-bezier(.2,.7,.1,1) forwards;animation-delay:calc(var(--t0) + var(--i,0)*85ms)}
+html.js .hero .eyebrow{animation-delay:calc(var(--t0) - .1s)}
+html.js .hero .scrollhint{opacity:0;animation:fadein 1s calc(var(--t0) + 1s) forwards}
 @keyframes rise{to{opacity:1;transform:none}}
-.hero .lead{margin-top:32px;max-width:640px}
+@keyframes fadein{to{opacity:1}}
 .scrollhint{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);font-family:var(--disp);letter-spacing:.2em;font-size:11px;color:var(--mute);z-index:2}
 .scrollhint::after{content:"";display:block;width:1px;height:36px;background:linear-gradient(var(--acc),transparent);margin:10px auto 0}
-.mission{font-size:clamp(28px,4.6vw,64px);font-weight:800;letter-spacing:-.035em;line-height:1.12;max-width:1000px;margin:0 auto}
-.mission em{font-style:normal;color:var(--acc)}
-.goals{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 40px;margin-top:40px;color:var(--fg2);font-size:16px}
-.goals span b{color:var(--acc);font-family:var(--disp);letter-spacing:.08em;font-size:14px;margin-right:8px}
+
+/* 스크롤 핀: 화면이 붙어 있는 동안 진행도에 따라 단어가 켜진다 */
+.pin{position:relative;height:240svh}
+.pin-in{position:sticky;top:0;height:100svh;display:flex;align-items:center;overflow:hidden;isolation:isolate}
+.pin .wrap{width:100%;padding-top:var(--nav)}
+.pin .giant{font-size:clamp(32px,6vw,92px)}
+.pin .giant + .giant{margin-top:.22em}
+.pin .w{opacity:.13;transition:opacity .45s}
+.pin .w.on{opacity:1}
+.ship .shipimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:-2;opacity:calc(var(--p,0)*.95);transform:scale(calc(1.22 - var(--p,0)*.22));will-change:transform,opacity}
+.ship .pin-in::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(11,11,12,.3),rgba(11,11,12,.45) 55%,var(--bg) 100%)}
+
+/* 마지막: 화면 가득 승선 CTA */
+.final .giant{font-size:clamp(42px,8vw,124px)}
+.final .lead{margin:28px auto 0}
+.final .btns{justify-content:center}
+html.js .final .eyebrow,html.js .final .w,html.js .final .lead,html.js .final .btns{opacity:0;transform:translateY(.4em)}
+.final.in .eyebrow,.final.in .w,.final.in .lead,.final.in .btns{animation:rise .9s cubic-bezier(.2,.7,.1,1) forwards;animation-delay:calc(var(--i,0)*70ms)}
+.final.in .lead{animation-delay:.5s}
+.final.in .btns{animation-delay:.65s}
+
+@media (max-width:639px){.pin{height:210svh}.pin .giant + .giant{margin-top:.3em}}
+@media (prefers-reduced-motion:reduce){
+  .ident,#stars{display:none}
+  .w,.hero .eyebrow,.hero .scrollhint,.hero::before,.final .eyebrow,.final .lead,.final .btns{opacity:1!important;transform:none!important}
+}
 
 /* ---------- 서브 페이지 공통 ---------- */
 .phero{padding:80px 0 56px;border-bottom:1px solid var(--line)}
