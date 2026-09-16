@@ -1,7 +1,8 @@
 <!-- {"path":"","title":"에고이즘 채용 | 미지의 영역을 개척하는 브랜드 창조자","desc":"라이프스타일 소비재 하우스 오브 브랜드, 에고이즘. 굴뚝강아지·미뇽맨션·바쏠·휴그·퓌라·페이버스의 자아를 함께 실현할 크루를 찾습니다.","section":"home","bodyclass":"home"} -->
-<!-- 출항 아이덴트: 검은 화면 → 오렌지 수평선 → 일출 → 별 워프(home.js) → 히어로. 같은 세션의 재방문은 짧게, #edit는 생략 -->
-<div class="ident" aria-hidden="true"><i class="ident-glow"></i><i class="ident-line"></i></div>
-<script>try{var h=document.documentElement;if(location.hash==='#edit'){h.classList.add('ident-off')}else if(sessionStorage.getItem('ego-ident')){h.classList.add('ident-seen')}else{sessionStorage.setItem('ego-ident','1')}}catch(e){}</script>
+<!-- 출항 아이덴트(타이틀 시퀀스): 암전 → 빛점 → 수평선 → 워드마크 → 일출·별 드러남 → 플래시·워프(home.js) → 글자.
+     전부 CSS 키프레임이라 JS가 없어도 걷힌다. 사이트 안에서 홈으로 돌아올 때(같은 출처 referrer, 새로고침 아님)만 짧은 버전, #edit는 생략 -->
+<div class="ident" aria-hidden="true" data-noedit><i class="ident-bg"></i><i class="ident-glow"></i><i class="ident-flash"></i><img class="ident-mark" src="{{root}}assets/img/logo.png" alt=""><i class="ident-dot"></i><i class="ident-line"></i></div>
+<script>try{var h=document.documentElement;if(location.hash==='#edit'){h.classList.add('ident-off')}else{var nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];var reload=nv&&nv.type==='reload';var same=document.referrer&&document.referrer.indexOf(location.origin)===0;if(same&&!reload)h.classList.add('ident-seen')}}catch(e){}</script>
 <canvas id="stars" aria-hidden="true"></canvas>
 
 <section class="screen hero">
