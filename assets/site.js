@@ -8,11 +8,16 @@
     return (s && s.src || '').replace(/assets\/site\.js.*$/, '');
   })();
   window.__EGO_BASE = BASE;
-  if (location.hash === '#edit') {
+  function loadEditor() {
+    if (window.__edLoaded) { location.reload(); return; }  // 나갔다가 다시 켤 때는 새로 불러온다
+    window.__edLoaded = true;
     var es = document.createElement('script');
     es.src = BASE + 'assets/edit.js?v=' + Date.now();
     document.body.appendChild(es);
   }
+  if (location.hash === '#edit') loadEditor();
+  // 주소창에 #edit만 덧붙이면 페이지가 새로 뜨지 않으므로, 해시 변경도 잡는다
+  window.addEventListener('hashchange', function () { if (location.hash === '#edit') loadEditor(); });
 
   /* ---------- 내비 ---------- */
   var nav = document.getElementById('nav');
