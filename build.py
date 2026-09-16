@@ -110,22 +110,6 @@ def render_nav(root, section):
     return ''.join(items)
 
 
-def render_subtabs(root, meta):
-    tabs = meta.get('subtabs')
-    if tabs is None:
-        n = next((x for x in NAV if x['key'] == meta.get('section')), None)
-        tabs = [list(t) for t in n['subs']] if n and n['subs'] else []
-    if not tabs:
-        return ''
-    sub = meta.get('sub', '')
-    out = []
-    for h, l in tabs:
-        on = ' class="on"' if h == sub else ''
-        tgt = ' target="_blank" rel="noopener"' if h.startswith('http') else ''
-        out.append(f'<a href="{href(root, h)}"{on}{tgt}>{esc(l)}</a>')
-    return '<nav class="subtabs" aria-label="하위 메뉴"><div class="wrap">' + ''.join(out) + '</div></nav>'
-
-
 def main():
     force = '--refresh' in sys.argv
     posts = fetch_blog(force)
@@ -154,7 +138,6 @@ def main():
                 .replace('{{canonical}}', SITE + path)
                 .replace('{{bodyclass}}', meta.get('bodyclass', 'sub'))
                 .replace('{{nav}}', render_nav(root, meta.get('section')))
-                .replace('{{subtabs}}', render_subtabs(root, meta))
                 .replace('{{content}}', body)
                 .replace('{{v}}', version)
                 .replace('{{home}}', root or './')
