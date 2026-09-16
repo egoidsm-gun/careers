@@ -86,7 +86,13 @@
   updatePins();
 
   if (!cv) return;
-  if (reduced || editing) { cv.remove(); cv = null; return; }
+  // iOS 사파리 잔상(로고 고스트·이미지 이중 렌더) 원인 추적: iOS에서는 고정 캔버스를 끈다.
+  // 주소 끝에 ?stars=1 이면 iOS에서도 강제로 켜고, ?stars=0 이면 어디서든 끈다(비교용).
+  var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var force = (location.search.match(/[?&]stars=([01])/) || [])[1];
+  if (ios) html.classList.add('ios');
+  var starsOff = force === '0' || (force !== '1' && ios);
+  if (reduced || editing || starsOff) { cv.remove(); cv = null; return; }
 
   var ctx = cv.getContext('2d'), W, H, cx, cy, stars = [];
   var mobile = window.matchMedia('(max-width: 639px)').matches;
