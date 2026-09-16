@@ -81,6 +81,7 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 
 /* ---------- 홈: 출항 (아이덴트 → 별 → 거대 글자 → 스크롤 핀) ---------- */
 body.sub main{padding-top:var(--nav)}
+main{overflow-x:clip}   /* clip은 스크롤 컨테이너를 만들지 않아 sticky 핀은 그대로, 가로 넘침만 차단 */
 :root{--t0:3.6s}                       /* 히어로 글자가 뜨는 시각 = 점프 직후, 워프가 잦아드는 순간 */
 html.ident-seen{--t0:.5s}              /* 사이트 안에서 홈으로 돌아올 때: 짧게 */
 html.ident-off{--t0:0s}                /* 편집 모드·JS 없음 */
@@ -132,7 +133,7 @@ html.ident-off .ident{display:none}
 .w{display:inline-block}
 
 /* 히어로: 별 위에 거대 글자, 아래에 일출의 잔광 */
-.hero{isolation:isolate;overflow:visible}
+.hero{isolation:isolate;overflow-x:clip;overflow-y:visible}   /* 잔광은 세로로만 번지고 가로는 화면 폭에서 잘라 iOS 가로 끌림 방지 */
 .hero .giant{font-size:clamp(46px,10.4vw,164px)}
 .hero::before{content:"";position:absolute;left:50%;bottom:-60vh;width:170vw;height:140vh;transform:translateX(-50%);z-index:-1;pointer-events:none;background:radial-gradient(ellipse 60% 46% at 50% 57%,rgba(237,109,32,.30),rgba(237,109,32,.07) 48%,transparent 78%)}
 html.js .hero::before{opacity:0;animation:fadein 2s var(--t0) forwards,breathe 7s calc(var(--t0) + 2s) ease-in-out infinite alternate}
