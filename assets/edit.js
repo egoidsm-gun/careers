@@ -1,6 +1,8 @@
 /* 편집 모드 — 주소 끝에 #edit 를 붙이면 site.js가 이 파일을 불러온다.
    문구를 직접 고치고 [저장]하면 GitHub 저장소의 원본 파일(src/pages/*.html)에 커밋되고,
-   GitHub Actions가 사이트를 다시 만들어 1~2분 안에 반영한다. 토큰은 이 브라우저에만 저장된다. */
+   GitHub Actions가 사이트를 다시 만들어 1~2분 안에 반영한다. 토큰은 이 브라우저에만 저장된다.
+   권한: 편집 UI는 저장소(egoidsm-gun/careers)에 쓰기 권한이 있는 GitHub 토큰을 확인한 뒤에만 켜진다.
+   토큰이 없거나 권한이 없으면 아무것도 편집할 수 없다 — 진짜 잠금은 GitHub 쪽에 있다. */
 (function () {
   'use strict';
   var BASE = window.__EGO_BASE || './';
@@ -42,13 +44,6 @@
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
   document.body.classList.add('editing');
 
-  var bar = document.createElement('div'); bar.id = 'ed-bar';
-  bar.innerHTML = '<span class="ed-tag">EDIT</span><span class="ed-n" id="ed-n">0곳 수정</span>' +
-    '<button type="button" class="ed-primary" id="ed-save" disabled>저장</button>' +
-    '<button type="button" id="ed-reset">되돌리기</button>' +
-    '<button type="button" id="ed-exit">나가기</button>' +
-    '<button type="button" class="ed-link" id="ed-token">토큰</button>';
-  document.body.appendChild(bar);
   var toastEl = document.createElement('div'); toastEl.id = 'ed-toast'; document.body.appendChild(toastEl);
   var toastTimer = null;
   function toast(msg, err, sticky, btn) {
@@ -59,15 +54,6 @@
     if (!sticky) toastTimer = setTimeout(function () { toastEl.className = ''; }, err ? 7000 : 4500);
   }
 
-  var els = Array.prototype.slice.call(document.querySelectorAll('[data-e]'));
-  var orig = {};
-  els.forEach(function (el) { orig[el.getAttribute('data-e')] = el.innerHTML; });
-  var map = null, locked = false;
-  fetch(BASE + 'assets/edit/' + key + '.json?v=' + Date.now())
-    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-    .then(function (j) { map = j; })
-    .catch(function () { toast('편집 지도를 못 불러왔어요. 새로고침해 보세요.', true, true); });
-
   function n(s) { return s.replace(/\s+/g, ' ').trim(); }
   function clean(h) { return h.replace(/&nbsp;/g, ' ').replace(/(<br\s*\/?>)+\s*$/, ''); }
   function changed() { return els.filter(function (el) { return n(el.innerHTML) !== n(orig[el.getAttribute('data-e')]); }); }
@@ -76,27 +62,6 @@
     document.getElementById('ed-n').textContent = c + '곳 수정';
     document.getElementById('ed-save').disabled = !c || locked;
   }
-
-  els.forEach(function (el) {
-    el.setAttribute('contenteditable', 'true');
-    el.setAttribute('spellcheck', 'false');
-    el.addEventListener('input', refresh);
-    el.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); document.execCommand('insertLineBreak'); }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save(); }
-    });
-    el.addEventListener('paste', function (e) {
-      e.preventDefault();
-      var t = (e.clipboardData || window.clipboardData).getData('text/plain');
-      document.execCommand('insertText', false, t);
-    });
-  });
-  // 편집 중에는 문구 안의 링크·버튼이 동작하지 않게 (글자만 고치도록)
-  document.addEventListener('click', function (e) {
-    var t = e.target.closest('a, button');
-    if (t && t.closest('[data-e]')) { e.preventDefault(); e.stopPropagation(); }
-  }, true);
-  window.addEventListener('beforeunload', function (e) { if (changed().length && !locked) { e.preventDefault(); e.returnValue = ''; } });
 
   function b64d(b) { var bin = atob(b.replace(/\n/g, '')); var u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder().decode(u); }
   function b64e(s) { var u = new TextEncoder().encode(s), bin = ''; for (var i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(bin); }
@@ -109,7 +74,7 @@
       if (!dlg) {
         dlg = document.createElement('dialog'); dlg.id = 'ed-dlg';
         dlg.innerHTML = '<h3>GitHub 토큰</h3>' +
-          '<p>저장은 GitHub 저장소(egoidsm-gun/careers)의 원본 파일에 바로 커밋돼요. 토큰은 이 브라우저에만 저장됩니다.</p>' +
+          '<p>편집은 GitHub 저장소(egoidsm-gun/careers)에 <b>쓰기 권한이 있는 계정</b>만 할 수 있어요. 저장하면 원본 파일에 바로 커밋되고, 토큰은 이 브라우저에만 저장됩니다.</p>' +
           '<p>없다면 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">여기서 Fine-grained 토큰 만들기 ↗</a> — Repository access: <b>careers</b>만, Permissions: <b>Contents → Read and write</b>.</p>' +
           '<input type="password" id="ed-token-input" placeholder="github_pat_…" autocomplete="off">' +
           '<div class="row"><button type="button" id="ed-dlg-cancel">취소</button><button type="button" class="ed-primary" id="ed-dlg-ok">저장</button></div>';
@@ -198,6 +163,54 @@
     }, 10000);
   }
 
+  /* ---------- 권한 확인 → 편집 UI ---------- */
+  var els = [], orig = {}, map = null, locked = false;
+  function leave() {
+    document.body.classList.remove('editing');
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  function validate(token) {
+    return fetch('https://api.github.com/repos/' + CFG.owner + '/' + CFG.repo, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { return !!(j && j.permissions && j.permissions.push); })
+      .catch(function () { return false; });
+  }
+  function init() {
+  var bar = document.createElement('div'); bar.id = 'ed-bar';
+  bar.innerHTML = '<span class="ed-tag">EDIT</span><span class="ed-n" id="ed-n">0곳 수정</span>' +
+    '<button type="button" class="ed-primary" id="ed-save" disabled>저장</button>' +
+    '<button type="button" id="ed-reset">되돌리기</button>' +
+    '<button type="button" id="ed-exit">나가기</button>' +
+    '<button type="button" class="ed-link" id="ed-token">토큰</button>';
+  document.body.appendChild(bar);
+  els = Array.prototype.slice.call(document.querySelectorAll('[data-e]'));
+  els.forEach(function (el) { orig[el.getAttribute('data-e')] = el.innerHTML; });
+  fetch(BASE + 'assets/edit/' + key + '.json?v=' + Date.now())
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (j) { map = j; })
+    .catch(function () { toast('편집 지도를 못 불러왔어요. 새로고침해 보세요.', true, true); });
+
+  els.forEach(function (el) {
+    el.setAttribute('contenteditable', 'true');
+    el.setAttribute('spellcheck', 'false');
+    el.addEventListener('input', refresh);
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); document.execCommand('insertLineBreak'); }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save(); }
+    });
+    el.addEventListener('paste', function (e) {
+      e.preventDefault();
+      var t = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, t);
+    });
+  });
+  // 편집 중에는 문구 안의 링크·버튼이 동작하지 않게 (글자만 고치도록)
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('a, button');
+    if (t && t.closest('[data-e]')) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  window.addEventListener('beforeunload', function (e) { if (changed().length && !locked) { e.preventDefault(); e.returnValue = ''; } });
+
   document.getElementById('ed-save').addEventListener('click', save);
   document.getElementById('ed-reset').addEventListener('click', function () {
     els.forEach(function (el) { el.innerHTML = orig[el.getAttribute('data-e')]; }); refresh(); toast('되돌렸어요.');
@@ -209,4 +222,16 @@
   document.getElementById('ed-token').addEventListener('click', function () { getToken(true).then(function (t) { if (t) toast('토큰을 저장했어요.'); }); });
   refresh();
   toast('편집 모드 — 점선 친 글자를 눌러 고치고 [저장]을 누르세요. 줄바꿈은 Enter.', false);
+  }
+
+  getToken().then(function (token) {
+    if (!token) { leave(); return; }
+    toast('권한 확인 중…', false, true);
+    return validate(token).then(function (ok) {
+      if (ok) { init(); return; }
+      localStorage.removeItem(TOKEN_KEY);
+      toast('이 저장소에 편집 권한이 있는 GitHub 토큰이 아니에요. 편집 모드를 닫습니다.', true, true);
+      setTimeout(leave, 3000);
+    });
+  });
 })();
