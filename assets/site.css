@@ -42,7 +42,7 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 @media (max-width:1179px){:root{--nav:72px;--pill:44px}}
 @media (max-width:639px){:root{--pill:clamp(30px,9.6vw,42px);--nav:calc(var(--pill) + 26px)}}  /* 좁은 폭도 한 줄: 로고·알약·버튼이 폭에 비례해 같이 준다 */
 .nav{position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:100;transition:background .3s,border-color .3s;background:linear-gradient(180deg,rgba(0,0,0,.8),rgba(0,0,0,0));border-bottom:1px solid transparent}
-.nav.solid{background:rgba(11,11,12,.93);border-bottom-color:var(--line)}
+.nav.solid{background:rgba(11,11,12,.86);backdrop-filter:saturate(160%) blur(18px);-webkit-backdrop-filter:saturate(160%) blur(18px);border-bottom-color:var(--line)}
 .nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav);max-width:none;padding:0 32px}
 .brk{display:none}
 .logo{display:flex;align-items:center;flex:none}
@@ -138,7 +138,7 @@ html.js .hero .scrollhint{opacity:0;animation:fadein 1s calc(var(--t0) + 1.4s) f
 .pin .giant + .giant{margin-top:.22em}
 .pin .w{opacity:.13;transition:opacity .45s}
 .pin .w.on{opacity:1}
-.ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95)}
+.ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95);transform:scale(calc(1.22 - var(--p,0)*.22))}
 .ship .pin-in::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(11,11,12,.3),rgba(11,11,12,.45) 55%,var(--bg) 100%)}
 
 /* 마지막: 화면 가득 승선 CTA */
