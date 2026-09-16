@@ -136,7 +136,7 @@
 
   var t0 = performance.now(), last = t0, running = !document.hidden;
   var seen = html.classList.contains('ident-seen');
-  var warpAt = seen ? 0 : 3200, warpDur = seen ? 1300 : 2100;   // 플래시(3.15s) 직후 워프 정점, 글자(3.9s)가 뜨면서 잦아든다   // ms — 일출 빛이 번질 때 워프가 시작된다
+  var warpAt = seen ? 0 : 3400, warpDur = seen ? 1300 : 2100;   // 배가 출항하는 플래시(3.35s)에 워프 시작, 글자(4.15s)가 뜨면서 잦아든다   // ms — 일출 빛이 번질 때 워프가 시작된다
   function speedAt(now) {
     var t = now - t0, w = 0;
     if (t > warpAt) {
