@@ -97,52 +97,6 @@
   }
 
 
-  /* ---------- 밤바다(WebGL): 잔물결 위에 수평선 잔광과 보물의 황금빛이 비친다. 인트로 동안만 돈다 ---------- */
-  (function ocean() {
-    var sea = document.querySelector('.ident-sea .sea-gl');
-    if (!sea || reduced || editing || html.classList.contains('ident-seen')) return;
-    var gl = sea.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'low-power' });
-    if (!gl) return;
-    var vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-    var fs = 'precision mediump float;uniform vec2 r;uniform float t;uniform float g;' +
-      'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}' +
-      'float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);}' +
-      'float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.03;a*=.5;}return v;}' +
-      'void main(){vec2 uv=gl_FragCoord.xy/r;float depth=1.-uv.y;' +
-      'vec2 p=vec2((uv.x-.5)*(1.+depth*3.)*6.,uv.y*40./(depth+.15));' +
-      'float n=fbm(p+vec2(t*.15,t*.35));float n2=fbm(p*2.1-vec2(t*.1,t*.5));float rip=n*.6+n2*.4;' +
-      'float hz=exp(-depth*7.);vec3 water=vec3(.012,.010,.012);vec3 warm=vec3(1.,.62,.30);' +
-      'float refl=hz*(.05+.30*pow(rip,2.));' +
-      'float dx=(uv.x-.22)/(.05+.12*g);float col=exp(-dx*dx)*exp(-depth*2.2)*(.6+.8*pow(rip,1.5))*g;' +
-      'vec3 gold=vec3(1.,.82,.45);vec3 c=water+warm*refl*.5+gold*col*1.6;' +
-      'float sp=smoothstep(.80,.96,rip)*exp(-depth*3.)*.22*(.4+g);c+=vec3(1.,.9,.7)*sp;' +
-      'gl_FragColor=vec4(c,1.);}';
-    function sh(type, src) { var o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return gl.getShaderParameter(o, gl.COMPILE_STATUS) ? o : null; }
-    var v = sh(gl.VERTEX_SHADER, vs), f = sh(gl.FRAGMENT_SHADER, fs); if (!v || !f) return;
-    var prog = gl.createProgram(); gl.attachShader(prog, v); gl.attachShader(prog, f); gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
-    gl.useProgram(prog);
-    var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-    var loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    var uR = gl.getUniformLocation(prog, 'r'), uT = gl.getUniformLocation(prog, 't'), uG = gl.getUniformLocation(prog, 'g');
-    html.classList.add('seagl');   // 캔버스 클래스(.sea-gl)와 이름을 달리해 querySelector 혼동 방지
-    var start = performance.now();
-    function size() {
-      var rect = sea.getBoundingClientRect(), s = 0.6;   // 저해상 렌더(가벼움, 물결엔 충분)
-      sea.width = Math.max(2, Math.round(rect.width * s)); sea.height = Math.max(2, Math.round(rect.height * s));
-      gl.viewport(0, 0, sea.width, sea.height);
-    }
-    size(); window.addEventListener('resize', size);
-    (function draw(now) {
-      if (!document.body.contains(sea)) return;              // 인트로가 DOM에서 빠지면 종료
-      var t = (now - start) / 1000, g = Math.max(0, Math.min(1, (t - 2.2) / 1.2));   // 2.2s부터 황금빛
-      gl.uniform2f(uR, sea.width, sea.height); gl.uniform1f(uT, t); gl.uniform1f(uG, g);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      requestAnimationFrame(draw);
-    })(start);
-  })();
-
   /* ---------- 별 캔버스: 아이덴트 직후 워프 → 느린 항해, 스크롤하면 가속 ---------- */
   var cv = document.getElementById('stars');
   var boost = 0, lastY = window.scrollY, queued = false;
@@ -183,7 +137,7 @@
 
   var t0 = performance.now(), last = t0, running = !document.hidden;
   var seen = html.classList.contains('ident-seen');
-  var warpAt = seen ? 0 : 3700, warpDur = seen ? 1300 : 2000;   // 보물의 빛이 터지는 3.7s에 워프 시작, 글자(4.3s)가 뜨면서 잦아든다   // ms — 일출 빛이 번질 때 워프가 시작된다
+  var warpAt = seen ? 0 : 3200, warpDur = seen ? 1300 : 2100;   // 플래시(3.15s) 직후 워프 정점, 글자(3.9s)가 뜨면서 잦아든다
   function speedAt(now) {
     var t = now - t0, w = 0;
     if (t > warpAt) {

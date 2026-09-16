@@ -82,49 +82,30 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 /* ---------- 홈: 출항 (아이덴트 → 별 → 거대 글자 → 스크롤 핀) ---------- */
 body.sub main{padding-top:var(--nav)}
 main{overflow-x:clip}   /* clip은 스크롤 컨테이너를 만들지 않아 sticky 핀은 그대로, 가로 넘침만 차단 */
-:root{--t0:4.3s}                       /* 히어로 글자가 뜨는 시각 = 보물의 빛이 터진 직후 */
-html.ident-seen{--t0:.5s}              /* 사이트 안에서 홈으로 돌아올 때: 짧게 */
+:root{--t0:3.9s}                       /* 히어로 글자가 뜨는 시각 = 워프가 잦아드는 순간 */
+html.ident-seen{--t0:.6s}              /* 사이트 안에서 홈으로 돌아올 때: 짧게 */
 html.ident-off{--t0:0s}                /* 편집 모드·JS 없음 */
 #stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.ident{--hz:58%;position:fixed;inset:0;z-index:300;overflow:hidden;pointer-events:none;animation:identOut .45s 4.3s cubic-bezier(.4,0,.2,1) forwards}
-/* 밤하늘: 암전 + 미세한 별 */
-.ident-bg{position:absolute;inset:0;background:radial-gradient(1.2px 1.2px at 12% 18%,rgba(255,255,255,.55),transparent 70%),radial-gradient(1px 1px at 78% 12%,rgba(255,255,255,.45),transparent 70%),radial-gradient(1.4px 1.4px at 88% 38%,rgba(255,240,220,.5),transparent 70%),radial-gradient(1px 1px at 30% 44%,rgba(255,255,255,.35),transparent 70%),radial-gradient(1.2px 1.2px at 64% 30%,rgba(255,255,255,.4),transparent 70%),radial-gradient(1px 1px at 8% 50%,rgba(255,255,255,.3),transparent 70%),radial-gradient(1px 1px at 52% 8%,rgba(255,255,255,.4),transparent 70%),radial-gradient(1.3px 1.3px at 40% 26%,rgba(255,200,160,.35),transparent 70%),radial-gradient(1px 1px at 92% 52%,rgba(255,255,255,.3),transparent 70%),radial-gradient(1px 1px at 22% 6%,rgba(255,255,255,.3),transparent 70%),#000;animation:identBg .5s 3.75s cubic-bezier(.4,0,.2,1) forwards}
-/* 밤바다: 수평선 아래. 잔물결이 천천히 흐르고 보물의 빛을 비춘다 */
-.ident-sea{position:absolute;left:0;right:0;top:var(--hz);bottom:0;background:linear-gradient(180deg,#0e0b09,#020202 70%);box-shadow:0 -1px 0 rgba(255,210,160,.10);opacity:0;animation:identIn 1.2s .2s forwards,identOutFast .5s 3.7s forwards}
-.ident-sea::before{content:"";position:absolute;left:22%;top:0;width:18%;height:60%;transform:translateX(-50%);background:linear-gradient(rgba(255,205,120,.5),rgba(255,180,90,.15) 55%,transparent);opacity:0;filter:blur(3px);animation:identGoldRefl 1.6s 2.2s ease-out forwards}
-html.seagl .ident-sea::after,html.seagl .ident-sea::before{display:none}
-.ident-sea::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.035) 0 1px,transparent 1px 6px);mask-image:linear-gradient(rgba(0,0,0,.8),transparent 75%);-webkit-mask-image:linear-gradient(rgba(0,0,0,.8),transparent 75%);animation:identRipple 1.6s linear infinite}
-/* 길잡이 별: 왼쪽 위에서 반짝이며 항로를 가리킨다 */
-.ident-guide{position:absolute;left:20%;top:17%;width:4px;height:4px;margin:-2px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px rgba(255,255,255,.65),0 0 34px 10px rgba(255,225,180,.35);opacity:0;animation:identGuide 2.2s 1.2s ease-in-out forwards}
-.ident-guide::before,.ident-guide::after{content:"";position:absolute;left:50%;top:50%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);width:46px;height:1px;transform:translate(-50%,-50%)}
-.ident-guide::after{transform:translate(-50%,-50%) rotate(90deg)}
-/* 보물의 빛: 수평선 왼쪽에서 황금빛이 떠올라 커지고, 발견의 순간 터진다 */
-.ident-gold{position:absolute;left:22%;top:var(--hz);width:70vmax;height:70vmax;transform:translate(-50%,-50%) scale(.08);background:radial-gradient(circle at 50% 50%,rgba(255,236,190,.95) 0%,rgba(255,205,110,.7) 6%,rgba(255,170,70,.35) 16%,rgba(237,120,40,.10) 30%,transparent 50%);opacity:0;animation:identGoldRise 1.5s 2.2s cubic-bezier(.2,.6,.2,1) forwards,identGoldBurst .55s 3.7s ease-out forwards}
-/* 개척선(브랜드 렌더 컷아웃): 오른쪽에서 항해해 들어와 왼쪽·중앙에 멈춘다. 이미지 아래(선체 바닥)가 수평선에 닿는다 */
-.ident-ship{position:absolute;left:50%;top:var(--hz);width:min(96vw,720px,calc(66vh * 1.02));transform:translate(calc(-50% + 82vw),-93%) scale(.9);opacity:0;animation:identSailIn 3.6s .3s cubic-bezier(.15,.55,.2,1) forwards,identShipGone .5s 3.72s cubic-bezier(.4,0,.8,1) forwards}
-.ident-ship .ship-img{position:relative;width:100%;height:auto;display:block;transform-origin:50% 100%;animation:identBob 2.4s .3s ease-in-out infinite alternate,identShipLit 1.4s 2.5s ease-out forwards;filter:brightness(.62) saturate(.85);-webkit-mask-image:linear-gradient(#000 86%,transparent 99%);mask-image:linear-gradient(#000 86%,transparent 99%)}
-.ident-ship .ship-logo{position:absolute;left:60%;top:45%;width:21%;height:auto;transform:translate(-50%,-50%) perspective(400px) rotateY(-18deg) rotate(-4deg);opacity:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.8));animation:identIn .8s 1.6s forwards}
-.ident-sea .sea-gl{position:absolute;inset:0;width:100%;height:100%;display:block}
-/* 불꽃: 보물의 빛에서 금빛 입자가 피어오른다 */
-.ident-sparks b{position:absolute;left:22%;top:var(--hz);width:3px;height:3px;margin:-1px;border-radius:50%;background:#ffe2a8;box-shadow:0 0 8px 2px rgba(255,210,130,.8);opacity:0;animation:identSpark 1.1s ease-out forwards}
-.ident-sparks b:nth-child(1){animation-delay:2.9s;--dx:-30px;--dy:-110px}.ident-sparks b:nth-child(2){animation-delay:3.05s;--dx:26px;--dy:-140px;width:2px;height:2px}.ident-sparks b:nth-child(3){animation-delay:3.15s;--dx:-62px;--dy:-90px}.ident-sparks b:nth-child(4){animation-delay:3.25s;--dx:52px;--dy:-120px;width:4px;height:4px}.ident-sparks b:nth-child(5){animation-delay:3.35s;--dx:-10px;--dy:-160px}.ident-sparks b:nth-child(6){animation-delay:3.45s;--dx:80px;--dy:-80px;width:2px;height:2px}.ident-sparks b:nth-child(7){animation-delay:3.55s;--dx:-88px;--dy:-130px}
-.ident-flash{position:absolute;inset:0;background:radial-gradient(ellipse at 28% 56%,rgba(255,244,222,1),rgba(255,200,110,.7) 26%,transparent 70%);opacity:0;animation:identFlash .8s 3.72s ease-out forwards}
-html.ident-seen .ident{animation:identOut .45s .25s forwards}
-html.ident-seen .ident-bg,html.ident-seen .ident-sea,html.ident-seen .ident-guide,html.ident-seen .ident-gold,html.ident-seen .ident-ship,html.ident-seen .ident-sparks,html.ident-seen .ident-flash{display:none}
+.ident{position:fixed;inset:0;z-index:300;overflow:hidden;pointer-events:none;animation:identOut .6s 3.9s cubic-bezier(.4,0,.2,1) forwards}
+.ident-bg{position:absolute;inset:0;background:#000;animation:identBg 1.3s 2.4s cubic-bezier(.4,0,.2,1) forwards}
+.ident-dot{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;box-shadow:0 0 12px 4px rgba(255,180,120,.95),0 0 44px 14px rgba(237,109,32,.5);opacity:0;animation:identDot 1.5s .4s ease-out forwards}
+.ident-line{position:absolute;left:50%;top:50%;height:2px;width:0;transform:translate(-50%,-50%);background:var(--acc2);box-shadow:0 0 18px 2px rgba(255,138,61,.9),0 0 70px 10px rgba(237,109,32,.45);animation:identLine 1.3s .9s cubic-bezier(.16,1,.3,1) forwards,identHot 1s 2.4s ease-in forwards,identLineUp .9s 3.3s cubic-bezier(.4,0,.6,1) forwards}
+.ident-mark{position:absolute;left:50%;top:50%;height:clamp(18px,3vw,30px);width:auto;opacity:0;transform:translate(-50%,calc(-50% - 34px));animation:identMark 2s 1.4s cubic-bezier(.2,.7,.2,1) forwards}
+.ident-glow{position:absolute;left:50%;top:50%;width:140vmax;height:60vmax;transform:translate(-50%,-50%) scaleY(.04);background:radial-gradient(ellipse at 50% 55%,rgba(255,138,61,.95) 0%,rgba(237,109,32,.55) 18%,rgba(237,109,32,.12) 42%,transparent 65%);opacity:0;animation:identGlow 1.9s 2.2s cubic-bezier(.2,.7,.2,1) forwards}
+.ident-flash{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,236,220,.95),rgba(255,138,61,.5) 30%,transparent 72%);opacity:0;animation:identFlash .7s 3.15s ease-out forwards}
+html.ident-seen .ident{animation:identOut .5s .5s forwards}
+html.ident-seen .ident-bg{animation:identBg .5s .3s forwards}
+html.ident-seen .ident-dot,html.ident-seen .ident-mark,html.ident-seen .ident-flash{display:none}
+html.ident-seen .ident-line{animation:identLine .5s 0s cubic-bezier(.16,1,.3,1) forwards,identLineUp .5s .5s forwards}
+html.ident-seen .ident-glow{animation:identGlow .8s .2s forwards}
 html.ident-off .ident{display:none}
-@keyframes identIn{to{opacity:1}}
-@keyframes identOutFast{to{opacity:0}}
-@keyframes identRipple{from{transform:translateY(0)}to{transform:translateY(6px)}}
-@keyframes identGoldRefl{to{opacity:1}}
-@keyframes identGuide{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.2)}45%{opacity:.5;transform:scale(.9)}65%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(.6)}}
-@keyframes identGoldRise{0%{opacity:0;transform:translate(-50%,-50%) scale(.08)}30%{opacity:.75;transform:translate(-50%,-52%) scale(.22)}100%{opacity:1;transform:translate(-50%,-55%) scale(.55)}}
-@keyframes identGoldBurst{to{opacity:0;transform:translate(-50%,-55%) scale(1.8)}}
-@keyframes identSailIn{0%{opacity:0;transform:translate(calc(-50% + 82vw),-93%) scale(.9)}12%{opacity:1}100%{opacity:1;transform:translate(calc(-50% - 3vw),-93%) scale(1)}}
-@keyframes identShipLit{to{filter:brightness(1.05) saturate(1)}}
-@keyframes identBob{from{transform:rotate(-.9deg) translateY(0)}to{transform:rotate(.9deg) translateY(-4px)}}
-@keyframes identShipGone{to{opacity:0;transform:translate(calc(-50% - 3vw),-95%) scale(1.06)}}
-@keyframes identSpark{0%{opacity:0;transform:translate(0,0)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
-@keyframes identFlash{0%{opacity:0}20%{opacity:.95}100%{opacity:0}}
+@keyframes identDot{0%{opacity:0;transform:scale(.4)}35%{opacity:1;transform:scale(1)}70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.8)}}
+@keyframes identLine{to{width:clamp(240px,70vw,1100px)}}
+@keyframes identHot{to{background:#fff;box-shadow:0 0 30px 6px rgba(255,210,170,1),0 0 130px 34px rgba(237,109,32,.7)}}
+@keyframes identLineUp{to{transform:translate(-50%,-50%) translateY(-42vh);opacity:0}}
+@keyframes identMark{0%{opacity:0;transform:translate(-50%,calc(-50% - 24px))}28%{opacity:1;transform:translate(-50%,calc(-50% - 34px))}68%{opacity:1;transform:translate(-50%,calc(-50% - 34px))}100%{opacity:0;transform:translate(-50%,calc(-50% - 60px))}}
+@keyframes identGlow{0%{opacity:0;transform:translate(-50%,-50%) scaleY(.04)}42%{opacity:1;transform:translate(-50%,-56%) scale(1,.7)}100%{opacity:0;transform:translate(-50%,-76%) scale(1.5,1.7)}}
+@keyframes identFlash{0%{opacity:0}22%{opacity:.9}100%{opacity:0}}
 @keyframes identBg{to{opacity:0}}
 @keyframes identOut{to{opacity:0;visibility:hidden}}
 
