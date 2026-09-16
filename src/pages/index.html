@@ -1,32 +1,7 @@
 <!-- {"path":"","title":"에고이즘 채용 | 미지의 영역을 개척하는 브랜드 창조자","desc":"라이프스타일 소비재 하우스 오브 브랜드, 에고이즘. 굴뚝강아지·미뇽맨션·바쏠·휴그·퓌라·페이버스의 자아를 함께 실현할 크루를 찾습니다.","section":"home","bodyclass":"home"} -->
-<!-- 출항 아이덴트 v5 "보물을 찾는 개척선": 밤바다에 개척선(니냐호를 벤치마킹한 카라벨 SVG, 큰 가로돛에 로고)이 오른쪽에서 항해해 옴 → 길잡이 별이 반짝임 → 수평선에 황금빛(보물)이 떠오르며 배가 그 빛을 받음 → 빛이 터지며 배가 빛 속으로 사라지고 별 워프(home.js) → 메인 화면. 전부 CSS 키프레임(JS 없어도 걷힘).
+<!-- 출항 아이덴트 v5 "보물을 찾는 개척선": 밤바다(WebGL 물결)에 개척선(브랜드 렌더 hero.jpg의 배를 소프트 매트로 따낸 WebP, 돛에 로고)이 오른쪽에서 항해해 옴 → 길잡이 별이 반짝임 → 수평선에 황금빛(보물)이 떠오르며 배가 그 빛을 받음 → 빛이 터지며 배가 빛 속으로 사라지고 별 워프(home.js) → 메인 화면. 전부 CSS 키프레임(JS 없어도 걷힘).
      사이트 안에서 홈으로 돌아올 때(같은 출처 referrer, 새로고침 아님)만 짧은 버전, #edit는 생략 -->
-<div class="ident" aria-hidden="true" data-noedit><i class="ident-bg"></i><i class="ident-sea"></i><i class="ident-guide"></i><i class="ident-gold"></i><div class="ident-ship"><i class="ship-glow"></i><svg class="ship-svg" viewBox="-30 0 460 430" aria-hidden="true"><defs>
-<radialGradient id="sailG" cx="46%" cy="50%" r="64%"><stop offset="0" stop-color="#3b3a41"/><stop offset=".55" stop-color="#1e1e23"/><stop offset="1" stop-color="#111114"/></radialGradient>
-<linearGradient id="rimG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,175,115,.18)"/><stop offset="1" stop-color="rgba(255,175,115,.9)"/></linearGradient>
-<linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a191e"/><stop offset="1" stop-color="#040405"/></linearGradient>
-<linearGradient id="reflMask" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset=".85" stop-color="#fff" stop-opacity="0"/></linearGradient>
-<mask id="rm"><rect x="-30" y="312" width="460" height="118" fill="url(#reflMask)"/></mask>
-<filter id="blur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2.4"/></filter>
-</defs>
-<g id="shipg"><g class="ship-in">
-<g class="rig"><path d="M219 10 L134 276 M219 10 L300 274 M219 10 L84 64 M84 64 L-8 204 M84 64 L46 258 M84 64 L118 262 M352 104 L219 10 M352 104 L394 238 M352 104 L306 246"/><path class="rat" d="M156 210 L170 210 M150 228 L166 228 M144 246 L162 246 M266 210 L282 210 M272 228 L288 228 M278 246 L294 246"/></g>
-<path class="sail lateen" d="M326 156 L400 70 L392 200 L342 214 Z"/><path class="spar" d="M318 160 L404 66"/>
-<path class="sail fore" d="M46 154 Q84 146 122 154 C126 176 126 196 122 214 Q84 222 46 214 C42 196 42 176 46 154 Z"/><path class="spar" d="M36 150 L132 150"/>
-<path class="sail main" d="M98 60 Q218 46 338 60 C350 118 352 178 338 226 Q218 242 98 226 C84 178 86 118 98 60 Z"/>
-<path class="seam" d="M158 56 C152 118 152 182 156 232 M218 50 C216 118 216 182 218 236 M278 56 C284 118 284 182 280 232 M100 118 Q218 106 336 118 M96 176 Q218 164 340 176"/>
-<path class="spar main" d="M86 56 L350 56"/>
-<image class="sail-logo" href="{{root}}assets/img/logo.png" x="156" y="126" width="124" height="40" preserveAspectRatio="xMidYMid meet" transform="rotate(-1.5 218 146)"/>
-<g class="mast"><path d="M82 258 L84 64 M216 274 L219 8 M348 236 L352 104"/></g>
-<path class="pennant" d="M219 8 L252 12 L246 18 L252 24 L219 26 Z"/><path class="pennant" d="M84 64 L104 67 L100 71 L104 76 L84 77 Z"/>
-<path class="hull" d="M52 246 C110 270 190 280 262 278 C318 276 354 266 386 236 L392 268 C376 296 344 312 296 312 L82 312 C64 312 52 292 52 246 Z"/>
-<path class="hull" d="M298 240 L304 196 L392 182 L396 238 Z"/><path class="deck" d="M304 196 L392 182 M306 208 L394 194 M318 204 L320 184 M338 201 L340 180 M358 198 L360 177 M378 195 L380 174"/>
-<path class="hull" d="M52 246 L46 228 L66 242 Z"/><path class="spar bow" d="M56 244 L-8 204"/>
-<path class="deck" d="M66 266 C130 288 200 296 262 294 C318 292 352 280 386 254"/>
-<g class="lights"><circle cx="104" cy="288" r="1.6"/><circle cx="146" cy="293" r="1.6"/><circle cx="188" cy="296" r="1.6"/><circle cx="230" cy="296" r="1.6"/><circle cx="272" cy="294" r="1.6"/><circle cx="314" cy="288" r="1.6"/><circle cx="352" cy="214" r="1.4"/><circle cx="372" cy="211" r="1.4"/><circle class="lantern" cx="398" cy="178" r="2.4"/></g>
-</g></g>
-<use class="refl" href="#shipg" transform="matrix(1 0 0 -1 0 624)" mask="url(#rm)" filter="url(#blur)"/>
-</svg></div><i class="ident-sparks"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i><i class="ident-flash"></i></div>
+<div class="ident" aria-hidden="true" data-noedit><i class="ident-bg"></i><i class="ident-sea"><canvas class="sea-gl"></canvas></i><i class="ident-guide"></i><i class="ident-gold"></i><div class="ident-ship"><img class="ship-img" src="{{root}}assets/img/ship-hero.webp" alt=""><img class="ship-logo" src="{{root}}assets/img/logo.png" alt=""></div><i class="ident-sparks"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i><i class="ident-flash"></i></div>
 <script>try{var h=document.documentElement;if(location.hash==='#edit'){h.classList.add('ident-off')}else{var nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];var reload=nv&&nv.type==='reload';var same=document.referrer&&document.referrer.indexOf(location.origin)===0;if(same&&!reload)h.classList.add('ident-seen')}}catch(e){}</script>
 <canvas id="stars" aria-hidden="true"></canvas>
 
