@@ -1,0 +1,9 @@
+[
+  {"key": "only", "label": "ONLY AT egoidsm", "href": "about/",
+   "subs": [["about/", "회사소개"], ["benefit/", "베네핏"], ["growth/", "성장"]]},
+  {"key": "brand", "label": "BRAND", "href": "brand/",
+   "subs": [["brand/gulgang/", "굴뚝강아지"], ["brand/mnms/", "미뇽맨션"], ["brand/vasol/", "바쏠"],
+            ["brand/huug/", "휴그"], ["brand/feura/", "퓌라"], ["brand/faverse/", "페이버스"]]},
+  {"key": "contents", "label": "CONTENTS", "href": null,
+   "subs": [["https://egoidsmblog.com/", "BLOG ↗"]]}
+]

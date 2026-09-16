@@ -25,16 +25,8 @@ OUT = ROOT / '_site'
 SITE = 'https://egoidsm-gun.github.io/careers/'  # 정식 도메인 연결 시 https://egoidsm.com/ 으로
 BLOG_RSS = 'https://egoidsmblog.com/rss'
 
-NAV = [
-    {'key': 'only', 'label': 'ONLY AT egoidsm', 'href': 'about/',
-     'subs': [('about/', '회사소개'), ('benefit/', '베네핏'), ('growth/', '성장')]},
-    {'key': 'brand', 'label': 'BRAND', 'href': 'brand/',
-     'subs': [('brand/gulgang/', '굴뚝강아지'), ('brand/mnms/', '미뇽맨션'), ('brand/vasol/', '바쏠'),
-              ('brand/huug/', '휴그'), ('brand/feura/', '퓌라'), ('brand/faverse/', '페이버스')]},
-    {'key': 'contents', 'label': 'CONTENTS', 'href': None,  # 페이지 없음 — 누르면 드롭다운만 열림
-     'subs': [('https://egoidsmblog.com/', 'BLOG ↗')]},
-    {'key': 'recruiting', 'label': 'RECRUITING', 'href': 'recruiting/', 'subs': []},
-]
+NAV_FILE = SRC / 'nav.json'   # 상단 알약·드롭다운 글자 — 편집 모드에서 고칠 수 있게 데이터 파일로 분리
+NAV = json.loads(NAV_FILE.read_text())
 
 # RSS 30개 창 밖에 있는 예전 크루 인터뷰 (구 사이트에 걸려 있던 글)
 LEGACY_INTERVIEWS = [
@@ -97,8 +89,8 @@ def post_cards(posts, cat, n):
     return '\n'.join(out) or '<p class="mute">아직 글이 없습니다.</p>'
 
 
-def render_nav(root, section):
-    """가운데 알약 탭 — RECRUITING은 오른쪽 사각 버튼이므로 알약에서 뺀다."""
+def render_nav(root, section, ids):
+    """가운데 알약 탭 — RECRUITING은 오른쪽 사각 버튼이므로 알약에서 뺀다. ids: 편집 모드용 data-e."""
     items = []
     for n in NAV:
         if n['key'] == 'recruiting':
@@ -107,12 +99,29 @@ def render_nav(root, section):
         dd = ''
         if n['subs']:
             dd = '<div class="dd">' + ''.join(
-                f'<a href="{href(root, h)}"{" target=\"_blank\" rel=\"noopener\"" if h.startswith("http") else ""}>{esc(l)}</a>'
-                for h, l in n['subs']) + '</div>'
-        trig = (f'<a href="{href(root, n["href"])}">{esc(n["label"])}</a>' if n['href']
-                else f'<button type="button" class="dd-trigger" aria-haspopup="true" aria-expanded="false">{esc(n["label"])}</button>')
+                f'<a href="{href(root, h)}" data-e="{ids[(n["key"], i)]}"{" target=\"_blank\" rel=\"noopener\"" if h.startswith("http") else ""}>{esc(l)}</a>'
+                for i, (h, l) in enumerate(n['subs'])) + '</div>'
+        de = f' data-e="{ids[(n["key"], None)]}"'
+        trig = (f'<a href="{href(root, n["href"])}"{de}>{esc(n["label"])}</a>' if n['href']
+                else f'<a href="#" class="dd-trigger" role="button" aria-haspopup="true" aria-expanded="false"{de}>{esc(n["label"])}</a>')
         items.append(f'<li class="{cls.strip()}">{trig}{dd}</li>')
     return ''.join(items)
+
+
+def nav_edit_items(file_idx):
+    """nav.json 안에서 각 라벨 문자열의 위치(UTF-16 오프셋)를 찾아 편집 지도 항목과 data-e id를 만든다."""
+    raw = NAV_FILE.read_text()
+    items, ids, cursor, k = [], {}, 0, 0
+    for n in NAV:
+        for sub_i, label in [(None, n['label'])] + [(i, l) for i, (h, l) in enumerate(n['subs'])]:
+            enc = json.dumps(label, ensure_ascii=False)
+            at = raw.index(enc, cursor)
+            s_, e_ = at + 1, at + len(enc) - 1
+            eid = f'nav:{k}'; k += 1
+            items.append([eid, u16(raw[:s_]), u16(raw[:e_]), norm(enc[1:-1]), file_idx, 'json'])
+            ids[(n['key'], sub_i)] = eid
+            cursor = e_
+    return items, ids
 
 
 # ---------- 편집 모드: 소스 스캔 ----------
@@ -229,20 +238,23 @@ def main():
         root = '../' * path.count('/')
         key = f.stem
         injected, items = scan_editable(txt, key, root)
-        (OUT / 'assets' / 'edit' / f'{key}.json').write_text(
-            json.dumps({'file': f'src/pages/{f.name}', 'items': items}, ensure_ascii=False))
+        lay_injected, lay_items = scan_editable(layout, 'layout', root)
+        nav_items, nav_ids = nav_edit_items(2)
+        (OUT / 'assets' / 'edit' / f'{key}.json').write_text(json.dumps({
+            'files': [f'src/pages/{f.name}', 'src/layout.html', 'src/nav.json'],
+            'items': [it + [0] for it in items] + [it + [1] for it in lay_items] + nav_items}, ensure_ascii=False))
         body = injected[m.end():]
         body = body.replace('{{root}}', root)
         body = re.sub(r'\{\{posts:([^:}]+):(\d+)\}\}', lambda mm: post_cards(posts, mm.group(1), int(mm.group(2))), body)
         body = body.replace('{{interviews}}', post_cards(interviews, 'all', 12))
         og = meta.get('og', 'assets/img/hero.jpg')
-        page = (layout
+        page = (lay_injected
                 .replace('{{title}}', esc(meta['title']))
                 .replace('{{desc}}', esc(meta.get('desc', '')))
                 .replace('{{og}}', SITE + og)
                 .replace('{{canonical}}', SITE + path)
                 .replace('{{bodyclass}}', meta.get('bodyclass', 'sub'))
-                .replace('{{nav}}', render_nav(root, meta.get('section')))
+                .replace('{{nav}}', render_nav(root, meta.get('section'), nav_ids))
                 .replace('{{content}}', body)
                 .replace('{{v}}', version)
                 .replace('{{home}}', root or './')

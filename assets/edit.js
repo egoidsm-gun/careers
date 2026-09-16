@@ -91,51 +91,67 @@
     });
   }
 
-  // 소스 문자열에 현재 편집 내용을 덧쓴다 (검증용으로도 노출)
-  function patch(src, targets) {
+  // 편집 내용을 파일별 패치로 묶는다 (검증용으로도 노출)
+  function jsonText(el) { return JSON.stringify(el.textContent.replace(/\s+/g, ' ').trim()).slice(1, -1); }
+  function plan(targets) {
     var byId = {}; map.items.forEach(function (it) { byId[it[0]] = it; });
-    var patches = [], bad = [];
+    var files = {}, bad = [];
     targets.forEach(function (el) {
       var id = el.getAttribute('data-e'), it = byId[id];
       if (!it) return bad.push(id);
-      var cur = src.slice(it[1], it[2]);
-      if (n(cur.split('{{root}}').join(rootPrefix)) !== it[3]) return bad.push(id);
-      patches.push({ s: it[1], e: it[2], html: clean(el.innerHTML) });
+      var fi = it[4] || 0, kind = it[5] || 'html';
+      (files[fi] = files[fi] || []).push({ s: it[1], e: it[2], expect: it[3], kind: kind, html: kind === 'json' ? jsonText(el) : clean(el.innerHTML) });
     });
-    if (bad.length) return { error: bad };
-    patches.sort(function (a, b) { return b.s - a.s; });
-    var out = src;
-    patches.forEach(function (p) { out = out.slice(0, p.s) + p.html + out.slice(p.e); });
-    return { out: out, count: patches.length };
+    return { files: files, bad: bad };
   }
-  window.__edPatch = function (src) { return patch(src, changed()); };
+  function apply(src, patches) {
+    for (var i = 0; i < patches.length; i++) {
+      var p = patches[i], cur = src.slice(p.s, p.e);
+      if (n(p.kind === 'json' ? cur : cur.split('{{root}}').join(rootPrefix)) !== p.expect) return { error: true };
+    }
+    var out = src;
+    patches.slice().sort(function (a, b) { return b.s - a.s; }).forEach(function (p) { out = out.slice(0, p.s) + p.html + out.slice(p.e); });
+    return { out: out };
+  }
+  window.__edPlan = function () { return plan(changed()); };
+  window.__edApply = apply;
 
   var saving = false;
+  function ghFetch(url, token, opt) {
+    opt = opt || {}; opt.headers = Object.assign({ Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }, opt.headers || {});
+    return fetch(url, opt);
+  }
+  function saveFile(token, file, patches) {
+    var url = 'https://api.github.com/repos/' + CFG.owner + '/' + CFG.repo + '/contents/' + file;
+    return ghFetch(url + '?ref=' + CFG.branch, token).then(function (r) {
+      if (r.status === 401 || r.status === 403 || r.status === 404) { localStorage.removeItem(TOKEN_KEY); throw new Error('토큰이 틀리거나 권한(Contents: Read and write)이 없어요. 토큰을 다시 넣어주세요.'); }
+      if (!r.ok) throw new Error('GitHub에서 원본을 못 읽었어요 (' + r.status + ')');
+      return r.json();
+    }).then(function (j) {
+      var res = apply(b64d(j.content), patches);
+      if (res.error) throw new Error('원본이 이미 바뀌어 있어 저장을 멈췄어요. 새로고침한 뒤 다시 고쳐주세요.');
+      return ghFetch(url, token, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: '편집 모드: ' + file.split('/').pop() + ' 문구 ' + patches.length + '곳 수정', content: b64e(res.out), sha: j.sha, branch: CFG.branch })
+      });
+    }).then(function (put) { if (!put.ok) throw new Error('저장 실패 (' + put.status + ')'); });
+  }
   function save() {
     if (saving) return;
     if (locked) return toast('저장한 내용이 배포되는 중이에요. 반영된 뒤 새로고침하고 이어서 편집하세요.');
     var ch = changed();
     if (!ch.length) return toast('바뀐 곳이 없어요.');
     if (!map) return toast('편집 지도를 아직 못 불러왔어요. 잠시 후 다시 눌러주세요.', true);
+    var pl = plan(ch);
+    if (pl.bad.length) return toast('알 수 없는 요소가 있어 저장을 멈췄어요. 새로고침 후 다시 시도해 주세요.', true);
     saving = true;
-    var url = 'https://api.github.com/repos/' + CFG.owner + '/' + CFG.repo + '/contents/' + map.file;
     getToken().then(function (token) {
       if (!token) { saving = false; return; }
-      var H = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
       toast('저장 중…', false, true);
-      return fetch(url + '?ref=' + CFG.branch, { headers: H }).then(function (r) {
-        if (r.status === 401 || r.status === 403 || r.status === 404) { localStorage.removeItem(TOKEN_KEY); throw new Error('토큰이 틀리거나 권한(Contents: Read and write)이 없어요. 토큰을 다시 넣어주세요.'); }
-        if (!r.ok) throw new Error('GitHub에서 원본을 못 읽었어요 (' + r.status + ')');
-        return r.json();
-      }).then(function (j) {
-        var res = patch(b64d(j.content), ch);
-        if (res.error) throw new Error('원본이 이미 바뀌어 있어 저장을 멈췄어요. 새로고침한 뒤 다시 고쳐주세요.');
-        return fetch(url, {
-          method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, H),
-          body: JSON.stringify({ message: '편집 모드: ' + map.file.split('/').pop() + ' 문구 ' + res.count + '곳 수정', content: b64e(res.out), sha: j.sha, branch: CFG.branch })
-        });
-      }).then(function (put) {
-        if (!put.ok) throw new Error('저장 실패 (' + put.status + ')');
+      var idxs = Object.keys(pl.files);
+      return idxs.reduce(function (chain, fi) {
+        return chain.then(function () { return saveFile(token, map.files[fi], pl.files[fi]); });
+      }, Promise.resolve()).then(function () {
         locked = true; saving = false;
         ch.forEach(function (el) { orig[el.getAttribute('data-e')] = el.innerHTML; });
         refresh();
@@ -224,6 +240,8 @@
   toast('편집 모드 — 점선 친 글자를 눌러 고치고 [저장]을 누르세요. 줄바꿈은 Enter.', false);
   }
 
+  var DEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if (DEV && !localStorage.getItem(TOKEN_KEY)) { init(); toast('로컬 검증 모드 — 편집은 되지만 저장은 토큰이 있어야 해요.', false, true); return; }
   getToken().then(function (token) {
     if (!token) { leave(); return; }
     toast('권한 확인 중…', false, true);

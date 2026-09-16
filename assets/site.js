@@ -28,13 +28,13 @@
 
   // 터치 기기: 드롭다운 있는 탭은 첫 탭에 펼치고, 두 번째 탭에 이동
   var touch = window.matchMedia('(hover: none)').matches;
-  document.querySelectorAll('.menu li.has-dd > a, .menu li.has-dd > button').forEach(function (a) {
+  document.querySelectorAll('.menu li.has-dd > a').forEach(function (a) {
     a.addEventListener('click', function (e) {
-      var li = a.parentElement, isBtn = a.tagName === 'BUTTON';
+      var li = a.parentElement, isBtn = a.classList.contains('dd-trigger');
       if (isBtn || (touch && !li.classList.contains('open'))) {
         e.preventDefault();
         var willOpen = !li.classList.contains('open');
-        document.querySelectorAll('.menu li.open').forEach(function (x) { x.classList.remove('open'); x.querySelector('button') && x.querySelector('button').setAttribute('aria-expanded', 'false'); });
+        document.querySelectorAll('.menu li.open').forEach(function (x) { x.classList.remove('open'); var tg = x.querySelector('.dd-trigger'); tg && tg.setAttribute('aria-expanded', 'false'); });
         if (willOpen) li.classList.add('open');
         if (isBtn) a.setAttribute('aria-expanded', String(willOpen));
       }
