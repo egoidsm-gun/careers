@@ -81,48 +81,40 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 
 /* ---------- 홈: 출항 (아이덴트 → 별 → 거대 글자 → 스크롤 핀) ---------- */
 body.sub main{padding-top:var(--nav)}
-:root{--t0:4.15s}                      /* 히어로 글자가 뜨는 시각 = 배가 출항하고 워프가 잦아드는 순간 */
-html.ident-seen{--t0:.6s}              /* 사이트 안에서 홈으로 돌아올 때: 짧게 */
+:root{--t0:3.55s}                      /* 히어로 글자가 뜨는 시각 = 점프 직후, 워프가 잦아드는 순간 */
+html.ident-seen{--t0:.5s}              /* 사이트 안에서 홈으로 돌아올 때: 짧게 */
 html.ident-off{--t0:0s}                /* 편집 모드·JS 없음 */
 #stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.ident{position:fixed;inset:0;z-index:300;overflow:hidden;pointer-events:none;animation:identOut .6s 4.15s cubic-bezier(.4,0,.2,1) forwards}
-.ident-bg{position:absolute;inset:0;background:#000;animation:identBg 1.2s 2.9s cubic-bezier(.4,0,.2,1) forwards}
-/* 밤바다: 수평선 아래, 등불의 반사와 잔물결. 플래시 때 사라지며 별이 채운다 */
-.ident-sea{position:absolute;left:0;right:0;top:50%;height:50%;background:radial-gradient(ellipse 70% 45% at 50% 0%,rgba(255,140,70,.28),transparent 70%),#030303;opacity:0;animation:identIn 1s 1.2s forwards,identOutFast .55s 3.35s forwards}
-.ident-sea::before{content:"";position:absolute;left:50%;top:0;width:3px;height:42%;transform:translateX(-50%);background:linear-gradient(rgba(255,190,130,.75),rgba(255,140,70,.25) 60%,transparent);filter:blur(2px);animation:identBeam 2.2s 1.2s ease-in-out infinite alternate}
-.ident-sea::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.045) 0 1px,transparent 1px 5px);mask-image:linear-gradient(rgba(0,0,0,.9),transparent 80%);-webkit-mask-image:linear-gradient(rgba(0,0,0,.9),transparent 80%);animation:identRipple 1.4s linear infinite}
-.ident-dot{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;box-shadow:0 0 12px 4px rgba(255,180,120,.95),0 0 44px 14px rgba(237,109,32,.5);opacity:0;animation:identDot 1.5s .4s ease-out forwards}
-.ident-line{position:absolute;left:50%;top:50%;height:2px;width:0;transform:translate(-50%,-50%);background:var(--acc2);box-shadow:0 0 18px 2px rgba(255,138,61,.9),0 0 70px 10px rgba(237,109,32,.45);animation:identLine 1.3s .9s cubic-bezier(.16,1,.3,1) forwards,identHot 1s 2.6s ease-in forwards,identLineUp .9s 3.5s cubic-bezier(.4,0,.6,1) forwards}
-/* 개척선: 수평선 위를 왼쪽에서 항해해 와 중앙에 서고, 플래시에 화면 앞으로 튀어나간다 */
-.ident-ship{position:absolute;left:50%;top:50%;width:clamp(96px,17vw,210px);height:auto;overflow:visible;transform:translate(calc(-50% - 70vw),-97%);animation:identSail 1.9s 1.5s cubic-bezier(.2,.7,.2,1) forwards,identShipGo .6s 3.35s cubic-bezier(.5,0,.9,.4) forwards}
-.ident-ship .ship-in{transform-origin:50% 100%;animation:identBob 1.7s .2s ease-in-out infinite alternate}
-.ident-ship .hull{fill:#0b0b0c;stroke:rgba(255,150,90,.55);stroke-width:1}
-.ident-ship .sail{fill:#121214;stroke:rgba(255,160,100,.7);stroke-width:1.2}
-.ident-ship .flag{fill:var(--acc)}
-.ident-ship path,.ident-ship rect{vector-effect:non-scaling-stroke}   /* 출항 때 배가 커져도 윤곽선은 가늘게 */
-.ident-mark{position:absolute;left:50%;top:50%;height:clamp(16px,2.6vw,26px);width:auto;opacity:0;transform:translate(-50%,calc(-50% + 34px));animation:identMark 2s 1.9s cubic-bezier(.2,.7,.2,1) forwards}
-.ident-glow{position:absolute;left:50%;top:50%;width:140vmax;height:60vmax;transform:translate(-50%,-50%) scaleY(.04);background:radial-gradient(ellipse at 50% 55%,rgba(255,138,61,.95) 0%,rgba(237,109,32,.55) 18%,rgba(237,109,32,.12) 42%,transparent 65%);opacity:0;animation:identGlow 1.9s 2.5s cubic-bezier(.2,.7,.2,1) forwards}
-.ident-flash{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,236,220,.95),rgba(255,138,61,.5) 30%,transparent 72%);opacity:0;animation:identFlash .7s 3.35s ease-out forwards}
-html.ident-seen .ident{animation:identOut .5s .5s forwards}
-html.ident-seen .ident-bg{animation:identBg .5s .3s forwards}
-html.ident-seen .ident-dot,html.ident-seen .ident-mark,html.ident-seen .ident-flash,html.ident-seen .ident-sea,html.ident-seen .ident-ship{display:none}
-html.ident-seen .ident-line{animation:identLine .5s 0s cubic-bezier(.16,1,.3,1) forwards,identLineUp .5s .5s forwards}
-html.ident-seen .ident-glow{animation:identGlow .8s .2s forwards}
+.ident{position:fixed;inset:0;z-index:300;overflow:hidden;pointer-events:none;animation:identOut .45s 3.55s cubic-bezier(.4,0,.2,1) forwards}
+.ident-bg{position:absolute;inset:0;background:#000;animation:identBg .5s 2.95s cubic-bezier(.4,0,.2,1) forwards}
+/* 배 뒤의 빛: 은은히 켜져 있다가 2.3s부터 차오르고(충전) 점프 때 터진다 */
+.ident-glow{position:absolute;left:50%;top:50%;width:130vmax;height:130vmax;transform:translate(-50%,-50%) scale(.55);background:radial-gradient(circle at 50% 50%,rgba(255,150,80,.55) 0%,rgba(237,109,32,.28) 14%,rgba(237,109,32,.07) 32%,transparent 55%);opacity:0;animation:identGlowIn 1.4s .5s ease-out forwards,identCharge .65s 2.3s cubic-bezier(.4,0,1,1) forwards,identGlowBurst .5s 2.95s ease-out forwards}
+/* 개척선: 정면에 크게. 어둠에서 떠오르고, 파도에 흔들리고, 충전 때 앞으로 기울며 팽팽해지고, 점프 때 빛줄기로 늘어나 중심으로 사라진다 */
+.ident-ship{position:absolute;left:50%;top:50%;width:clamp(250px,62vw,440px);height:auto;overflow:visible;opacity:0;transform:translate(-50%,-46%) scale(.86);animation:identShipIn 1.3s .3s cubic-bezier(.2,.7,.2,1) forwards,identLean .65s 2.3s cubic-bezier(.4,0,.8,1) forwards,identJump .55s 2.95s cubic-bezier(.6,0,1,.5) forwards}
+.ident-ship .ship-in{transform-box:fill-box;transform-origin:50% 100%;animation:identBob 2.4s .3s ease-in-out infinite alternate}
+.ident-ship .hull{fill:#0b0b0c;stroke:rgba(255,150,90,.6);stroke-width:1}
+.ident-ship .sail{fill:url(#sg);stroke:rgba(255,165,105,.75);stroke-width:1.2}
+.ident-ship .rig{fill:none;stroke:rgba(255,150,90,.3);stroke-width:.8}
+.ident-ship .deck{fill:none;stroke:rgba(255,150,90,.35);stroke-width:1}
+.ident-ship .flag{fill:#15151a;stroke:var(--acc2);stroke-width:1.2}
+.ident-ship .flag-g{transform-box:view-box;transform-origin:152px 27px;animation:identFlag 1.15s ease-in-out infinite alternate}
+.ident-ship path,.ident-ship rect{vector-effect:non-scaling-stroke}
+/* 점프 스트릭: 배가 사라지는 순간 가로로 뻗는 빛줄기 */
+.ident-line{position:absolute;left:50%;top:50%;height:2px;width:0;transform:translate(-50%,-50%);background:#fff;box-shadow:0 0 22px 4px rgba(255,210,170,1),0 0 90px 24px rgba(237,109,32,.7);opacity:0;animation:identStreak .6s 3s cubic-bezier(.1,.8,.2,1) forwards}
+.ident-flash{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,240,225,1),rgba(255,150,80,.6) 28%,transparent 70%);opacity:0;animation:identFlash .75s 3.05s ease-out forwards}
+html.ident-seen .ident{animation:identOut .45s .25s forwards}
+html.ident-seen .ident-bg,html.ident-seen .ident-glow,html.ident-seen .ident-ship,html.ident-seen .ident-line,html.ident-seen .ident-flash{display:none}
 html.ident-off .ident{display:none}
-@keyframes identDot{0%{opacity:0;transform:scale(.4)}35%{opacity:1;transform:scale(1)}70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.8)}}
-@keyframes identLine{to{width:clamp(240px,70vw,1100px)}}
-@keyframes identHot{to{background:#fff;box-shadow:0 0 30px 6px rgba(255,210,170,1),0 0 130px 34px rgba(237,109,32,.7)}}
-@keyframes identLineUp{to{transform:translate(-50%,-50%) translateY(-42vh);opacity:0}}
-@keyframes identIn{to{opacity:1}}
-@keyframes identOutFast{to{opacity:0}}
-@keyframes identBeam{from{opacity:.55;transform:translateX(-50%) scaleX(1)}to{opacity:1;transform:translateX(-50%) scaleX(1.8)}}
-@keyframes identRipple{from{transform:translateY(0)}to{transform:translateY(5px)}}
-@keyframes identSail{to{transform:translate(-50%,-97%)}}
-@keyframes identBob{from{transform:rotate(-1.6deg) translateY(0)}to{transform:rotate(1.6deg) translateY(-2px)}}
-@keyframes identShipGo{to{transform:translate(-50%,-30%) scale(7);opacity:0}}
-@keyframes identMark{0%{opacity:0;transform:translate(-50%,calc(-50% + 44px))}25%{opacity:1;transform:translate(-50%,calc(-50% + 34px))}70%{opacity:1;transform:translate(-50%,calc(-50% + 34px))}100%{opacity:0;transform:translate(-50%,calc(-50% + 60px))}}
-@keyframes identGlow{0%{opacity:0;transform:translate(-50%,-50%) scaleY(.04)}42%{opacity:1;transform:translate(-50%,-56%) scale(1,.7)}100%{opacity:0;transform:translate(-50%,-76%) scale(1.5,1.7)}}
-@keyframes identFlash{0%{opacity:0}22%{opacity:.9}100%{opacity:0}}
+@keyframes identShipIn{to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes identBob{from{transform:rotate(-1.2deg) translateY(0)}to{transform:rotate(1.2deg) translateY(-3px)}}
+@keyframes identFlag{from{transform:skewY(-4deg) scaleX(1)}to{transform:skewY(3deg) scaleX(.95)}}
+@keyframes identLean{to{opacity:1;transform:translate(-50%,-50%) scale(1.06) rotate(-3deg)}}
+@keyframes identJump{0%{opacity:1;transform:translate(-50%,-50%) scale(1.06) rotate(-3deg)}35%{opacity:1;transform:translate(-50%,-52%) scale(1.7,.62) rotate(0)}100%{opacity:0;transform:translate(-50%,-56%) scale(.02,.02)}}
+@keyframes identGlowIn{to{opacity:.55}}
+@keyframes identCharge{to{opacity:1;transform:translate(-50%,-50%) scale(.85)}}
+@keyframes identGlowBurst{to{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}
+@keyframes identStreak{0%{opacity:0;width:0}30%{opacity:1;width:110vw}100%{opacity:0;width:130vw}}
+@keyframes identFlash{0%{opacity:0}20%{opacity:.95}100%{opacity:0}}
 @keyframes identBg{to{opacity:0}}
 @keyframes identOut{to{opacity:0;visibility:hidden}}
 
