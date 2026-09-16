@@ -132,9 +132,9 @@ html.ident-off .ident{display:none}
 .w{display:inline-block}
 
 /* 히어로: 별 위에 거대 글자, 아래에 일출의 잔광 */
-.hero{isolation:isolate}
+.hero{isolation:isolate;overflow:visible}
 .hero .giant{font-size:clamp(46px,10.4vw,164px)}
-.hero::before{content:"";position:absolute;left:50%;bottom:-32vh;width:150vw;height:72vh;transform:translateX(-50%);z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 100%,rgba(237,109,32,.34),rgba(237,109,32,.08) 42%,transparent 70%)}
+.hero::before{content:"";position:absolute;left:50%;bottom:-60vh;width:170vw;height:140vh;transform:translateX(-50%);z-index:-1;pointer-events:none;background:radial-gradient(ellipse 60% 46% at 50% 57%,rgba(237,109,32,.30),rgba(237,109,32,.07) 48%,transparent 78%)}
 html.js .hero::before{opacity:0;animation:fadein 2s var(--t0) forwards,breathe 7s calc(var(--t0) + 2s) ease-in-out infinite alternate}
 html.js .hero .w{opacity:0;transform:translateY(.5em) scale(.97);filter:blur(14px);animation:riseBlur 1.1s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--t0) + var(--i,0)*130ms)}
 html.js .hero .eyebrow{opacity:0;transform:translateY(.45em);animation:rise .95s cubic-bezier(.2,.7,.1,1) forwards;animation-delay:calc(var(--t0) - .15s)}
@@ -142,7 +142,7 @@ html.js .hero .scrollhint{opacity:0;animation:fadein 1s calc(var(--t0) + 1.4s) f
 @keyframes rise{to{opacity:1;transform:none}}
 @keyframes riseBlur{60%{filter:none}to{opacity:1;transform:none;filter:none}}
 @keyframes fadein{to{opacity:1}}
-@keyframes breathe{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.12,1.25)}}
+@keyframes breathe{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.08,1.12)}}
 .scrollhint{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);font-family:var(--disp);letter-spacing:.2em;font-size:11px;color:var(--mute);z-index:2}
 .scrollhint::after{content:"";display:block;width:1px;height:36px;background:linear-gradient(var(--acc),transparent);margin:10px auto 0}
 
@@ -154,8 +154,8 @@ html.js .hero .scrollhint{opacity:0;animation:fadein 1s calc(var(--t0) + 1.4s) f
 .pin .giant + .giant{margin-top:.22em}
 .pin .w{opacity:.13;transition:opacity .45s}
 .pin .w.on{opacity:1}
-.ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95);transform:scale(calc(1.22 - var(--p,0)*.22))}
-.ship .pin-in::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(11,11,12,.3),rgba(11,11,12,.45) 55%,var(--bg) 100%)}
+.ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95);transform:scale(calc(1.22 - var(--p,0)*.22));-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent)}
+.ship .pin-in::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(11,11,12,.4);opacity:var(--p,0);-webkit-mask-image:linear-gradient(180deg,transparent,#000 25%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 25%,#000 70%,transparent)}
 
 /* 마지막: 화면 가득 승선 CTA */
 .final .giant{font-size:clamp(42px,8vw,124px)}
