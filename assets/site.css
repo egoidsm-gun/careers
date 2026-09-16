@@ -49,8 +49,8 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 .logo img{height:26px;width:auto}
 .menu{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:0 40px;list-style:none;display:flex;align-items:center;gap:40px;height:var(--pill);border-radius:999px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .menu li{position:relative;height:100%;display:flex;align-items:center}
-.menu li>a{font-family:var(--disp);font-size:21px;letter-spacing:.06em;color:#cfcfcf;line-height:1;display:flex;align-items:center;height:100%;white-space:nowrap;transition:color .15s;padding-top:2px}
-.menu li>a:hover,.menu li.on>a{color:#fff}
+.menu li>a,.menu li>button{font-family:var(--disp);font-size:21px;letter-spacing:.06em;color:#cfcfcf;line-height:1;display:flex;align-items:center;height:100%;white-space:nowrap;transition:color .15s;padding-top:2px}
+.menu li>a:hover,.menu li>button:hover,.menu li.on>a,.menu li.open>button{color:#fff}
 .dd{position:absolute;top:calc(100% + 10px);left:50%;transform:translate(-50%,8px);min-width:220px;background:#1c1c1e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:8px;opacity:0;visibility:hidden;transition:.18s;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .dd::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
 .menu li:hover .dd,.menu li:focus-within .dd,.menu li.open .dd{opacity:1;visibility:visible;transform:translate(-50%,0)}
@@ -63,7 +63,7 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
   .nav .wrap{padding:0 18px;gap:12px}
   .menu{position:static;transform:none;margin:0 auto;padding:0 20px;gap:20px;max-width:100%;overflow-x:auto;scrollbar-width:none}
   .menu::-webkit-scrollbar{display:none}
-  .menu li>a{font-size:15px;letter-spacing:.05em}
+  .menu li>a,.menu li>button{font-size:15px;letter-spacing:.05em}
   .logo img{height:22px}
   .nav-cta{padding:0 16px;font-size:18px}
   .dd{position:fixed;left:16px;right:16px;top:calc(var(--nav) + 4px);transform:none;min-width:0}

@@ -26,7 +26,7 @@ NAV = [
     {'key': 'brand', 'label': 'BRAND', 'href': 'brand/',
      'subs': [('brand/gulgang/', '굴뚝강아지'), ('brand/mnms/', '미뇽맨션'), ('brand/vasol/', '바쏠'),
               ('brand/huug/', '휴그'), ('brand/feura/', '퓌라'), ('brand/faverse/', '페이버스')]},
-    {'key': 'contents', 'label': 'CONTENTS', 'href': 'contents/',
+    {'key': 'contents', 'label': 'CONTENTS', 'href': None,  # 페이지 없음 — 누르면 드롭다운만 열림
      'subs': [('https://egoidsmblog.com/', 'BLOG ↗')]},
     {'key': 'recruiting', 'label': 'RECRUITING', 'href': 'recruiting/', 'subs': []},
 ]
@@ -104,7 +104,9 @@ def render_nav(root, section):
             dd = '<div class="dd">' + ''.join(
                 f'<a href="{href(root, h)}"{" target=\"_blank\" rel=\"noopener\"" if h.startswith("http") else ""}>{esc(l)}</a>'
                 for h, l in n['subs']) + '</div>'
-        items.append(f'<li class="{cls.strip()}"><a href="{href(root, n["href"])}">{esc(n["label"])}</a>{dd}</li>')
+        trig = (f'<a href="{href(root, n["href"])}">{esc(n["label"])}</a>' if n['href']
+                else f'<button type="button" class="dd-trigger" aria-haspopup="true" aria-expanded="false">{esc(n["label"])}</button>')
+        items.append(f'<li class="{cls.strip()}">{trig}{dd}</li>')
     return ''.join(items)
 
 
