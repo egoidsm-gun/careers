@@ -27,7 +27,7 @@ NAV = [
      'subs': [('brand/gulgang/', '굴뚝강아지'), ('brand/mnms/', '미뇽맨션'), ('brand/vasol/', '바쏠'),
               ('brand/huug/', '휴그'), ('brand/feura/', '퓌라'), ('brand/faverse/', '페이버스')]},
     {'key': 'contents', 'label': 'CONTENTS', 'href': 'contents/',
-     'subs': [('contents/', '콘텐츠'), ('https://egoidsmblog.com/', 'BLOG ↗')]},
+     'subs': [('https://egoidsmblog.com/', 'BLOG ↗')]},
     {'key': 'recruiting', 'label': 'RECRUITING', 'href': 'recruiting/', 'subs': []},
 ]
 
