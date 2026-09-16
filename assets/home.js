@@ -42,6 +42,29 @@
   if (!editing) {
     document.querySelectorAll('.hero .giant, .final .giant, .pin .words').forEach(splitWords);
   }
+  var ident = document.querySelector('.ident');
+  if (ident) ident.addEventListener('animationend', function (e) { if (e.target === ident) ident.remove(); });
+
+  /* ---------- 진단 패널(?debug=1): 뷰포트·가로 넘침 상태를 화면에 표시 ---------- */
+  if (/[?&]debug=1/.test(location.search)) {
+    var dbg = document.createElement('pre');
+    dbg.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;margin:0;padding:10px;background:rgba(0,0,0,.85);color:#7CFC9A;font:11px/1.5 Menlo,monospace;white-space:pre-wrap;border:1px solid #444;border-radius:8px;pointer-events:none';
+    document.body.appendChild(dbg);
+    var tick = function () {
+      var vv = window.visualViewport, over = [];
+      document.querySelectorAll('body *').forEach(function (el) {
+        if (over.length >= 10 || el === dbg) return;
+        var r = el.getBoundingClientRect(); if (!r.width || !r.height) return;
+        var cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.opacity === '0' || cs.display === 'none') return;
+        if (r.left < -1 || r.right > window.innerWidth + 1) over.push(el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : '') + ' L' + Math.round(r.left) + ' R' + Math.round(r.right));
+      });
+      dbg.textContent = 'UA ' + navigator.userAgent.slice(0, 90) + '\ninner ' + window.innerWidth + 'x' + window.innerHeight + '  dpr ' + window.devicePixelRatio + '  scrollX ' + window.scrollX + '  docW ' + document.documentElement.scrollWidth + '  clientW ' + document.documentElement.clientWidth +
+        (vv ? '\nvisualViewport w ' + Math.round(vv.width) + ' scale ' + vv.scale.toFixed(3) + ' offsetLeft ' + Math.round(vv.offsetLeft) + ' pageLeft ' + Math.round(vv.pageLeft) : '') +
+        '\nhtml ' + document.documentElement.className + '  stars ' + !!document.getElementById('stars') +
+        '\n넘침(' + over.length + '): ' + (over.join(' | ') || '없음');
+    };
+    tick(); setInterval(tick, 1000);
+  }
 
   /* ---------- 스크롤 핀: 진행도로 단어를 켜고, 배를 띄운다 ---------- */
   var pins = Array.prototype.slice.call(document.querySelectorAll('.pin'));
@@ -86,12 +109,8 @@
   updatePins();
 
   if (!cv) return;
-  // iOS 사파리 잔상(로고 고스트·이미지 이중 렌더) 원인 추적: iOS에서는 고정 캔버스를 끈다.
-  // 주소 끝에 ?stars=1 이면 iOS에서도 강제로 켜고, ?stars=0 이면 어디서든 끈다(비교용).
-  var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  var force = (location.search.match(/[?&]stars=([01])/) || [])[1];
-  if (ios) html.classList.add('ios');
-  var starsOff = force === '0' || (force !== '1' && ios);
+  // 주소 끝에 ?stars=0 이면 별을 끈다(비교·진단용). 그 외엔 모든 기기에서 켠다.
+  var starsOff = /[?&]stars=0/.test(location.search);
   if (reduced || editing || starsOff) { cv.remove(); cv = null; return; }
 
   var ctx = cv.getContext('2d'), W, H, cx, cy, stars = [];

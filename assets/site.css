@@ -14,8 +14,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
 .mute{color:var(--mute)}
 .acc{color:var(--acc)}
-.skip{position:absolute;left:-999px;top:8px;background:var(--acc);color:#000;padding:8px 12px;border-radius:6px;z-index:200}
-.skip:focus{left:8px}
+.skip{position:absolute;left:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--acc);color:#000;padding:8px 12px;border-radius:6px;z-index:200}
+.skip:focus{width:auto;height:auto;overflow:visible;clip-path:none}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 
 /* ---------- 타이포 ---------- */
@@ -61,8 +61,7 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 .nav-cta:hover{background:var(--acc2)}
 @media (max-width:1179px){
   .nav .wrap{padding:0 18px;gap:12px}
-  .menu{position:static;transform:none;margin:0 auto;padding:0 20px;gap:20px;max-width:100%;overflow-x:auto;scrollbar-width:none}
-  .menu::-webkit-scrollbar{display:none}
+  .menu{position:static;transform:none;margin:0 auto;padding:0 20px;gap:20px;max-width:100%}
   .menu li>a{font-size:13px;letter-spacing:.03em}
   .logo img{height:22px}
   .nav-cta{padding:0 14px;font-size:14px}
@@ -85,8 +84,8 @@ body.sub main{padding-top:var(--nav)}
 :root{--t0:3.9s}                       /* 히어로 글자가 뜨는 시각 = 워프가 잦아드는 순간 */
 html.ident-seen{--t0:.6s}              /* 사이트 안에서 홈으로 돌아올 때: 짧게 */
 html.ident-off{--t0:0s}                /* 편집 모드·JS 없음 */
-#stars{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
-.ident{position:fixed;inset:0;z-index:300;pointer-events:none;animation:identOut .6s 3.9s cubic-bezier(.4,0,.2,1) forwards}
+#stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.ident{position:fixed;inset:0;z-index:300;overflow:hidden;pointer-events:none;animation:identOut .6s 3.9s cubic-bezier(.4,0,.2,1) forwards}
 .ident-bg{position:absolute;inset:0;background:#000;animation:identBg 1.3s 2.4s cubic-bezier(.4,0,.2,1) forwards}
 .ident-dot{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;box-shadow:0 0 12px 4px rgba(255,180,120,.95),0 0 44px 14px rgba(237,109,32,.5);opacity:0;animation:identDot 1.5s .4s ease-out forwards}
 .ident-line{position:absolute;left:50%;top:50%;height:2px;width:0;transform:translate(-50%,-50%);background:var(--acc2);box-shadow:0 0 18px 2px rgba(255,138,61,.9),0 0 70px 10px rgba(237,109,32,.45);animation:identLine 1.3s .9s cubic-bezier(.16,1,.3,1) forwards,identHot 1s 2.4s ease-in forwards,identLineUp .9s 3.3s cubic-bezier(.4,0,.6,1) forwards}
@@ -109,7 +108,7 @@ html.ident-off .ident{display:none}
 @keyframes identBg{to{opacity:0}}
 @keyframes identOut{to{opacity:0;visibility:hidden}}
 
-.screen{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden}
+.screen{position:relative;z-index:1;min-height:100svh;display:flex;align-items:center;overflow:hidden}
 .screen .wrap{width:100%;padding-top:calc(var(--nav) + 40px);padding-bottom:96px}
 .screen.center .wrap{text-align:center}
 .giant{font-size:clamp(40px,8.6vw,132px);line-height:.98;letter-spacing:-.045em;font-weight:800;margin:0;color:var(--fg)}
@@ -132,14 +131,14 @@ html.js .hero .scrollhint{opacity:0;animation:fadein 1s calc(var(--t0) + 1.4s) f
 .scrollhint::after{content:"";display:block;width:1px;height:36px;background:linear-gradient(var(--acc),transparent);margin:10px auto 0}
 
 /* 스크롤 핀: 화면이 붙어 있는 동안 진행도에 따라 단어가 켜진다 */
-.pin{position:relative;height:240svh}
+.pin{position:relative;z-index:1;height:240svh}
 .pin-in{position:sticky;top:0;height:100svh;display:flex;align-items:center;overflow:hidden;isolation:isolate}
 .pin .wrap{width:100%;padding-top:var(--nav)}
 .pin .giant{font-size:clamp(32px,6vw,92px)}
 .pin .giant + .giant{margin-top:.22em}
 .pin .w{opacity:.13;transition:opacity .45s}
 .pin .w.on{opacity:1}
-.ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95);transform:scale(calc(1.22 - var(--p,0)*.22))}
+.ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95)}
 .ship .pin-in::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(11,11,12,.3),rgba(11,11,12,.45) 55%,var(--bg) 100%)}
 
 /* 마지막: 화면 가득 승선 CTA */
@@ -358,7 +357,7 @@ a.row:hover .t{color:var(--acc)}
 .legal ul{padding-left:20px}
 
 /* ---------- 푸터 ---------- */
-.foot{border-top:1px solid var(--line);padding:64px 0 48px;color:var(--mute);font-size:14px;margin-top:40px}
+.foot{position:relative;z-index:1;border-top:1px solid var(--line);padding:64px 0 48px;color:var(--mute);font-size:14px;margin-top:40px}
 .foot .wrap{display:flex;flex-direction:column;gap:28px}
 .flogo{height:18px;width:auto;margin-bottom:16px}
 .f1 p{margin:0;color:var(--fg2);line-height:1.6}
