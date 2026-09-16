@@ -1,5 +1,5 @@
 [
-  {"key": "only", "label": "ONLY AT egoidsm", "href": "about/",
+  {"key": "only", "label": "egoidsm", "href": "about/",
    "subs": [["about/", "회사소개"], ["benefit/", "베네핏"], ["growth/", "성장"]]},
   {"key": "brand", "label": "BRAND", "href": "brand/",
    "subs": [["brand/gulgang/", "굴뚝강아지"], ["brand/mnms/", "미뇽맨션"], ["brand/vasol/", "바쏠"],
