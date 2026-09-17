@@ -43,10 +43,10 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 @media (max-width:639px){:root{--pill:clamp(30px,9.6vw,42px);--nav:calc(var(--pill) + 26px)}}  /* 좁은 폭도 한 줄: 로고·알약·버튼이 폭에 비례해 같이 준다 */
 .nav{position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:100;transition:background .3s,border-color .3s;background:linear-gradient(180deg,rgba(0,0,0,.8),rgba(0,0,0,0));border-bottom:1px solid transparent}
 .nav.solid{background:rgba(11,11,12,.86);backdrop-filter:saturate(160%) blur(18px);-webkit-backdrop-filter:saturate(160%) blur(18px);border-bottom-color:var(--line)}
-.nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav);max-width:none;padding:0 32px}
+.nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav)}   /* 바 배경은 전폭, 내용물은 본문과 같은 기둥(--max 1200 + 24px)에 맞춘다 — 로고 왼쪽이 히어로 글자 왼쪽과 한 줄(2026-09-17 사용자 "넓은 화면에서 간격·비율이 똥망") */
 .brk{display:none}
 .logo{display:flex;align-items:center;flex:none}
-.logo img{height:26px;width:auto}
+.logo img{height:32px;width:auto}
 .menu{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:0 40px;list-style:none;display:flex;align-items:center;gap:40px;height:var(--pill);border-radius:999px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .menu li{position:relative;height:100%;display:flex;align-items:center}
 .menu li>a{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:.04em;color:#cfcfcf;line-height:1;display:flex;align-items:center;height:100%;white-space:nowrap;transition:color .15s}
