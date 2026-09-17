@@ -164,10 +164,10 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 /* 마지막 구간은 한 화면 규격에서 빼고 닫는 문장답게 여백을 직접 준다(2026-09-17 사용자 "버튼과 푸터 사이가 허하다"): 위는 개척선 뒤 숨 고르는 공간, 아래는 짧게 */
 /* 승선 구간도 개척선처럼 화면을 붙잡는다(2026-09-17 사용자 "개척선 구간처럼 걸려서 집중시켰으면, 푸터까지 한번에 내려가니 극적인 게 없다").
    핀 높이 200svh = 화면을 채운 채 100svh만큼 더 스크롤되는 동안 멈춰 있다가 풀린다. 빛은 세로로 자르지 않는다(섹션 경계선 금지 규칙). */
-.final{height:200svh}
+.final{height:175svh}
 .final .pin-in{overflow-x:clip;overflow-y:visible}
 .final .wrap{padding-top:0}
-body.home .foot{margin-top:14svh}   /* 핀이 풀린 뒤 푸터까지 숨 돌릴 공간 */
+body.home .foot{margin-top:-10svh}   /* 핀이 풀리면 스티키 아래쪽 절반이 빈 채로 남는다 — 푸터를 그만큼 끌어올려 버튼→푸터선을 약 200px로(2026-09-17 사용자 "너무 벌어졌다") */
 .final .giant{font-size:clamp(42px,8vw,124px)}
 .final .lead{margin:28px auto 0}
 .final .btns{justify-content:center}
@@ -202,7 +202,7 @@ html.set2.js .final.lit .btns::before{animation:litGlow 1.1s ease forwards}
 @keyframes litGlow{to{opacity:1}}
 .crewcv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:-1;pointer-events:none;transition:opacity .7s}
 
-@media (max-width:639px){.pin{height:210svh}.final{height:180svh}.pin .giant + .giant{margin-top:.3em}}
+@media (max-width:639px){.pin{height:210svh}.final{height:160svh}.pin .giant + .giant{margin-top:.3em}}
 @media (prefers-reduced-motion:reduce){
   .ident,#stars,.mark{display:none}
   .hero .w{filter:none!important}

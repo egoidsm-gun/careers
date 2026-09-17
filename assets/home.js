@@ -78,7 +78,7 @@
     pins.forEach(function (sec) {
       var p = progress(sec), ship = sec.classList.contains('ship');
       if (ship) sec.style.setProperty('--p', p.toFixed(3));
-      if (sec.classList.contains('final') && !crewStarted && p > .12) {   // 승선 구간이 화면을 붙잡은 뒤에 크루가 올라탄다
+      if (sec.classList.contains('final') && !crewStarted && p > .04) {   // 핀이 걸리자마자 크루가 올라탄다(2026-09-17 사용자가 시점 지정)
         crewStarted = true;
         if (set2 && !reduced && !editing) crewBoarding(sec.querySelector('.btns'), sec);
       }
