@@ -139,7 +139,7 @@
     var VS = 'attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0.,1.);}';
 
     // ① 장면: 빛의 세기 I(r 채널, HDR)와 색온도 tp(g 채널: 플래시 순간 백열→쿨 화이트)
-    var SCENE = PRE + ENC + IGN + 'uniform float t;uniform float amb;uniform float fr;uniform float pxh;' +
+    var SCENE = PRE + ENC + IGN + 'uniform float t;uniform float amb;uniform float fr;uniform float pxh;uniform float nb;' +
       'float hash(float n){return fract(sin(n)*43758.5453);}' +
       'float vnoise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);float a=hash(i.x+i.y*57.),b=hash(i.x+1.+i.y*57.),c=hash(i.x+(i.y+1.)*57.),d=hash(i.x+1.+(i.y+1.)*57.);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}' +
       'void main(){vec2 uv=v;float h0=.38;float dy=uv.y-h0;float cx=abs(uv.x-.5);' +
@@ -149,16 +149,21 @@
       'float env=(1.+1.2*ch)*(1.-.4*exp(-pow((t-' + T(-.05) + ')/.04,2.)));' +
       'float lw=mix(.0016,.0009,max(ch,ts));float lwe=max(lw,.9*pxh);float core=exp(-pow(dy/lwe,2.))*(lw/lwe)*xm*smoothstep(.2,.5,t)*(1.-ta*.92)*env;' +   // 선이 렌더 픽셀보다 가늘어지면 넓히되 총량은 보존(서브픽셀로 어두워지지 않게)
       'float halo=exp(-abs(dy)/(.010+.04*ts))*xm*tl*.2*(1.-ta*.8);' +   // 선 주변의 얇은 광륜 — 넓은 번짐은 블룸 패스가 맡는다
-      // 빛줄기 9개: 길이·두께·밝기·시차가 제각각, 빛이 옆으로 흐르는 질감, 수평선 쪽으로 남는 잔상
-      'float bands=0.;for(int i=0;i<9;i++){float k=float(i);float r1=hash(k*7.31),r2=hash(k*3.7),r3=hash(k*5.1),r4=hash(k*2.3),r5=hash(k*9.1);' +
-      'float dl=r5*.4;float tsb=smoothstep(' + T(0) + '+dl,' + T(.9) + '+dl,t);float dir=mod(k,2.)<1.?1.:-1.;' +
-      'float spread=dir*(.02+.15*pow(r1,1.2))*pow(tsb,.6);float yi=h0+spread*(1.-ta*.85)+.006*sin(t*(.4+r1)+k);' +
-      'float th=mix(.0018,.014,r2*r2)*(1.+ta*1.2);float br=(.18+.55*r3)*(1.-.4*r2);' +
-      'float xc=.5+(r4-.5)*.8;float xe=.14+.32*r1;float xmask=smoothstep(xe,xe-.30,abs(uv.x-xc));' +
-      'float tex=.45+.55*vnoise(vec2(uv.x*4.+k*3.+t*.35*dir,k*1.7));' +
-      'float d=(uv.y-yi)/th;float g=exp(-d*d);float d2=(uv.y-(yi-(yi-h0)*.18))/(th*2.2);g+=.18*exp(-d2*d2);' +
-      'bands+=br*g*xmask*tex*tsb*exp(-abs(yi-h0)*6.);}' +
-      'bands*=(1.-ta*.7)*(1.-.5*pow(cx*2.,2.));' +
+      // 빛줄기(v8.1): 가느다란 필라멘트 수십 개가 플래시에 터져 나가 감속하고(폭발 감쇠), 리본처럼 살짝 휘어 기울고,
+      // 혜성처럼 머리는 뚝·꼬리는 길게 옆으로 흐르며, 가늘어지고 어두워지다 사라진다 — 되돌아오지 않고 그 자리에 잔광이 올라온다.
+      // 밝기는 대부분 어둡고 몇 개만 밝게(pow), 두께는 대부분 가늘고 몇 개만 굵게. 렌더 픽셀보다 가늘면 넓히되 총량 보존.
+      'float bands=0.;for(int i=0;i<32;i++){float k=float(i);if(k>=nb)break;' +
+      'float r1=hash(k*7.31+1.7),r2=hash(k*3.7+2.1),r3=hash(k*5.1+3.3),r4=hash(k*2.3+4.9),r5=hash(k*9.1+5.7),r6=hash(k*1.9+6.3),r7=hash(k*4.3+7.9);' +
+      'float dir=mod(k,2.)<1.?1.:-1.;float dl=r5*.35;float u=clamp((t-' + T(0) + '-dl)/1.15,0.,1.);float ease=1.-exp(-4.5*u);' +
+      'float S=.012+.16*pow(r1,1.6);float yi=h0+dir*S*ease*(1.-.2*ta);' +
+      'yi+=(.0015+.004*r6)*sin(uv.x*(3.+4.*r2)+k*1.3+t*(.3+.5*r7))+(r7-.5)*.02*(uv.x-.5);' +
+      'float th=mix(.0006,.0045,r2*r2*r2)*(1.+.8*u);float the=max(th,.9*pxh);float d=(uv.y-yi)/the;float g=(exp(-d*d)+.14*exp(-d*d/20.))*(th/the);' +   // 가는 심 + 옅은 베일
+      'float sp=(.25+.6*r3)*(mod(k,3.)<1.?-1.:1.);float xh=.5+(r4-.5)*.7+sp*u*.8;float ahead=(uv.x-xh)*sign(sp);float tail=.18+.5*r1;' +
+      'float prof=ahead>0.?exp(-ahead*ahead/.003):exp(ahead/tail);' +   // 머리는 부드럽게, 꼬리는 길게
+      'float tex=.6+.4*vnoise(vec2(uv.x*14.+k*5.+t*.8*sp,k*2.1));' +
+      'float life=smoothstep(0.,.1,u)*(1.-smoothstep(.5,1.,u));float br=.08+.75*pow(r3,2.5);' +
+      'bands+=br*g*prof*tex*life*exp(-abs(yi-h0)*5.);}' +
+      'bands*=1.-.4*pow(cx*2.,2.);' +
       // 잔광(지속): 수평선에 오로라처럼 숨 쉬는 빛 — 글자 아래에 머문다
       'float amb1=exp(-abs(dy)/.085)*(.20+.22*vnoise(vec2(uv.x*2.5+t*.05,t*.07)))*ta;' +
       'amb1+=exp(-abs(dy)/.30)*.055*ta+exp(-abs(dy)/.011)*.22*ta*(.6+.4*vnoise(vec2(uv.x*9.+t*.2,t*.3)));' +
@@ -234,7 +239,7 @@
     function quad() { gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
     function render(t, amb) {
       var fr = Math.floor(t * 24), fl = t - TF, fa = fl < 0 ? Math.exp(-Math.pow(fl / .05, 2)) : Math.exp(-fl / .32);
-      pass(Ps, scene.fb, scene.w, scene.h); gl.uniform1f(Ps.u.t, t); gl.uniform1f(Ps.u.amb, amb); gl.uniform1f(Ps.u.fr, fr); gl.uniform1f(Ps.u.pxh, 1 / scene.h); quad();
+      pass(Ps, scene.fb, scene.w, scene.h); gl.uniform1f(Ps.u.t, t); gl.uniform1f(Ps.u.amb, amb); gl.uniform1f(Ps.u.fr, fr); gl.uniform1f(Ps.u.pxh, 1 / scene.h); gl.uniform1f(Ps.u.nb, mobile ? 18 : 28); quad();
       if (post) {
         pass(Pp, mips[0].fb, mips[0].w, mips[0].h); tex(0, scene.tx); gl.uniform2f(Pp.u.px, 1 / scene.w, 1 / scene.h); gl.uniform1f(Pp.u.th, TH); quad();
         for (var i = 1; i < N; i++) { pass(Pd, mips[i].fb, mips[i].w, mips[i].h); tex(0, mips[i - 1].tx); gl.uniform2f(Pd.u.px, 1 / mips[i - 1].w, 1 / mips[i - 1].h); quad(); }
