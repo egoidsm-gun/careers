@@ -86,14 +86,17 @@
       all.forEach(function (w, i) { w.classList.toggle('on', i < k); });
     });
   }
+  /* 승선(2026-09-17): 마지막 구간에 닿는 순간 별이 한 번 빨라지고(출항 때처럼), 이어서 CSS가 수평선의 빛을 버튼 아래에 다시 켠다.
+     관측 대상은 섹션이 아니라 첫 글자 — 섹션은 위아래 여백이 커서 threshold로 잡으면 글자가 화면에 들어오기 한참 전에 애니메이션이 끝나 버린다. */
   var fin = document.querySelector('.final');
   if (fin) {
+    var board = function () { fin.classList.add('in'); boost = Math.max(boost, 2.2); };
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (es) {
-        es.forEach(function (e) { if (e.isIntersecting) { fin.classList.add('in'); io.disconnect(); } });
-      }, { threshold: 0.3 });
-      io.observe(fin);
-    } else fin.classList.add('in');
+        es.forEach(function (e) { if (e.isIntersecting) { board(); io.disconnect(); } });
+      }, { rootMargin: '0px 0px -12% 0px' });
+      io.observe(fin.querySelector('.eyebrow') || fin);
+    } else board();
   }
 
   /* ---------- 장면 사이 간격 맞추기(2026-09-17 사용자 지적 "간격 차이가 난다") ----------

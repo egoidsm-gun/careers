@@ -157,22 +157,42 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 
 /* 마지막: 화면 가득 승선 CTA */
 /* 마지막 구간은 한 화면 규격에서 빼고 닫는 문장답게 여백을 직접 준다(2026-09-17 사용자 "버튼과 푸터 사이가 허하다"): 위는 개척선 뒤 숨 고르는 공간, 아래는 짧게 */
-.screen.final{min-height:auto}
+.screen.final{min-height:auto;overflow-x:clip;overflow-y:visible}
 .screen.final .wrap{padding-top:20svh;padding-bottom:21svh}
 body.home .foot{margin-top:0}
 .final .giant{font-size:clamp(42px,8vw,124px)}
 .final .lead{margin:28px auto 0}
 .final .btns{justify-content:center}
-html.js .final .eyebrow,html.js .final .w,html.js .final .lead,html.js .final .btns{opacity:0;transform:translateY(.4em)}
-.final.in .eyebrow,.final.in .w,.final.in .lead,.final.in .btns{animation:rise .9s cubic-bezier(.2,.7,.1,1) forwards;animation-delay:calc(var(--i,0)*70ms)}
+html.js .final .eyebrow,html.js .final .w,html.js .final .lead,html.js .final .btn{opacity:0;transform:translateY(.4em)}
+.final.in .eyebrow,.final.in .w,.final.in .lead,.final.in .btn{animation:rise .9s cubic-bezier(.2,.7,.1,1) forwards;animation-delay:calc(var(--i,0)*70ms)}
 .final.in .lead{animation-delay:.5s}
-.final.in .btns{animation-delay:.65s}
+.final.in .btn{animation-delay:.65s}
+
+/* 승선(2026-09-17 사용자 승인 "출항으로 열고 승선으로 닫는다"): 인트로를 열었던 수평선의 빛이 버튼 아래에서 다시 켜진다.
+   별 가속(home.js) → 빛줄기가 중앙에서 좌우로 늘어남 → 잔광이 번짐 → 버튼 위로 한 줄기가 스친다. 새 모티프 없이 히어로의 언어를 그대로 재사용. */
+.final .btns{position:relative;isolation:isolate}
+.final .btns::before,.final .btns::after{content:"";position:absolute;left:50%;top:50%;z-index:-1;pointer-events:none;opacity:0}
+.final .btns::before{width:min(170vw,2400px);height:38vh;transform:translate(-50%,-50%) scaleX(.05);
+  background:radial-gradient(ellipse 44% 50% at 50% 50%,rgba(237,109,32,.34),rgba(237,109,32,.08) 46%,transparent 72%)}
+.final .btns::after{width:min(150vw,2000px);height:2px;transform:translate(-50%,-50%) scaleX(.03);
+  background:linear-gradient(90deg,transparent,rgba(255,206,150,.9) 50%,transparent);box-shadow:0 0 18px rgba(255,170,90,.45)}
+html.js .final.in .btns::after{animation:boardLine 1s cubic-bezier(.16,1,.3,1) .8s forwards}
+html.js .final.in .btns::before{animation:boardGlow 1.4s cubic-bezier(.2,.7,.1,1) .95s forwards}
+.final .btn{position:relative;overflow:hidden}
+.final .btn::after{content:"";position:absolute;inset:-1px;pointer-events:none;transform:translateX(-130%);
+  background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%)}
+html.js .final.in .btn::after{animation:boardSweep .9s cubic-bezier(.3,.6,.2,1) 1.55s forwards}
+@keyframes boardLine{55%{opacity:1}to{opacity:.55;transform:translate(-50%,-50%) scaleX(1)}}
+@keyframes boardGlow{to{opacity:1;transform:translate(-50%,-50%) scaleX(1)}}
+@keyframes boardSweep{to{transform:translateX(130%)}}
 
 @media (max-width:639px){.pin{height:210svh}.pin .giant + .giant{margin-top:.3em}}
 @media (prefers-reduced-motion:reduce){
   .ident,#stars,.mark{display:none}
   .hero .w{filter:none!important}
-  .w,.hero .eyebrow,.hero .scrollhint,.hero::before,.final .eyebrow,.final .lead,.final .btns{opacity:1!important;transform:none!important}
+  .w,.hero .eyebrow,.hero .scrollhint,.hero::before,.final .eyebrow,.final .lead,.final .btn{opacity:1!important;transform:none!important}
+  .final .btns::before,.final .btns::after{opacity:1!important;transform:translate(-50%,-50%)!important;animation:none!important}
+  .final .btn::after{display:none}
 }
 
 /* ---------- 서브 페이지 공통 ---------- */
