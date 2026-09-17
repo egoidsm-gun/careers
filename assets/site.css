@@ -105,6 +105,28 @@ html.js .hero::before{opacity:0;animation:fadein 2s var(--t0) forwards,breathe 7
 html.js .hero .w{opacity:0;transform:translateY(.5em) scale(.97);filter:blur(14px);animation:riseBlur 1.1s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--t0) + var(--i,0)*130ms)}
 html.js .hero .eyebrow{opacity:0;transform:translateY(.45em);animation:rise .95s cubic-bezier(.2,.7,.1,1) forwards;animation-delay:calc(var(--t0) - .15s)}
 html.js .hero .scrollhint{opacity:0;animation:fadein 1s calc(var(--t0) + 1.4s) forwards}
+/* 워드마크 장면(2026-09-17 사용자 요청): 로고를 ego → id → sm 세 조각으로 순차 출현시킨다 — 빛점이 수평선으로 늘어나는 박자에 맞춰 수평선 바로 위에서 하나씩 밝아지고,
+   갈라지는 순간(--tf = home.js 플래시 1.42s)에 하얗게 타올라 빛줄기와 함께 흩어진다. 조각 경계는 로고 PNG(762px)의 글자 사이 빈 칸: o|i 43.4% · d|s 67.1% */
+:root{--tf:1.42s}
+.mark{position:absolute;left:50%;top:62svh;transform:translate(-50%,calc(-100% - 3.4svh));width:clamp(200px,30vw,430px);aspect-ratio:762/246;z-index:2;pointer-events:none;display:none}
+html.js .mark{display:block}
+html.ident-seen .mark,html.ident-off .mark{display:none}
+.mark-in{position:absolute;inset:0}
+.mark .seg{position:absolute;inset:0}   /* 클립은 정적인 래퍼에, 애니메이션은 안쪽 img에 — 같은 요소에 clip-path+filter 애니메이션을 걸면 크롬이 검은 상자를 그린다(2026-09-17 실측) */
+.mark .s1{clip-path:inset(-12% 56.6% -12% 0)}
+.mark .s2{clip-path:inset(-12% 32.9% -12% 43.4%)}
+.mark .s3{clip-path:inset(-12% 0 -12% 67.1%)}
+.mark .seg img{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transform:translateY(30%);filter:brightness(2.4) saturate(.3)}   /* 백열로 켜져 브랜드 오렌지로 식는다 */
+html.js .mark .seg img{animation:markIn .55s cubic-bezier(.16,1,.3,1) forwards}
+html.js .mark .s1 img{animation-delay:calc(var(--tf) - .97s)}
+html.js .mark .s2 img{animation-delay:calc(var(--tf) - .7s)}
+html.js .mark .s3 img{animation-delay:calc(var(--tf) - .44s)}
+html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forwards}
+@keyframes markIn{45%{opacity:1}to{opacity:1;transform:none;filter:none}}
+@keyframes markOut{0%{opacity:1;filter:none;transform:none}
+  9%{filter:brightness(2.6) saturate(.35) drop-shadow(0 0 22px rgba(255,214,170,.95))}
+  40%{opacity:1;filter:brightness(1.7) saturate(.6) drop-shadow(0 0 30px rgba(255,170,100,.5)) blur(0)}
+  100%{opacity:0;filter:brightness(1.5) saturate(.6) blur(16px);transform:scale(1.06)}}
 @keyframes rise{to{opacity:1;transform:none}}
 @keyframes riseBlur{60%{filter:none}to{opacity:1;transform:none;filter:none}}
 @keyframes fadein{to{opacity:1}}
@@ -134,7 +156,7 @@ html.js .final .eyebrow,html.js .final .w,html.js .final .lead,html.js .final .b
 
 @media (max-width:639px){.pin{height:210svh}.pin .giant + .giant{margin-top:.3em}}
 @media (prefers-reduced-motion:reduce){
-  .ident,#stars{display:none}
+  .ident,#stars,.mark{display:none}
   .hero .w{filter:none!important}
   .w,.hero .eyebrow,.hero .scrollhint,.hero::before,.final .eyebrow,.final .lead,.final .btns{opacity:1!important;transform:none!important}
 }
