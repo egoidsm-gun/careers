@@ -96,6 +96,29 @@
     } else fin.classList.add('in');
   }
 
+  /* ---------- 장면 사이 간격 맞추기(2026-09-17 사용자 지적 "간격 차이가 난다") ----------
+     히어로 글자 끝 → 멈춘 개척선 문구 사이(간격1)는 구조에서 저절로 나오는 값이고, 개척선 문구 끝 → 승선 문구 사이(간격2)는
+     CSS 패딩으로 정한 값이라 기기마다 어긋났다(폰 812: 673 vs 459). 그래서 간격1을 재서 승선 구간의 위 여백을 그만큼 맞춘다.
+     두 값 모두 문서 좌표(스크롤과 무관)로 계산하고, 스티키 안의 오프셋은 함께 움직이므로 빼서 쓴다. 측정 후 보정은 1회로 정확히 수렴한다. */
+  function syncGap() {
+    var pin = document.querySelector('.pin');
+    var heroT = document.querySelector('.hero .giant'), pinIn = pin && pin.querySelector('.pin-in');
+    var eye = pin && pin.querySelector('.eyebrow'), lines = pin ? pin.querySelectorAll('.giant') : [];
+    var wrap = document.querySelector('.final .wrap'), finEye = document.querySelector('.final .eyebrow');
+    if (!heroT || !pin || !pinIn || !eye || !lines.length || !wrap || !finEye) return;
+    var top = function (el) { return el.getBoundingClientRect().top + window.scrollY; };
+    var last = lines[lines.length - 1], inTop = top(pinIn), pinTop = top(pin);
+    var gap1 = pinTop + (top(eye) - inTop) - (top(heroT) + heroT.offsetHeight);
+    var shipEnd = pinTop + pin.offsetHeight - pinIn.offsetHeight + (top(last) + last.offsetHeight - inTop);
+    var gap2 = top(finEye) - shipEnd;
+    var pad = parseFloat(getComputedStyle(wrap).paddingTop) + (gap1 - gap2);
+    if (isFinite(pad)) wrap.style.paddingTop = Math.round(Math.max(80, Math.min(pad, innerHeight * 1.2))) + 'px';
+  }
+  syncGap();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncGap);   // 서체가 붙으면 글자 높이가 달라진다
+  window.addEventListener('load', syncGap);
+  window.addEventListener('resize', syncGap);   // 별 캔버스 블록과 별개로 — 별이 꺼진 경우(reduced motion·?stars=0)에도 맞춰야 한다
+
 
   /* ---------- 빛의 수평선(WebGL): 빛점 → 수평선 → 빛줄기 확산 → 잔광. 홈에 머무는 동안 계속 산다 ----------
      t(초)로 장면을 계산한다. 재방문(ident-seen)은 잔광부터, 편집 모드·모션 축소는 정지 화면. */
