@@ -152,6 +152,10 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .ship .pin-in::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(11,11,12,.4);opacity:var(--p,0);-webkit-mask-image:linear-gradient(180deg,transparent,#000 25%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 25%,#000 70%,transparent)}
 
 /* 마지막: 화면 가득 승선 CTA */
+/* 마지막 구간은 한 화면 규격에서 빼고 닫는 문장답게 여백을 직접 준다(2026-09-17 사용자 "버튼과 푸터 사이가 허하다"): 위는 개척선 뒤 숨 고르는 공간, 아래는 짧게 */
+.screen.final{min-height:auto}
+.screen.final .wrap{padding-top:20svh;padding-bottom:14svh}
+body.home .foot{margin-top:0}
 .final .giant{font-size:clamp(42px,8vw,124px)}
 .final .lead{margin:28px auto 0}
 .final .btns{justify-content:center}
@@ -367,7 +371,7 @@ a.row:hover .t{color:var(--acc)}
 .legal ul{padding-left:20px}
 
 /* ---------- 푸터 ---------- */
-.foot{position:relative;z-index:1;border-top:1px solid var(--line);padding:64px 0 48px;color:var(--mute);font-size:14px;margin-top:40px}
+.foot{position:relative;z-index:1;border-top:1px solid var(--line);padding:48px 0 48px;color:var(--mute);font-size:14px;margin-top:40px}
 .foot .wrap{display:flex;flex-direction:column;gap:28px}
 .flogo{height:18px;width:auto;margin-bottom:16px}
 .f1 p{margin:0;color:var(--fg2);line-height:1.6}
