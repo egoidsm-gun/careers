@@ -100,6 +100,9 @@ html.aurora body{background:#000}
 /* 히어로: 별 위에 거대 글자, 아래에 일출의 잔광 */
 .hero{isolation:isolate;overflow-x:clip;overflow-y:visible}   /* 잔광은 세로로만 번지고 가로는 화면 폭에서 잘라 iOS 가로 끌림 방지 */
 .hero .giant{font-size:clamp(46px,10.4vw,164px)}
+/* 눈썹은 짝이 되는 헤드라인의 약 14%를 유지한다(2026-09-17 사용자 "글자 비율이 너무 차이난다") — 기본 14px 고정이라 헤드라인만 커지면 비율이 무너졌다(넓은 화면에서 8.5%).
+   좁은 폭에서는 기본값 그대로(가독성 하한 14px), 넓어질 때만 함께 큰다. 개척선(15%)·하위 페이지(18%)는 이미 적정이라 그대로 둔다. */
+.hero .eyebrow{font-size:clamp(14px,1.45vw,23px);margin-bottom:clamp(18px,1.55vw,26px)}
 .hero::before{content:"";position:absolute;left:50%;bottom:-60vh;width:170vw;height:140vh;transform:translateX(-50%);z-index:-1;pointer-events:none;background:radial-gradient(ellipse 60% 46% at 50% 57%,rgba(237,109,32,.30),rgba(237,109,32,.07) 48%,transparent 78%)}
 html.js .hero::before{opacity:0;animation:fadein 2s var(--t0) forwards,breathe 7s calc(var(--t0) + 2s) ease-in-out infinite alternate}
 html.js .hero .w{opacity:0;transform:translateY(.5em) scale(.97);filter:blur(14px);animation:riseBlur 1.1s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--t0) + var(--i,0)*130ms)}
@@ -157,6 +160,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .screen.final .wrap{padding-top:20svh;padding-bottom:21svh}
 body.home .foot{margin-top:0}
 .final .giant{font-size:clamp(42px,8vw,124px)}
+.final .eyebrow{font-size:clamp(14px,1.15vw,17.5px)}
 .final .lead{margin:28px auto 0}
 .final .btns{justify-content:center}
 html.js .final .eyebrow,html.js .final .w,html.js .final .lead,html.js .final .btns{opacity:0;transform:translateY(.4em)}
