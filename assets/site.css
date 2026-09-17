@@ -166,7 +166,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
    핀 높이 200svh = 화면을 채운 채 100svh만큼 더 스크롤되는 동안 멈춰 있다가 풀린다. 빛은 세로로 자르지 않는다(섹션 경계선 금지 규칙). */
 .final{height:175svh}
 .final .pin-in{overflow-x:clip;overflow-y:visible}
-.final .wrap{padding-top:0}
+/* 개척선 핀과 동일하게 `.pin .wrap{padding-top:var(--nav)}`를 그대로 쓴다 — 상단 바가 화면 위를 덮고 있어서 그만큼 내려야 눈에 가운데로 보인다(2026-09-17 사용자가 스크린샷으로 위치 지정) */
 body.home .foot{margin-top:-10svh}   /* 핀이 풀리면 스티키 아래쪽 절반이 빈 채로 남는다 — 푸터를 그만큼 끌어올려 버튼→푸터선을 약 200px로(2026-09-17 사용자 "너무 벌어졌다") */
 .final .giant{font-size:clamp(42px,8vw,124px)}
 .final .lead{margin:28px auto 0}
