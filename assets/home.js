@@ -149,20 +149,22 @@
       'float env=(1.+1.2*ch)*(1.-.4*exp(-pow((t-' + T(-.05) + ')/.04,2.)));' +
       'float lw=mix(.0016,.0009,max(ch,ts));float lwe=max(lw,.9*pxh);float core=exp(-pow(dy/lwe,2.))*(lw/lwe)*xm*smoothstep(.2,.5,t)*(1.-ta*.92)*env;' +   // 선이 렌더 픽셀보다 가늘어지면 넓히되 총량은 보존(서브픽셀로 어두워지지 않게)
       'float halo=exp(-abs(dy)/(.010+.04*ts))*xm*tl*.2*(1.-ta*.8);' +   // 선 주변의 얇은 광륜 — 넓은 번짐은 블룸 패스가 맡는다
-      // 빛줄기(v8.1): 가느다란 필라멘트 수십 개가 플래시에 터져 나가 감속하고(폭발 감쇠), 리본처럼 살짝 휘어 기울고,
-      // 혜성처럼 머리는 뚝·꼬리는 길게 옆으로 흐르며, 가늘어지고 어두워지다 사라진다 — 되돌아오지 않고 그 자리에 잔광이 올라온다.
-      // 밝기는 대부분 어둡고 몇 개만 밝게(pow), 두께는 대부분 가늘고 몇 개만 굵게. 렌더 픽셀보다 가늘면 넓히되 총량 보존.
+      // 빛줄기(v8.2, 수평선에 힘을 모으는 구도 — 사용자 선택): 가느다란 필라멘트 수십 개가 플래시에 수평선에서 터져 나가 감속하고,
+      // 잠깐 머물며 천천히 옆으로 흐르다가, 각자 다른 시차로 중력처럼 가속해 수평선으로 되돌아와 닿는 순간 선을 잠깐 밝히며 흡수된다.
+      // 끝은 가우시안으로 부드럽고, 밝기·두께는 거듭제곱 분포(대부분 어둡고 가늘게), 가는 심+옅은 베일, 렌더 픽셀보다 가늘면 총량 보존해 넓힘.
       'float bands=0.;for(int i=0;i<32;i++){float k=float(i);if(k>=nb)break;' +
       'float r1=hash(k*7.31+1.7),r2=hash(k*3.7+2.1),r3=hash(k*5.1+3.3),r4=hash(k*2.3+4.9),r5=hash(k*9.1+5.7),r6=hash(k*1.9+6.3),r7=hash(k*4.3+7.9);' +
-      'float dir=mod(k,2.)<1.?1.:-1.;float dl=r5*.35;float u=clamp((t-' + T(0) + '-dl)/1.15,0.,1.);float ease=1.-exp(-4.5*u);' +
-      'float S=.012+.16*pow(r1,1.6);float yi=h0+dir*S*ease*(1.-.2*ta);' +
-      'yi+=(.0015+.004*r6)*sin(uv.x*(3.+4.*r2)+k*1.3+t*(.3+.5*r7))+(r7-.5)*.02*(uv.x-.5);' +
-      'float th=mix(.0006,.0045,r2*r2*r2)*(1.+.8*u);float the=max(th,.9*pxh);float d=(uv.y-yi)/the;float g=(exp(-d*d)+.14*exp(-d*d/20.))*(th/the);' +   // 가는 심 + 옅은 베일
-      'float sp=(.25+.6*r3)*(mod(k,3.)<1.?-1.:1.);float xh=.5+(r4-.5)*.7+sp*u*.8;float ahead=(uv.x-xh)*sign(sp);float tail=.18+.5*r1;' +
-      'float prof=ahead>0.?exp(-ahead*ahead/.003):exp(ahead/tail);' +   // 머리는 부드럽게, 꼬리는 길게
-      'float tex=.6+.4*vnoise(vec2(uv.x*14.+k*5.+t*.8*sp,k*2.1));' +
-      'float life=smoothstep(0.,.1,u)*(1.-smoothstep(.5,1.,u));float br=.08+.75*pow(r3,2.5);' +
-      'bands+=br*g*prof*tex*life*exp(-abs(yi-h0)*5.);}' +
+      'float dir=mod(k,2.)<1.?1.:-1.;float dl=r5*.25;float To=.5+.25*r6;float hold=.1+.25*r7;float Tr=.5+.5*r2;' +
+      'float t1=t-' + T(0) + '-dl;float u1=clamp(t1/To,0.,1.);float out_=(1.-exp(-4.*u1))/.982;' +           // 터져 나가 감속
+      'float u2=clamp((t1-To-hold)/Tr,0.,1.);float back=pow(u2,1.8);' +                                        // 중력처럼 가속해 복귀
+      'float S=.012+.15*pow(r1,1.5);float yi=h0+dir*S*out_*(1.-back);' +
+      'yi+=(.001+.003*r6)*sin(uv.x*(2.+3.*r2)+k*1.3+t*.5)*(1.-back)+(r7-.5)*.012*(uv.x-.5)*(1.-back);' +      // 살짝 휘고 기울되 선에 닿을 땐 곧게
+      'float th=mix(.0006,.004,r2*r2*r2)*(1.+.5*u1)*(1.-.55*back);float the=max(th,.9*pxh);float d=(uv.y-yi)/the;float g=(exp(-d*d)+.14*exp(-d*d/20.))*(th/the);' +
+      'float xc=.5+(r4-.5)*.8+(r3-.5)*.1*u1;float L=.1+.3*r1;float xe=uv.x-xc;float env=exp(-xe*xe/(L*L));' +   // 끝이 부드러운 길이
+      'float tex=.55+.45*vnoise(vec2(uv.x*12.+k*7.+t*(.3+.4*r7)*dir,k*3.1));' +
+      'float life=smoothstep(0.,.1,u1)*(1.-smoothstep(.8,1.,u2));float br=(.08+.75*pow(r3,2.5))*(1.+.6*back);' +   // 돌아올수록 조금 밝아지며 가늘어진다
+      'bands+=br*g*env*tex*life*exp(-abs(yi-h0)*5.);' +
+      'bands+=.9*br*env*exp(-pow((u2-.93)/.07,2.))*exp(-abs(dy)/.0035)*step(.01,u2);}' +                       // 닿는 순간 선 위의 짧은 흡수 플레어
       'bands*=1.-.4*pow(cx*2.,2.);' +
       // 잔광(지속): 수평선에 오로라처럼 숨 쉬는 빛 — 글자 아래에 머문다
       'float amb1=exp(-abs(dy)/.085)*(.20+.22*vnoise(vec2(uv.x*2.5+t*.05,t*.07)))*ta;' +
