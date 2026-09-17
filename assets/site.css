@@ -100,10 +100,10 @@ html.aurora body{background:#000}
 /* 히어로: 별 위에 거대 글자, 아래에 일출의 잔광 */
 .hero{isolation:isolate;overflow-x:clip;overflow-y:visible}   /* 잔광은 세로로만 번지고 가로는 화면 폭에서 잘라 iOS 가로 끌림 방지 */
 .hero .giant{font-size:clamp(46px,10.4vw,164px)}
-/* 눈썹(서브카피) ↔ 거대 헤드라인 비율(2026-09-17 사용자 "서브카피가 좀 더 잘 보이게, 같은 맥락은 다 조화롭게").
-   기본 14px 고정이라 헤드라인만 vw로 커지면 비율이 무너졌다(2000px에서 히어로 8.5%). 섹션이 `--eb`로 자기 헤드라인에 맞는 값을 준다.
-   헤드라인이 작을수록 비율은 조금 더 크게(광학 보정): 히어로 17% · 승선 18% · 개척선 20%. 하한 14px이라 좁은 폭은 종전 그대로. */
-.hero{--eb:clamp(14px,1.75vw,28px);--ebgap:clamp(18px,1.7vw,28px)}
+/* 눈썹(서브카피) 크기 — 홈의 거대 헤드라인 구간 세 곳(히어로·개척선·승선)은 **하나의 값으로 통일**한다(2026-09-17 사용자 "서브카피 글자 크기를 모두 통일, 비율은 30까지").
+   기준은 히어로: `3.12vw = 10.4vw x 0.30`, 상한 49px = 164px x 0.30 — 히어로 헤드라인과 상·하한이 같은 폭에서 걸려 **모든 폭에서 히어로 대비 30%**가 유지된다.
+   통일값이라 헤드라인이 작은 구간은 비율이 더 커진다(2000px 기준 승선 40% · 개척선 53%). 하위 페이지는 짝 제목이 작아 기본 14px 유지. */
+body.home{--eb:clamp(14px,3.12vw,49px);--ebgap:clamp(18px,2.1vw,33px)}
 .hero::before{content:"";position:absolute;left:50%;bottom:-60vh;width:170vw;height:140vh;transform:translateX(-50%);z-index:-1;pointer-events:none;background:radial-gradient(ellipse 60% 46% at 50% 57%,rgba(237,109,32,.30),rgba(237,109,32,.07) 48%,transparent 78%)}
 html.js .hero::before{opacity:0;animation:fadein 2s var(--t0) forwards,breathe 7s calc(var(--t0) + 2s) ease-in-out infinite alternate}
 html.js .hero .w{opacity:0;transform:translateY(.5em) scale(.97);filter:blur(14px);animation:riseBlur 1.1s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--t0) + var(--i,0)*130ms)}
@@ -148,7 +148,6 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .pin{position:relative;z-index:1;height:240svh}
 .pin-in{position:sticky;top:0;height:100svh;display:flex;align-items:center;overflow:hidden;isolation:isolate}
 .pin .wrap{width:100%;padding-top:var(--nav)}
-.pin{--eb:clamp(14px,1.2vw,18.5px)}
 .pin .giant{font-size:clamp(32px,6vw,92px)}
 .pin .giant + .giant{margin-top:.22em}
 .pin .w{opacity:.13;transition:opacity .45s}
@@ -162,7 +161,6 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .screen.final .wrap{padding-top:20svh;padding-bottom:21svh}
 body.home .foot{margin-top:0}
 .final .giant{font-size:clamp(42px,8vw,124px)}
-.final{--eb:clamp(14px,1.45vw,22px);--ebgap:clamp(18px,1.4vw,22px)}
 .final .lead{margin:28px auto 0}
 .final .btns{justify-content:center}
 html.js .final .eyebrow,html.js .final .w,html.js .final .lead,html.js .final .btns{opacity:0;transform:translateY(.4em)}
