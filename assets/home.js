@@ -158,13 +158,13 @@
       'bands+=br*g*xmask*tex*tsb*exp(-abs(yi-h0)*6.);}' +
       'bands*=(1.-ta*.7)*(1.-.5*pow(cx*2.,2.));' +
       // 잔광(지속): 수평선에 오로라처럼 숨 쉬는 빛 — 글자 아래에 머문다
-      'float amb1=exp(-abs(dy)/.085)*(.20+.22*vnoise(vec2(uv.x*2.5+t*.05,t*.07)))*ta*amb;' +
-      'amb1+=exp(-abs(dy)/.30)*.055*ta*amb+exp(-abs(dy)/.011)*.22*ta*amb*(.6+.4*vnoise(vec2(uv.x*9.+t*.2,t*.3)));' +
+      'float amb1=exp(-abs(dy)/.085)*(.20+.22*vnoise(vec2(uv.x*2.5+t*.05,t*.07)))*ta;' +
+      'amb1+=exp(-abs(dy)/.30)*.055*ta+exp(-abs(dy)/.011)*.22*ta*(.6+.4*vnoise(vec2(uv.x*9.+t*.2,t*.3)));' +
       'amb1*=(1.-.35*pow(cx*2.,2.));' +
       // 갈라지는 순간의 플래시: 0.05s에 터지고 0.32s 시상수로 식는다, 식으면서 폭이 넓어진다
       'float fl=t-1.42;float fa=fl<0.?exp(-pow(fl/.05,2.)):exp(-fl/.32);' +
       'float flash=fa*.9*exp(-abs(dy)/(.07+.35*clamp(fl,0.,1.)))+fa*.04;' +
-      'float I=core*3.+halo+bands+amb1+flash;float e=enc(I);' +
+      'float I=(core*3.+halo+bands+amb1+flash)*amb;float e=enc(I);' +   // amb = 스크롤 감쇠(0~1): 인트로 중이든 잔광이든 빛 전체에 적용
       (hdr ? '' : 'e+=(ign(gl_FragCoord.xy+vec2(fr*17.,fr*11.))-.5)/255.;') +
       'gl_FragColor=vec4(e,clamp(fa*1.1,0.,1.),0.,1.);}';
     // ② 프리필터+첫 다운샘플: 문턱(소프트 니) 넘는 세기만 블룸 원천으로
@@ -248,7 +248,7 @@
     function draw(now) {
       if (!running) return;
       var t = at !== null ? at : offset + (now - start) / 1000;
-      var amb = Math.max(0, Math.min(1, 1 - window.scrollY / (innerHeight * .9)));   // 스크롤하면 잔광이 잦아든다
+      var sc = Math.min(1, window.scrollY / (innerHeight * .32)), amb = Math.pow(1 - sc, 1.6);   // 스크롤하면 빛 전체가 빠르게 잦아들어 화면 1/3을 내려가기 전(SCROLL 표시가 수평선 위로 올라오는 지점)에 완전히 사라진다
       render(t, amb);
       if (still) return;                                       // 정지 화면은 한 프레임만
       if (amb <= 0 && t > 6) { running = false; return; }      // 홈 아래로 내려가면 쉰다
