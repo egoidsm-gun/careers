@@ -154,7 +154,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 /* 마지막: 화면 가득 승선 CTA */
 /* 마지막 구간은 한 화면 규격에서 빼고 닫는 문장답게 여백을 직접 준다(2026-09-17 사용자 "버튼과 푸터 사이가 허하다"): 위는 개척선 뒤 숨 고르는 공간, 아래는 짧게 */
 .screen.final{min-height:auto}
-.screen.final .wrap{padding-top:20svh;padding-bottom:14svh}
+.screen.final .wrap{padding-top:20svh;padding-bottom:21svh}
 body.home .foot{margin-top:0}
 .final .giant{font-size:clamp(42px,8vw,124px)}
 .final .lead{margin:28px auto 0}
