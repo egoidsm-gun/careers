@@ -88,9 +88,86 @@
   }
   /* 승선(2026-09-17): 마지막 구간에 닿는 순간 별이 한 번 빨라지고(출항 때처럼), 이어서 CSS가 수평선의 빛을 버튼 아래에 다시 켠다.
      관측 대상은 섹션이 아니라 첫 글자 — 섹션은 위아래 여백이 커서 threshold로 잡으면 글자가 화면에 들어오기 한참 전에 애니메이션이 끝나 버린다. */
+  /* 승선 2안(?set=2): 크루가 빛이 되어 버튼 아래에서 줄지어 올라와 승선구로 들어간다. 한 명씩 도착할수록 배가 밝아지고, 행렬이 끝나면 잔광만 남는다. */
+  var set2 = /[?&]set=2/.test(location.search);
+  if (set2) html.classList.add('set2');
+  function crewBoarding(host, fin) {
+    var cv = document.createElement('canvas'); cv.className = 'crewcv'; cv.setAttribute('aria-hidden', 'true');
+    host.appendChild(cv);
+    var ctx = cv.getContext('2d'), W, H, dpr, mob = window.matchMedia('(max-width: 639px)').matches;
+    var slow = parseFloat((/[?&]slow=([\d.]+)/.exec(location.search) || [])[1]) || 1;   // 진단: ?slow=4 면 4배 느리게
+    function size() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      W = Math.min(1100, innerWidth * .96); H = mob ? 300 : 380;
+      cv.style.width = W + 'px'; cv.style.height = H + 'px';
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    size(); window.addEventListener('resize', size);
+    var N = mob ? 18 : 30, P = [], i, r;
+    for (i = 0; i < N; i++) {
+      var side = i % 2 ? 1 : -1; r = .30 + Math.random() * .34;
+      P.push({ sx: .5 + side * r, sy: .80 + Math.random() * .40,          // 버튼 아래 좌우에서 출발 — 글자 위를 지나지 않는다
+               tx: .5 + (Math.random() - .5) * .05, ty: .5 + (Math.random() - .5) * .06,
+               arc: side * (.05 + Math.random() * .09),
+               d: (140 + i * 48 + Math.random() * 80) * slow, dur: (880 + Math.random() * 520) * slow,
+               w: 1.2 + Math.random() * 1.7 });
+    }
+    var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0);
+    function at(p, u) {                                                    // 완만한 호를 그리며 승선구로
+      var sx = p.sx * W, sy = p.sy * H, tx = p.tx * W, ty = p.ty * H;
+      var cx = (sx + tx) / 2 - (ty - sy) * p.arc, cy = (sy + ty) / 2 + (tx - sx) * p.arc;
+      var k = 1 - u;
+      return [k * k * sx + 2 * k * u * cx + u * u * tx, k * k * sy + 2 * k * u * cy + u * u * ty];
+    }
+    var t0 = performance.now();
+    function frame(now) {
+      var t = now - t0, lit = 0, k;
+      ctx.clearRect(0, 0, W, H);
+      for (k = 0; k < N; k++) if (t >= P[k].d + P[k].dur) lit++;
+      if (lit) {                                                           // 도착한 크루 수만큼 배가 밝아진다
+        var f = lit / N, g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * .40);
+        g.addColorStop(0, 'rgba(237,109,32,' + (.26 * f).toFixed(3) + ')');
+        g.addColorStop(.45, 'rgba(237,109,32,' + (.09 * f).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(237,109,32,0)');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      }
+      ctx.lineCap = 'round';
+      for (k = 0; k < N; k++) {
+        var p = P[k], u = (t - p.d) / p.dur;
+        if (u < 0) continue;
+        if (u >= 1) {                                                      // 승선 순간의 짧은 섬광
+          var age = t - (p.d + p.dur);
+          if (age < 280) {
+            var a = 1 - age / 280, pos = at(p, 1);
+            ctx.beginPath(); ctx.arc(pos[0], pos[1], 1.5 + 5 * (1 - a), 0, 6.283);
+            ctx.fillStyle = 'rgba(255,214,170,' + (.5 * a * a).toFixed(3) + ')'; ctx.fill();
+          }
+          continue;
+        }
+        var e = 1 - Math.pow(1 - u, 2.2);                                  // 다가갈수록 느려진다
+        var cur = at(p, e), prev = at(p, Math.max(0, e - .11));            // 꼬리
+        var al = Math.min(1, u / .12) * (u > .84 ? (1 - u) / .16 : 1);     // 승선구에 닿으며 스며든다
+        var grd = ctx.createLinearGradient(prev[0], prev[1], cur[0], cur[1]);
+        grd.addColorStop(0, 'rgba(237,109,32,0)');
+        grd.addColorStop(1, 'rgba(255,190,130,' + (.9 * al).toFixed(3) + ')');
+        ctx.strokeStyle = grd; ctx.lineWidth = p.w;
+        ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cur[0], cur[1]); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cur[0], cur[1], p.w * .95, 0, 6.283);     // 머리의 빛점
+        ctx.fillStyle = 'rgba(255,226,196,' + (.95 * al).toFixed(3) + ')'; ctx.fill();
+      }
+      if (t < last + 420) requestAnimationFrame(frame);
+      else { fin.classList.add('lit'); cv.style.opacity = 0; setTimeout(function () { cv.remove(); }, 800); }
+    }
+    requestAnimationFrame(frame);
+  }
+
   var fin = document.querySelector('.final');
   if (fin) {
-    var board = function () { fin.classList.add('in'); boost = Math.max(boost, 2.2); };
+    var board = function () {
+      fin.classList.add('in'); boost = Math.max(boost, 2.2);
+      if (set2 && !reduced && !editing) crewBoarding(fin.querySelector('.btns'), fin);
+    };
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (es) {
         es.forEach(function (e) { if (e.isIntersecting) { board(); io.disconnect(); } });
