@@ -89,7 +89,7 @@
   /* 승선(2026-09-17): 마지막 구간에 닿는 순간 별이 한 번 빨라지고(출항 때처럼), 이어서 CSS가 수평선의 빛을 버튼 아래에 다시 켠다.
      관측 대상은 섹션이 아니라 첫 글자 — 섹션은 위아래 여백이 커서 threshold로 잡으면 글자가 화면에 들어오기 한참 전에 애니메이션이 끝나 버린다. */
   /* 승선 2안(?set=2): 크루가 빛이 되어 버튼 아래에서 줄지어 올라와 승선구로 들어간다. 한 명씩 도착할수록 배가 밝아지고, 행렬이 끝나면 잔광만 남는다. */
-  var set2 = /[?&]set=2/.test(location.search);
+  var set2 = !/[?&]set=1/.test(location.search);   // 2번(크루 승선)이 기본. `?set=1`이면 1번(빛의 귀환)으로 되돌려 본다
   if (set2) html.classList.add('set2');
   function crewBoarding(host, fin) {
     var cv = document.createElement('canvas'); cv.className = 'crewcv'; cv.setAttribute('aria-hidden', 'true');
