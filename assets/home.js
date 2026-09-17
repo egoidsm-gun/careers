@@ -107,21 +107,21 @@
       'float hash(float n){return fract(sin(n)*43758.5453);}' +
       'float vnoise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);float a=hash(i.x+i.y*57.),b=hash(i.x+1.+i.y*57.),c=hash(i.x+(i.y+1.)*57.),d=hash(i.x+1.+(i.y+1.)*57.);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}' +
       'void main(){vec2 uv=gl_FragCoord.xy/r;float h0=.38;float dy=uv.y-h0;float cx=abs(uv.x-.5);' +
-      'float tl=smoothstep(.35,1.25,t);float ts=smoothstep(1.2,2.7,t);float ta=smoothstep(2.5,3.9,t);' +
+      'float tl=smoothstep(.35,1.25,t);float ts=smoothstep(1.2,2.3,t);float ta=smoothstep(2.2,3.4,t);' +
       // 백열 빛점 → 수평선(끝이 부드럽게 사라짐)
       'float ext=pow(tl,.55)*.66+.004;float xm=smoothstep(ext,ext-.14,cx);' +
       'float lw=mix(.0016,.0009,ts);float core=exp(-pow(dy/lw,2.))*xm*smoothstep(.2,.5,t)*(1.-ta*.92);' +
-      'float bloomL=exp(-abs(dy)/(.015+.10*ts))*xm*tl*.5*(1.-ta*.75);' +
+      'float bloomL=exp(-abs(dy)/(.012+.045*ts))*xm*tl*.42*(1.-ta*.8);' +
       // 빛줄기 16개: 길이·두께·밝기·시차가 제각각, 빛이 옆으로 흐르는 질감, 수평선 쪽으로 남는 잔상
-      'float bands=0.;for(int i=0;i<16;i++){float fi=float(i);float r1=hash(fi*7.31),r2=hash(fi*3.7),r3=hash(fi*5.1),r4=hash(fi*2.3),r5=hash(fi*9.1);' +
-      'float dl=r5*.55;float tsb=smoothstep(1.2+dl,2.6+dl,t);float dir=mod(fi,2.)<1.?1.:-1.;' +
-      'float spread=dir*(.03+.34*pow(r1,1.4))*pow(tsb,.6);float yi=h0+spread*(1.-ta*.82)+.010*sin(t*(.4+r1)+fi);' +
-      'float th=mix(.0025,.05,r2*r2)*(1.+ta*1.6);float br=(.12+.6*r3)*(1.-.6*r2*r2);' +
-      'float xc=.5+(r4-.5)*.5;float xe=.22+.5*r1;float xmask=smoothstep(xe,xe-.34,abs(uv.x-xc));' +
-      'float tex=.35+.65*vnoise(vec2(uv.x*4.+fi*3.+t*.35*dir,fi*1.7));' +
-      'float d=(uv.y-yi)/th;float g=exp(-d*d);float d2=(uv.y-(yi-(yi-h0)*.18))/(th*2.6);g+=.28*exp(-d2*d2);' +
-      'bands+=br*g*xmask*tex*tsb;}' +
-      'bands*=(1.-ta*.68)*(1.-.45*pow(cx*2.,2.));' +
+      'float bands=0.;for(int i=0;i<9;i++){float fi=float(i);float r1=hash(fi*7.31),r2=hash(fi*3.7),r3=hash(fi*5.1),r4=hash(fi*2.3),r5=hash(fi*9.1);' +
+      'float dl=r5*.4;float tsb=smoothstep(1.2+dl,2.2+dl,t);float dir=mod(fi,2.)<1.?1.:-1.;' +
+      'float spread=dir*(.02+.15*pow(r1,1.2))*pow(tsb,.6);float yi=h0+spread*(1.-ta*.85)+.006*sin(t*(.4+r1)+fi);' +
+      'float th=mix(.0018,.014,r2*r2)*(1.+ta*1.2);float br=(.18+.55*r3)*(1.-.4*r2);' +
+      'float xc=.5+(r4-.5)*.8;float xe=.14+.32*r1;float xmask=smoothstep(xe,xe-.30,abs(uv.x-xc));' +
+      'float tex=.45+.55*vnoise(vec2(uv.x*4.+fi*3.+t*.35*dir,fi*1.7));' +
+      'float d=(uv.y-yi)/th;float g=exp(-d*d);float d2=(uv.y-(yi-(yi-h0)*.18))/(th*2.2);g+=.18*exp(-d2*d2);' +
+      'bands+=br*g*xmask*tex*tsb*exp(-abs(yi-h0)*6.);}' +
+      'bands*=(1.-ta*.7)*(1.-.5*pow(cx*2.,2.));' +
       // 잔광(지속): 수평선에 오로라처럼 숨 쉬는 빛 — 글자 아래에 머문다
       'float amb1=exp(-abs(dy)/.085)*(.20+.22*vnoise(vec2(uv.x*2.5+t*.05,t*.07)))*ta*amb;' +
       'amb1+=exp(-abs(dy)/.30)*.055*ta*amb+exp(-abs(dy)/.011)*.22*ta*amb*(.6+.4*vnoise(vec2(uv.x*9.+t*.2,t*.3)));' +
