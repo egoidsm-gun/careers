@@ -6,6 +6,8 @@
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var editing = location.hash === '#edit';
   var vh = window.innerHeight;
+  var TF = 1.6;   // 빛이 갈라지는(플래시) 시각(초). 셰이더 타임라인·별 워프가 이 값을 기준으로 잡히고, site.css의 --tf(같은 값)·--t0(TF+1.48)도 맞춰야 한다
+  function T(x) { return (TF + x).toFixed(2); }
 
   /* ---------- 단어 분해: 문장을 <span class="w">로 쪼갠다 ----------
      소스는 평문 그대로 두고 런타임에만 쪼갠다. 편집 모드(#edit)는 innerHTML을 저장하므로
@@ -141,15 +143,15 @@
       'float hash(float n){return fract(sin(n)*43758.5453);}' +
       'float vnoise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);float a=hash(i.x+i.y*57.),b=hash(i.x+1.+i.y*57.),c=hash(i.x+(i.y+1.)*57.),d=hash(i.x+1.+(i.y+1.)*57.);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}' +
       'void main(){vec2 uv=v;float h0=.38;float dy=uv.y-h0;float cx=abs(uv.x-.5);' +
-      'float tl=smoothstep(.35,1.1,t);float ch=smoothstep(1.05,1.4,t);float ts=smoothstep(1.42,2.35,t);float ta=smoothstep(2.25,3.4,t);' +
+      'float tl=smoothstep(.35,1.1,t);float ch=smoothstep(' + T(-.4) + ',' + T(-.02) + ',t);float ts=smoothstep(' + T(0) + ',' + T(.93) + ',t);float ta=smoothstep(' + T(.83) + ',' + T(1.98) + ',t);' +
       // 백열 빛점 → 수평선. 다 늘어난 뒤 갈라지기 전 한 박자: 밝아지며 가늘어지고(충전) 직전에 살짝 숨을 죽인다(예비 동작)
       'float ext=pow(tl,.55)*.66+.004;float xm=smoothstep(ext,ext-.14,cx);' +
-      'float env=(1.+1.2*ch)*(1.-.4*exp(-pow((t-1.37)/.04,2.)));' +
+      'float env=(1.+1.2*ch)*(1.-.4*exp(-pow((t-' + T(-.05) + ')/.04,2.)));' +
       'float lw=mix(.0016,.0009,max(ch,ts));float lwe=max(lw,.9*pxh);float core=exp(-pow(dy/lwe,2.))*(lw/lwe)*xm*smoothstep(.2,.5,t)*(1.-ta*.92)*env;' +   // 선이 렌더 픽셀보다 가늘어지면 넓히되 총량은 보존(서브픽셀로 어두워지지 않게)
       'float halo=exp(-abs(dy)/(.010+.04*ts))*xm*tl*.2*(1.-ta*.8);' +   // 선 주변의 얇은 광륜 — 넓은 번짐은 블룸 패스가 맡는다
       // 빛줄기 9개: 길이·두께·밝기·시차가 제각각, 빛이 옆으로 흐르는 질감, 수평선 쪽으로 남는 잔상
       'float bands=0.;for(int i=0;i<9;i++){float k=float(i);float r1=hash(k*7.31),r2=hash(k*3.7),r3=hash(k*5.1),r4=hash(k*2.3),r5=hash(k*9.1);' +
-      'float dl=r5*.4;float tsb=smoothstep(1.42+dl,2.32+dl,t);float dir=mod(k,2.)<1.?1.:-1.;' +
+      'float dl=r5*.4;float tsb=smoothstep(' + T(0) + '+dl,' + T(.9) + '+dl,t);float dir=mod(k,2.)<1.?1.:-1.;' +
       'float spread=dir*(.02+.15*pow(r1,1.2))*pow(tsb,.6);float yi=h0+spread*(1.-ta*.85)+.006*sin(t*(.4+r1)+k);' +
       'float th=mix(.0018,.014,r2*r2)*(1.+ta*1.2);float br=(.18+.55*r3)*(1.-.4*r2);' +
       'float xc=.5+(r4-.5)*.8;float xe=.14+.32*r1;float xmask=smoothstep(xe,xe-.30,abs(uv.x-xc));' +
@@ -162,7 +164,7 @@
       'amb1+=exp(-abs(dy)/.30)*.055*ta+exp(-abs(dy)/.011)*.22*ta*(.6+.4*vnoise(vec2(uv.x*9.+t*.2,t*.3)));' +
       'amb1*=(1.-.35*pow(cx*2.,2.));' +
       // 갈라지는 순간의 플래시: 0.05s에 터지고 0.32s 시상수로 식는다, 식으면서 폭이 넓어진다
-      'float fl=t-1.42;float fa=fl<0.?exp(-pow(fl/.05,2.)):exp(-fl/.32);' +
+      'float fl=t-' + T(0) + ';float fa=fl<0.?exp(-pow(fl/.05,2.)):exp(-fl/.32);' +
       'float flash=fa*.9*exp(-abs(dy)/(.07+.35*clamp(fl,0.,1.)))+fa*.04;' +
       'float I=(core*3.+halo+bands+amb1+flash)*amb;float e=enc(I);' +   // amb = 스크롤 감쇠(0~1): 인트로 중이든 잔광이든 빛 전체에 적용
       (hdr ? '' : 'e+=(ign(gl_FragCoord.xy+vec2(fr*17.,fr*11.))-.5)/255.;') +
@@ -231,7 +233,7 @@
     function tex(unit, tx) { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tx); }
     function quad() { gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
     function render(t, amb) {
-      var fr = Math.floor(t * 24), fl = t - 1.42, fa = fl < 0 ? Math.exp(-Math.pow(fl / .05, 2)) : Math.exp(-fl / .32);
+      var fr = Math.floor(t * 24), fl = t - TF, fa = fl < 0 ? Math.exp(-Math.pow(fl / .05, 2)) : Math.exp(-fl / .32);
       pass(Ps, scene.fb, scene.w, scene.h); gl.uniform1f(Ps.u.t, t); gl.uniform1f(Ps.u.amb, amb); gl.uniform1f(Ps.u.fr, fr); gl.uniform1f(Ps.u.pxh, 1 / scene.h); quad();
       if (post) {
         pass(Pp, mips[0].fb, mips[0].w, mips[0].h); tex(0, scene.tx); gl.uniform2f(Pp.u.px, 1 / scene.w, 1 / scene.h); gl.uniform1f(Pp.u.th, TH); quad();
@@ -299,7 +301,7 @@
 
   var t0 = performance.now(), last = t0, running = !document.hidden;
   var seen = html.classList.contains('ident-seen');
-  var warpAt = seen ? 0 : 1420, warpDur = seen ? 1300 : 1600;   // 빛이 갈라지는 1.42s(home.js aurora의 플래시 시각)에 별도 함께 흩어진다
+  var warpAt = seen ? 0 : TF * 1000, warpDur = seen ? 1300 : 1600;   // 빛이 갈라지는 순간(TF)에 별도 함께 흩어진다
   function speedAt(now) {
     var t = now - t0, w = 0;
     if (t > warpAt) {

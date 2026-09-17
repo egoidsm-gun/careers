@@ -2,14 +2,14 @@
 <!-- 출항 아이덴트 v8 "빛의 수평선"(넷플릭스 잡스 인트로 벤치마킹): 그린 것 없이 GPU 셰이더(home.js aurora)가 빛을 실시간 렌더한다.
      암전 → 백열 빛점 → 수평선으로 늘어남 → 한 박자 조여진 뒤 1.42s에 갈라져 퍼짐(플래시·색수차·별 워프) → 가라앉아 수평선의 잔광이 되어 히어로 배경으로 계속 살아 있음 → 2.9s 거대 글자.
      v8부터 다중 패스: 장면(빛의 세기, HDR) → 블룸 밉체인 → 합성(색 램프·비네트·필름 그레인·디더) — 카메라로 찍은 빛처럼. 진단 스위치 ?at=초 ?post=0 ?hdr=0 ?stars=0
-     워드마크 장면(.mark, 사용자 요청): 로고 PNG를 ego → id → sm 세 조각으로 0.45/0.72/0.98s에 백열로 켜 오렌지로 식히고, 1.42s 플래시에 하얗게 타올라 2.4s까지 흩어진다(CSS, --tf). 스크롤하면 빛 전체가 화면 1/3 안에 사라진다
+     워드마크 장면(.mark, 사용자 요청): 로고 PNG를 ego → id → sm 세 조각으로 서로 떨어진 자리에 0.3/0.58/0.86s에 백열로 켜 오렌지로 식히고, 1.26→1.6s에 미끄러져 붙으며 붙는 순간 플래시(--tf). 하얗게 타올라 2.6s까지 흩어진다. 세 단어(자아·본능·~주의)의 결합임을 말 없이 보여주는 장면. 스크롤하면 빛 전체가 화면 1/3 안에 사라진다
      상단 바는 처음부터 보인다. 사이트 안에서 홈으로 돌아올 때(같은 출처 referrer, 새로고침 아님)는 잔광 상태에서 바로 시작, #edit는 정지 화면 -->
 <script>try{var h=document.documentElement;if(location.hash==='#edit'){h.classList.add('ident-off')}else{var nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];var reload=nv&&nv.type==='reload';var same=document.referrer&&document.referrer.indexOf(location.origin)===0;if(same&&!reload)h.classList.add('ident-seen')}}catch(e){}</script>
 <canvas id="aurora" aria-hidden="true"></canvas>
 <canvas id="stars" aria-hidden="true"></canvas>
 
 <section class="screen hero">
-  <div class="mark" aria-hidden="true" data-noedit><div class="mark-in"><div class="seg s1"><img src="{{root}}assets/img/logo.png" alt=""></div><div class="seg s2"><img src="{{root}}assets/img/logo.png" alt=""></div><div class="seg s3"><img src="{{root}}assets/img/logo.png" alt=""></div></div></div>
+  <div class="mark" aria-hidden="true" data-noedit><div class="mark-in"><div class="pos p1"><div class="seg s1"><img src="{{root}}assets/img/logo.png" alt=""></div></div><div class="pos p2"><div class="seg s2"><img src="{{root}}assets/img/logo.png" alt=""></div></div><div class="pos p3"><div class="seg s3"><img src="{{root}}assets/img/logo.png" alt=""></div></div></div></div>
   <div class="wrap">
     <p class="eyebrow">ONLY AT EGOIDSM</p>
     <h1 class="giant">미지의 영역을<br>개척하는<br>브랜드 창조자</h1>
