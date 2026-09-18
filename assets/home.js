@@ -108,7 +108,7 @@
     var btn = fin.querySelector('.btn');
     var ctxB = cvB.getContext('2d'), ctxF = cvF.getContext('2d'), ctx = ctxF, W, H, dpr, mob = window.matchMedia('(max-width: 639px)').matches;
     var slow = parseFloat((/[?&]slow=([\d.]+)/.exec(location.search) || [])[1]) || 1;   // 진단: ?slow=4 면 4배 느리게
-    var deckY, deckW, hullH, shipL;                                        // 갑판 y·배 폭·배 높이·배 왼쪽(뱃머리) x — 캔버스 좌표
+    var deckY, deckW, hullH, shipL, lampLen;                               // 갑판 y·배 폭·배 높이·배 왼쪽(뱃머리) x·등 빛 길이 — 캔버스 좌표
     function size() {
       dpr = Math.min(devicePixelRatio || 1, 2);
       var bw = btn.getBoundingClientRect().width; W = Math.min(1100, Math.max(innerWidth * .96, bw * 2.8)); H = mob ? 300 : 380;   // 좁은 화면에서도 뱃머리 앞 빛이 캔버스 끝에 잘리지 않게
@@ -118,6 +118,10 @@
       deckY = H / 2 + (br.top - (hr.top + hr.height / 2)); deckW = br.width; hullH = br.height;
       shipL = W / 2 + (br.left - (hr.left + hr.width / 2));
       btn.style.transform = keep;
+      // 캔버스는 넓혔지만(위) 화면 자체가 좁으면 등 빛의 눈에 보이는 부분이 뷰포트 오른쪽 끝에서 잘린다(QA 2026-09-18, 320~375px 폭 실측) —
+      // 뱃머리~화면 끝 실제 여백에 맞춰 길이를 줄인다. 여백이 넉넉하면(margin) 기존 deckW*.62 그대로, 좁으면만 줄어든다.
+      var margin = innerWidth - br.right - 8;
+      lampLen = Math.max(24, Math.min(deckW * .62, margin / .78));
     }
     size(); window.addEventListener('resize', size);
     var N = mob ? 18 : 30, P = [], i, r;
@@ -194,7 +198,7 @@
       ctx.beginPath(); ctx.arc(L[0], L[1], 2.4, 0, 6.283); ctx.lineWidth = .8; ctx.strokeStyle = 'rgba(255,200,160,.55)'; ctx.stroke();
     }
     function lamp(I) {                                                   // I: 밝기 — 켜지는 순간 세고, 그 뒤 은은하게 숨 쉰다
-      var L = lampPos(), len = deckW * .62, hh = hullH * .52, fl = .9 + .07 * Math.sin(t_ / 61) + .03 * Math.sin(t_ / 23);
+      var L = lampPos(), len = lampLen, hh = hullH * .52, fl = .9 + .07 * Math.sin(t_ / 61) + .03 * Math.sin(t_ / 23);
       ctx.save(); ctx.translate(L[0], L[1]); ctx.rotate(sh.a);
       var g = ctx.createLinearGradient(0, 0, len, 0);                    // 앞(오른쪽)으로 퍼지는 타원 빛 — 프로펠러 뒤에 있던 그 빛을 뱃머리로 옮긴 것(사용자 지정)
       g.addColorStop(0, 'rgba(255,190,130,' + Math.min(1, .36 * I * fl).toFixed(3) + ')'); g.addColorStop(.4, 'rgba(255,160,90,' + Math.min(1, .13 * I * fl).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,140,70,0)');
