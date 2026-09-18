@@ -194,6 +194,9 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
   .shot.s1{top:calc(var(--nav) + 10px);left:-10%;width:72vw}
   .shot.s4{bottom:5%;right:-10%;width:64vw}
 }
+/* 세로가 짧은 폰(예: 320×568 iPhone SE1) — 가운데 정렬된 글자가 위로 붙어, s1이 뜨기 시작하는 지점(--dy)과 잠깐 겹친다.
+   QA 에이전트 실측(2026-09-18): 320×568에서 진행도 0~0.18 구간에 카드 아래쪽과 눈썹 텍스트가 최대 15px 겹침. 시작 이동거리만 줄여 겹침을 없앤다 */
+@media (max-width:639px) and (max-height:600px){.shot.s1{--dy:46px}}
 /* 짧은 세로 화면(랜드스케이프 폰) — 키운 글자가 네 줄이라 그대로 두면 화면을 넘긴다. 글자를 줄이고 사진은 접는다 */
 @media (max-height:520px){.crew .giant{font-size:clamp(26px,4.4vw,52px)}.shots{display:none}}
 @media (prefers-reduced-motion:reduce){.shot{transform:none;opacity:.85}}
