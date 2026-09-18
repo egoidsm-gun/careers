@@ -120,31 +120,24 @@
       btn.style.transform = keep;
     }
     size(); window.addEventListener('resize', size);
-    /* 승선 안무(2026-09-18 사용자 "모여들고 탑승하는 애니메이션 퀄리티 업") — 세 박자.
-       ① 모여들기: 왼쪽(부두 쪽)·아래의 넓은 부채꼴(캔버스 밖 포함)에서 빛이 선미의 승선구 한 점으로 수렴한다. 속도·곡률·감속이 각자 다르다.
-       ② 탑승: 승선구에 닿은 빛이 그대로 머리가 되고, 몸이 갑판까지 아래로 펼쳐진다(180ms). 발판이 한 번 맥동한다.
-       ③ 자리 잡기: 먼저 탄 사람이 뱃머리 쪽 먼 자리까지 걸어가고(걸음 박자로 몸이 들리고 앞으로 기움), 뒤에 탄 사람은 가까운 자리에 선다 — 줄이 자연스럽게 찬다. */
-    var N = mob ? 18 : 30, P = [], i, GX = .06;                           // GX: 승선구(선미 갑판)의 배 폭 비율
+    var N = mob ? 18 : 30, P = [], i, r;
     for (i = 0; i < N; i++) {
-      var ang = (160 + Math.random() * 100) * Math.PI / 180;               // 왼쪽 위(160°)~아래(260°)
-      P.push({ ang: ang, rad: 130 + Math.random() * 240,                   // 출발 거리 — 캔버스 밖에서 들어오기도 한다
-               h: (mob ? 8 : 10) + Math.random() * 4,
-               d: (120 + i * (mob ? 100 : 72) + Math.random() * 60) * slow, dur: (850 + Math.random() * 400) * slow,
-               k: 1.9 + Math.random() * .7, sag: 18 + Math.random() * 46,  // 감속 지수, 경로가 아래로 처지는 깊이
-               frac: .075 + ((N - 1 - i) + .5) / N * .755 + (Math.random() - .5) * .35 / N,   // 먼저 탄 사람이 먼 자리(뱃머리 쪽)까지 간다
-               speed: (.066 + Math.random() * .018) / slow,                // px/ms 걷는 속도
-               lean: (Math.random() - .5) * .16, ph: Math.random() * 6.283, w: 1.1 + Math.random() * 1.3 });
+      var side = i % 2 ? 1 : -1; r = .30 + Math.random() * .34;
+      P.push({ sx: .5 + side * r, sy: .80 + Math.random() * .40,            // 버튼 아래 좌우에서 출발 — 글자 위를 지나지 않는다
+               slot: (i + .5) / N + (Math.random() - .5) * .5 / N,          // 갑판에서 설 자리 — 선미에서 뱃머리 앞까지 고르게, 뱃머리 끝은 비워 둔다
+               arc: side * (.05 + Math.random() * .09),
+               d: (140 + i * 48 + Math.random() * 80) * slow, dur: (880 + Math.random() * 520) * slow,
+               w: 1.2 + Math.random() * 1.7,
+               h: (mob ? 8 : 10) + Math.random() * 4, lean: (Math.random() - .5) * .16, ph: Math.random() * 6.283 });
     }
-    function gangX() { return shipL + deckW * GX; }
-    function spotX(p) { return shipL + deckW * p.frac; }
-    function walkMs(p) { return Math.max(0, spotX(p) - gangX()) / p.speed; }
-    function arriveAt(p) { return p.d + p.dur + 180 + walkMs(p); }
-    var last = P.reduce(function (m, p) { return Math.max(m, arriveAt(p)); }, 0);
-    var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 자리에 선 뒤 한 박자 — 뱃고동 → 시동
-    function at(p, u) {                                                    // 부채꼴의 출발점에서 승선구(머리 높이)까지, 아래로 처졌다 올라오는 호
-      var gx = gangX(), gy = deckY - p.h, sx = gx + Math.cos(p.ang) * p.rad, sy = gy - Math.sin(p.ang) * p.rad;
-      var cx = (sx + gx) / 2, cy = Math.max(sy, gy) + p.sag, k = 1 - u;
-      return [k * k * sx + 2 * k * u * cx + u * u * gx, k * k * sy + 2 * k * u * cy + u * u * gy];
+    var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0);
+    var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
+    function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
+    function at(p, u) {                                                    // 완만한 호를 그리며 자기 자리로
+      var sx = p.sx * W, sy = p.sy * H, tx = spot(p), ty = deckY;
+      var cx = (sx + tx) / 2 - (ty - sy) * p.arc, cy = (sy + ty) / 2 + (tx - sx) * p.arc;
+      var k = 1 - u;
+      return [k * k * sx + 2 * k * u * cx + u * u * tx, k * k * sy + 2 * k * u * cy + u * u * ty];
     }
     /* 배의 자세 — 시동이 걸리면 물결(느린 상하·기울기)에 엔진의 미세 진동이 얹히고 뱃머리가 살짝 든다.
        버튼(CSS transform)과 갑판 위 모든 것(캔버스)이 정확히 같은 자세를 써야 같이 흔들린다 — 그래서 배 쪽도 CSS 애니메이션이 아니라 여기서 준다. */
@@ -218,7 +211,7 @@
       var vr = fin.getBoundingClientRect();
       if (vr.bottom < 0 || vr.top > innerHeight) { requestAnimationFrame(frame); return; }   // 화면 밖이면 그리지 않는다
       var lit = 0, k;
-      for (k = 0; k < N; k++) if (t >= P[k].d + P[k].dur) lit++;           // 승선구를 밟은 사람 수
+      for (k = 0; k < N; k++) if (t >= P[k].d + P[k].dur) lit++;
       // 시동 — 뱃고동 뒤 1.6초에 걸쳐 차오른다(smoothstep)
       var e = t < ENG ? 0 : Math.min(1, (t - ENG) / 1600); e = e * e * (3 - 2 * e);
       var swell = Math.sin(t / 1500) * 2.4, tremor = Math.sin(t / 43) * .26 + Math.sin(t / 19) * .14;
@@ -244,24 +237,19 @@
         ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       }
       ctx.lineCap = 'round';
-      for (k = 0; k < N; k++) {                                            // 모여드는 빛
+      for (k = 0; k < N; k++) {
         var p = P[k], u = (t - p.d) / p.dur;
         if (u < 0 || u >= 1) continue;
-        var e2 = 1 - Math.pow(1 - u, p.k);                                 // 다가갈수록 느려진다 — 각자 다른 지수
-        var cur = at(p, e2), al = Math.min(1, u / .10) * (.85 + .15 * Math.sin(t / 90 + p.ph));
-        var seg, q4;                                                       // 꼬리 — 세 토막, 뒤로 갈수록 가늘고 옅게
-        for (q4 = 0; q4 < 3; q4++) {
-          var a0 = Math.max(0, e2 - .06 * (q4 + 1)), a1 = Math.max(0, e2 - .06 * q4), p0 = at(p, a0), p1 = at(p, a1);
-          seg = ctx.createLinearGradient(p0[0], p0[1], p1[0], p1[1]);
-          seg.addColorStop(0, 'rgba(237,109,32,' + (.55 * al * (1 - (q4 + 1) / 3)).toFixed(3) + ')');
-          seg.addColorStop(1, 'rgba(255,190,130,' + (.85 * al * (1 - q4 / 3)).toFixed(3) + ')');
-          ctx.strokeStyle = seg; ctx.lineWidth = p.w * (1.5 - q4 * .4);
-          ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
-        }
-        var hg = ctx.createRadialGradient(cur[0], cur[1], 0, cur[0], cur[1], 7);   // 머리의 광
-        hg.addColorStop(0, 'rgba(255,236,214,' + (.55 * al).toFixed(3) + ')'); hg.addColorStop(.4, 'rgba(255,190,130,' + (.22 * al).toFixed(3) + ')'); hg.addColorStop(1, 'rgba(255,170,100,0)');
-        ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(cur[0], cur[1], 7, 0, 6.283); ctx.fill();
-        ctx.beginPath(); ctx.arc(cur[0], cur[1], 1.5, 0, 6.283); ctx.fillStyle = 'rgba(255,246,236,' + (.95 * al).toFixed(3) + ')'; ctx.fill();
+        var e2 = 1 - Math.pow(1 - u, 2.2);                                 // 다가갈수록 느려진다
+        var cur = at(p, e2), prev = at(p, Math.max(0, e2 - .11));          // 꼬리
+        var al = Math.min(1, u / .12) * (u > .84 ? (1 - u) / .16 : 1);     // 갑판에 닿으며 스며든다
+        var grd = ctx.createLinearGradient(prev[0], prev[1], cur[0], cur[1]);
+        grd.addColorStop(0, 'rgba(237,109,32,0)');
+        grd.addColorStop(1, 'rgba(255,190,130,' + (.9 * al).toFixed(3) + ')');
+        ctx.strokeStyle = grd; ctx.lineWidth = p.w;
+        ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cur[0], cur[1]); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cur[0], cur[1], p.w * .95, 0, 6.283);     // 머리의 빛점
+        ctx.fillStyle = 'rgba(255,226,196,' + (.95 * al).toFixed(3) + ')'; ctx.fill();
       }
       // ── 앞 캔버스: 뱃머리 등 → 프로펠러 → 갑판 크루 ──
       ctx = ctxF; ctx.clearRect(0, 0, W, H);
@@ -272,44 +260,20 @@
       }
       var spin = t < HORN + 300 ? 0 : Math.min(1, (t - HORN - 300) / 1300); spin = spin * spin * (3 - 2 * spin);
       propeller(spin, dt);
-      var pad = 0;                                                       // 승선구 발판 — 누가 탈 때마다 한 번 맥동한다
-      for (k = 0; k < N; k++) { var tb0 = t - (P[k].d + P[k].dur); if (tb0 >= 0 && tb0 < 420) pad = Math.max(pad, 1 - tb0 / 420); }
-      if (pad > 0) {
-        var gp = tf(gangX(), deckY), pg2 = ctx.createRadialGradient(gp[0], gp[1], 0, gp[0], gp[1], 16);
-        pg2.addColorStop(0, 'rgba(255,214,170,' + (.45 * pad * pad).toFixed(3) + ')'); pg2.addColorStop(1, 'rgba(255,190,130,0)');
-        ctx.fillStyle = pg2; ctx.save(); ctx.translate(gp[0], gp[1]); ctx.scale(1, .35); ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.283); ctx.fill(); ctx.restore();
-      }
       for (k = 0; k < N; k++) {
-        var p2 = P[k], tb = t - (p2.d + p2.dur);
-        if (tb < 0) continue;
-        var gx2 = gangX(), sx2 = spotX(p2), x, a = .92, hcur = p2.h, tilt, bob = 0, standing = false;
-        if (tb < 180) {                                                    // ② 탑승 — 빛이 머리가 되고 몸이 갑판으로 펼쳐진다
-          var g = tb / 180; g = g * g * (3 - 2 * g);
-          x = gx2; hcur = p2.h * Math.max(.12, g); a = .92 * Math.min(1, tb / 90);
-          var pos0 = tf(x, deckY - p2.h + hcur);                           // 머리는 고정, 발이 갑판까지 내려온다
-          var mg = ctx.createRadialGradient(pos0[0], pos0[1] - hcur, 0, pos0[0], pos0[1] - hcur, 9);
-          mg.addColorStop(0, 'rgba(255,240,220,' + (.7 * (1 - g)).toFixed(3) + ')'); mg.addColorStop(1, 'rgba(255,190,130,0)');
-          ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(pos0[0], pos0[1] - hcur, 9, 0, 6.283); ctx.fill();
-          person(pos0[0], pos0[1], hcur, a, sh.a);
-          continue;
+        var p2 = P[k], u3 = (t - p2.d) / p2.dur;
+        if (u3 < 1) continue;                                              // 승선 — 빛이 갑판 위에 사람으로 선다
+        var age2 = t - (p2.d + p2.dur), a = Math.min(1, age2 / 300);
+        var pos = tf(spot(p2), deckY), ph2 = p2.h * (.55 + .45 * a);
+        var tilt = sh.a + p2.lean * a + e * Math.sin(t / 650 + p2.ph) * .02;   // 시동이 걸리면 각자 미세하게 몸을 가눈다
+        person(pos[0], pos[1] - (1 - a) * 4, ph2, .92 * a, tilt);
+        if (age2 < 280) {                                                  // 발 딛는 순간의 짧은 섬광
+          var fa = 1 - age2 / 280;
+          ctx.beginPath(); ctx.arc(pos[0], pos[1], 1.5 + 5 * (1 - fa), 0, 6.283);
+          ctx.fillStyle = 'rgba(255,214,170,' + (.5 * fa * fa).toFixed(3) + ')'; ctx.fill();
         }
-        var walk = walkMs(p2), wp = walk > 0 ? Math.min(1, (tb - 180) / walk) : 1;
-        if (wp < 1) {                                                      // ③ 걷기 — 걸음 박자로 몸이 살짝 들리고 앞으로 기운다
-          var ease = wp < .1 ? wp / .1 : wp > .88 ? (1 - wp) / .12 : 1;    // 출발·정지는 부드럽게
-          x = gx2 + (sx2 - gx2) * wp; bob = Math.abs(Math.sin(tb / 95 + p2.ph)) * .9 * ease; tilt = sh.a + .07 * ease;
-        } else {                                                           // 자리에 섰다
-          x = sx2; standing = true; tilt = sh.a + p2.lean + e * Math.sin(t / 650 + p2.ph) * .02;
-        }
-        var pos = tf(x, deckY);
-        person(pos[0], pos[1] - bob, hcur, a, tilt);
-        if (tb < 760) {                                                    // 탄 직후 잠깐 남는 온기
-          var wa = (1 - (tb - 180) / 580) * .35, hp = pos[1] - bob - hcur + hcur * .2;
-          var wg2 = ctx.createRadialGradient(pos[0], hp, 0, pos[0], hp, 7);
-          wg2.addColorStop(0, 'rgba(255,220,180,' + Math.max(0, wa).toFixed(3) + ')'); wg2.addColorStop(1, 'rgba(255,190,130,0)');
-          ctx.fillStyle = wg2; ctx.beginPath(); ctx.arc(pos[0], hp, 7, 0, 6.283); ctx.fill();
-        }
-        if (flash > 0 && standing) {                                       // 뱃고동에 전원이 함께 빛난다
-          ctx.beginPath(); ctx.arc(pos[0], pos[1] - hcur + hcur * .34 * .6, 1.6 + 2.2 * flash, 0, 6.283);
+        if (flash > 0) {                                                   // 뱃고동에 전원이 함께 빛난다
+          ctx.beginPath(); ctx.arc(pos[0], pos[1] - ph2 + ph2 * .34 * .6, 1.6 + 2.2 * flash, 0, 6.283);
           ctx.fillStyle = 'rgba(255,240,220,' + (.55 * flash).toFixed(3) + ')'; ctx.fill();
         }
       }
