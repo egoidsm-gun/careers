@@ -132,7 +132,7 @@
     }
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0);
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
-    function spot(p) { return shipL + deckW * (.925 - p.slot * .755); }    // 배가 왼쪽을 보므로 뱃머리(왼쪽 17%)를 비운다
+    function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
     function at(p, u) {                                                    // 완만한 호를 그리며 자기 자리로
       var sx = p.sx * W, sy = p.sy * H, tx = spot(p), ty = deckY;
       var cx = (sx + tx) / 2 - (ty - sy) * p.arc, cy = (sy + ty) / 2 + (tx - sx) * p.arc;
@@ -156,16 +156,16 @@
       ctx.lineTo(w * .32, 0); ctx.lineTo(-w * .32, 0); ctx.closePath(); ctx.fill();
       ctx.restore();
     }
-    /* 프로펠러 — 선미(오른쪽) 한가운데. 처음엔 멈춰 있다가 전원 탑승하면 빠르게 돈다(사용자 "굴뚝 연기보다 프로펠러", "뒤 중앙에, 조금 더 크게").
+    /* 프로펠러 — 선미(왼쪽) 한가운데. 처음엔 멈춰 있다가 전원 탑승하면 빠르게 돈다(사용자 "굴뚝 연기보다 프로펠러", "뒤 중앙에, 조금 더 크게").
        옆에서 본 원판이라 세운 타원으로 그린다(rx = ry의 36%). 빨라지면 날개 대신 잔상 원판과 흐린 날개로 — 그래야 돈다고 읽힌다. */
     var ang = 0, t_ = 0;
     function propeller(spin, dt) {
-      var ry = Math.max(12, hullH * .30), rx = ry * .36, hub = tf(shipL + deckW * .985 + rx * .55, deckY + hullH * .5);
+      var ry = Math.max(12, hullH * .30), rx = ry * .36, hub = tf(shipL + deckW * .015 - rx * .55, deckY + hullH * .5);
       var b, th, tx, ty, mx, my, nx, ny, bw = ry * .30;
       ang += spin * .024 * dt;                                            // 최고 약 3.8회전/초
       ctx.save(); ctx.translate(hub[0], hub[1]); ctx.rotate(sh.a);
       ctx.strokeStyle = 'rgba(110,46,14,.95)'; ctx.lineWidth = 2.5;      // 축 — 선미로 들어간다
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-rx - 6, 0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(rx + 6, 0); ctx.stroke();
       if (spin > .1) {                                                   // 회전 잔상 — 돌수록 원판이 차오른다
         ctx.beginPath(); ctx.ellipse(0, 0, rx * 1.05, ry * 1.05, 0, 0, 6.283);
         ctx.fillStyle = 'rgba(255,168,96,' + (.08 + .16 * spin).toFixed(3) + ')'; ctx.fill();
@@ -184,11 +184,11 @@
       ctx.beginPath(); ctx.arc(0, 0, ry * .22, 0, 6.283); ctx.fillStyle = '#e8853f'; ctx.fill();   // 허브
       ctx.beginPath(); ctx.arc(0, 0, ry * .22, 0, 6.283); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(70,28,8,.9)'; ctx.stroke();
       ctx.restore();
-      if (spin > .05) {                                                  // 프로펠러 물살 — 뒤(오른쪽)로 뻗는 따뜻한 빛, 회전에 맞춰 일렁인다
+      if (spin > .05) {                                                  // 프로펠러 물살 — 뒤(왼쪽)로 뻗는 따뜻한 빛, 회전에 맞춰 일렁인다
         var fl = .8 + .2 * Math.sin(t_ / 61) + .1 * Math.sin(t_ / 23), wl = deckW * .34;
-        var wg = ctx.createLinearGradient(hub[0], 0, hub[0] + wl, 0);
+        var wg = ctx.createLinearGradient(hub[0], 0, hub[0] - wl, 0);
         wg.addColorStop(0, 'rgba(255,170,100,' + (.30 * spin * fl).toFixed(3) + ')'); wg.addColorStop(.4, 'rgba(255,140,70,' + (.10 * spin * fl).toFixed(3) + ')'); wg.addColorStop(1, 'rgba(255,120,50,0)');
-        ctx.beginPath(); ctx.ellipse(hub[0] + wl * .5, hub[1], wl * .5, ry * .95 * (1 + .1 * fl), 0, 0, 6.283); ctx.fillStyle = wg; ctx.fill();
+        ctx.beginPath(); ctx.ellipse(hub[0] - wl * .5, hub[1], wl * .5, ry * .95 * (1 + .1 * fl), 0, 0, 6.283); ctx.fillStyle = wg; ctx.fill();
       }
     }
     /* 빛줄기 — 탑승 완료의 신호(사용자 "일자로 된 빛줄기가 배에는 강하게, 멀어질수록 줄어들며 은은하게", "배 앞으로").
@@ -221,9 +221,9 @@
       // 시동 — 뱃고동 뒤 1.6초에 걸쳐 차오른다(smoothstep)
       var e = t < ENG ? 0 : Math.min(1, (t - ENG) / 1600); e = e * e * (3 - 2 * e);
       var swell = Math.sin(t / 1500) * 2.4, tremor = Math.sin(t / 43) * .26 + Math.sin(t / 19) * .14;
-      var surge = 1.4 * (.5 + .5 * Math.sin(t / 2400));                   // 밧줄에 매인 채 앞(왼쪽)으로 밀리다 돌아온다
-      sh.x = e * (Math.sin(t / 29) * .2 - surge); sh.y = e * (swell + tremor);
-      sh.a = e * (Math.sin(t / 1500 + .7) * .0052 + .0095);              // +.0095rad ≈ 뱃머리(왼쪽)가 0.54° 든다(양수 = 시계 = 왼쪽이 위로)
+      var surge = 1.4 * (.5 + .5 * Math.sin(t / 2400));                   // 밧줄에 매인 채 앞(오른쪽)으로 밀리다 돌아온다
+      sh.x = e * (Math.sin(t / 29) * .2 + surge); sh.y = e * (swell + tremor);
+      sh.a = e * (Math.sin(t / 1500 + .7) * .0052 - .0095);              // -.0095rad ≈ 뱃머리(오른쪽)가 0.54° 든다(음수 = 반시계 = 오른쪽이 위로)
       btn.style.transform = e ? 'translate(' + sh.x.toFixed(2) + 'px,' + sh.y.toFixed(2) + 'px) rotate(' + (sh.a * 57.2958).toFixed(3) + 'deg)' : '';
       // 뱃고동 — 탑승 완료의 한 박자. 선체가 잠깐 밝아지며 수면의 빛줄기가 켜지고, 별도 한 번 빨라진다(출항 때처럼)
       var flash = 0;
