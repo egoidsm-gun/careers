@@ -132,7 +132,9 @@
                arc: side * (.05 + Math.random() * .09),
                d: (140 + i * 48 + Math.random() * 80) * slow, dur: (880 + Math.random() * 520) * slow,
                w: 1.2 + Math.random() * 1.7,
-               h: (mob ? 8 : 10) + Math.random() * 4, lean: (Math.random() - .5) * .16, ph: Math.random() * 6.283 });
+               h: (mob ? 9 : 11) + Math.random() * 4, wf: .33 + Math.random() * .07,   // 키·체형
+               pose: Math.random() < .16 ? 1 : Math.random() < .2 ? 2 : 0,           // 0 팔 내림 · 1 손 흔들기 · 2 주머니에 손
+               lean: (Math.random() - .5) * .16, ph: Math.random() * 6.283 });
     }
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0);
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
@@ -150,14 +152,32 @@
       var cx = shipL + deckW / 2, cy = deckY + hullH / 2, dx = x - cx, dy = y - cy, c = Math.cos(sh.a), s = Math.sin(sh.a);
       return [cx + dx * c - dy * s + sh.x, cy + dx * s + dy * c + sh.y];
     }
-    function person(x, y, h, a, tilt) {                                    // 갑판에 선 크루 — 머리 + 어깨에서 발로 좁아지는 몸
-      var w = h * .34;
+    /* 갑판의 크루(2026-09-18 사용자 "탑승한 사람들 퀄리티 좀 높여봐") — 핀 같던 머리+사다리꼴을 사람 실루엣으로:
+       머리·목·둥근 어깨·허리가 들어간 몸통·두 다리·팔. 자세 셋(팔 내림 / 손 흔들기(움직임) / 주머니에 손), 키·체형 각자 다름,
+       위가 밝고 아래가 어두운 톤 + 부드러운 림 라이트. 발(0,0) 기준으로 그린다. */
+    function person(x, y, h, a, tilt, p, tb) {
+      var w = h * (p ? p.wf : .36), r = h * .15, ny = -h + r * 2 + h * .05, hy = -h * .44;   // 어깨 y, 골반 y
       ctx.save(); ctx.translate(x, y); if (tilt) ctx.rotate(tilt);
-      ctx.fillStyle = 'rgba(255,228,198,' + a.toFixed(3) + ')';
-      ctx.beginPath(); ctx.arc(0, -h + w * .6, w * .6, 0, 6.283); ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(-w * .5, -h + w * 1.3); ctx.lineTo(w * .5, -h + w * 1.3);
-      ctx.lineTo(w * .32, 0); ctx.lineTo(-w * .32, 0); ctx.closePath(); ctx.fill();
+      ctx.shadowColor = 'rgba(255,190,130,' + (.55 * a).toFixed(3) + ')'; ctx.shadowBlur = 2.5;   // 림 라이트
+      var g = ctx.createLinearGradient(0, -h, 0, 0);
+      g.addColorStop(0, 'rgba(255,238,218,' + a.toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,208,170,' + (a * .92).toFixed(3) + ')');
+      ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.arc(0, -h + r, r, 0, 6.283); ctx.fill();                          // 머리
+      var tw = p && p.pose === 2 ? w * .56 : w * .5;                                          // 주머니에 손이면 몸통이 조금 넓다
+      ctx.beginPath();                                                                        // 몸통 — 둥근 어깨, 허리가 살짝 들어가 골반으로
+      ctx.moveTo(-tw, ny + w * .3); ctx.quadraticCurveTo(-tw, ny, -tw * .55, ny); ctx.lineTo(tw * .55, ny); ctx.quadraticCurveTo(tw, ny, tw, ny + w * .3);
+      ctx.quadraticCurveTo(tw * .78, hy * .75, tw * .72, hy); ctx.lineTo(-tw * .72, hy); ctx.quadraticCurveTo(-tw * .78, hy * .75, -tw, ny + w * .3); ctx.fill();
+      ctx.lineWidth = Math.max(1, w * .3);                                                    // 두 다리
+      ctx.beginPath(); ctx.moveTo(-w * .2, hy); ctx.lineTo(-w * .26, 0); ctx.moveTo(w * .2, hy); ctx.lineTo(w * .26, 0); ctx.stroke();
+      ctx.lineWidth = Math.max(.9, w * .24);                                                  // 팔
+      if (!p || p.pose === 0) {
+        ctx.beginPath(); ctx.moveTo(-tw * .9, ny + w * .35); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(tw * .9, ny + w * .35); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();
+      } else if (p.pose === 1) {                                                              // 손 흔들기 — 탄 뒤 400ms부터 팔이 흔들린다
+        var wv = tb > 400 ? Math.sin(tb / 230 + p.ph) * .38 : -.6, ax = tw * .9, ay = ny + w * .3;
+        ctx.beginPath(); ctx.moveTo(-ax, ay + w * .05); ctx.lineTo(-tw * 1.15, hy * .9);
+        ctx.moveTo(ax, ay); var ex = ax + Math.cos(-1.0 + wv) * h * .34, ey = ay + Math.sin(-1.0 + wv) * h * .34;
+        ctx.lineTo(ax + (ex - ax) * .5, ay + (ey - ay) * .5 + h * .02); ctx.lineTo(ex, ey); ctx.stroke();
+      }
       ctx.restore();
     }
     /* 프로펠러 — 선미(왼쪽) 한가운데. 처음엔 멈춰 있다가 전원 탑승하면 빠르게 돈다(사용자 "굴뚝 연기보다 프로펠러", "뒤 중앙에, 조금 더 크게").
@@ -270,7 +290,7 @@
         var age2 = t - (p2.d + p2.dur), a = Math.min(1, age2 / 300);
         var pos = tf(spot(p2), deckY), ph2 = p2.h * (.55 + .45 * a);
         var tilt = sh.a + p2.lean * a + e * Math.sin(t / 650 + p2.ph) * .02;   // 시동이 걸리면 각자 미세하게 몸을 가눈다
-        person(pos[0], pos[1] - (1 - a) * 4, ph2, .92 * a, tilt);
+        person(pos[0], pos[1] - (1 - a) * 4, ph2, .92 * a, tilt, p2, age2);
         if (age2 < 280) {                                                  // 발 딛는 순간의 짧은 섬광
           var fa = 1 - age2 / 280;
           ctx.beginPath(); ctx.arc(pos[0], pos[1], 1.5 + 5 * (1 - fa), 0, 6.283);
