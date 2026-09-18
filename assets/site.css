@@ -192,9 +192,10 @@ html.js:not(.set2) .final.in .btns::before{animation:boardGlow 1.4s cubic-bezier
    실루엣은 index.html의 SVG <clipPath id="hull">(objectBoundingBox) — 오른쪽이 뱃머리(앞으로 기운 곡선), 왼쪽이 선미(거의 수직), 바닥은 평평한 키일. 배는 오른쪽으로 간다(사용자 확정).
    좌우 대칭 사다리꼴은 방향이 없어 욕조로 보였다(사용자 "너무 못생겼다") — 배는 뱃머리가 있어야 배고, 방향이 생기면 "떠난다"도 같이 살아난다.
    패딩은 비대칭: 뱃머리 쪽을 넉넉히 비워 글자가 선미~중앙에 앉고 앞은 나갈 공간으로 남는다. clip-path는 클릭 영역까지 같이 잘라 준다.
+   크기는 약 200×51(2026-09-18 사용자 "좀 큰 편, 컴팩트하게" — 이전 230×67에서 줄임).
    흔들림(transform)·뱃고동 번쩍(background-color)은 home.js가 매 프레임 준다 — .btn의 `transition:.18s`가 transform까지 먹으면 매 프레임 전환이 다시 시작돼 배가 끈적하게 끌린다.
    filter는 쓰지 않는다: clip-path와 filter를 같은 요소에서 실시간으로 바꾸면 크롬이 검은 상자를 그린다(워드마크 장면에서 겪은 것). */
-.final .btn{position:relative;overflow:hidden;height:auto;padding:14px 70px 24px 46px;transition:background-color .18s,border-color .18s;will-change:transform;
+.final .btn{position:relative;overflow:hidden;height:auto;padding:12px 58px 20px 38px;font-size:15px;line-height:1.25;transition:background-color .18s,border-color .18s;will-change:transform;
   clip-path:url(#hull);box-shadow:inset 0 1px 0 rgba(255,255,255,.34)}
 /* 선체 마감 — 갑판 가장자리의 하이라이트, 아래로 갈수록 어두워지는 선측, 수면 바로 위의 가는 밝은 줄(boot-top), 물에 잠긴 어두운 띠 */
 .final .btn,.final .btn:hover{background-image:linear-gradient(180deg,
@@ -458,7 +459,7 @@ a.row:hover .t{color:var(--acc)}
 @media (max-height:520px){.final{height:auto}.final .pin-in{position:static;height:auto;min-height:100svh}
   /* 가운데 정렬이 남기는 버튼 아래 여백만큼 문서 끝에서 버튼이 위로 밀린다 — 위 패딩을 키워 콘텐츠를 내려 그 여백을 없앤다 */
   .final .wrap{padding-top:calc(var(--nav) + 96px)}
-  .final .btn{padding:7px 52px 13px 30px}}   /* 배도 납작하게 — 세로 375px에 내비·문구·배·푸터가 다 들어가야 한다 */
+  .final .btn{padding:6px 44px 11px 26px}}   /* 배도 납작하게 — 세로 375px에 내비·문구·배·푸터가 다 들어가야 한다 */
 @media (max-height:520px) and (max-width:1179px){
   :root{--nav:56px}
   .foot{padding:24px 0;margin-top:16px}   /* QA(2026-09-18): 승선 버튼이 배 모양이 되며 42→50px로 높아져 812×375·667×375에서 다시 내비 밑에 살짝 잠겼다(실측 텍스트 기준 0.2~2.2px, 배 갑판까지 치면 최대 14px) — 버튼-푸터 간격이 아니라 이 아래(푸터) 여백을 더 줄여 확보한다 */
