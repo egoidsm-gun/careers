@@ -77,7 +77,8 @@
   function updatePins() {
     pins.forEach(function (sec) {
       var p = progress(sec), ship = sec.classList.contains('ship');
-      if (ship) sec.style.setProperty('--p', p.toFixed(3));
+      // 진행도를 CSS로 넘기는 건 그림이 있는 핀뿐 — 개척선의 배 이미지와 크루 핀의 사진 타일
+      if (ship || sec.classList.contains('crew')) sec.style.setProperty('--p', p.toFixed(3));
       // 크루 행렬은 승선 구간이 화면을 붙잡고 조금 지난 뒤에 — 화면이 멈춰 있는 동안 벌어져야 시선이 모인다
       // 핀이 꺼진 화면(짧은 세로)에서는 progress()가 항상 1이라 섹션이 눈에 들어왔는지도 함께 본다
       if (sec.classList.contains('final') && !crewStarted && p > .12 && sec.getBoundingClientRect().top < vh * .5) {
