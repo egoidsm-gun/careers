@@ -187,7 +187,7 @@
     }
     /* 뱃머리 등 — 뱃고동 순간 켜져 앞으로 부드러운 타원 빛을 던진다(사용자 "조명은 배 앞쪽으로" = 프로펠러 뒤에 있던 타원 잔광을 뱃머리로). 직선 빔은 쏘지 않는다("일자 빛줄기 없애줘, 별로다").
        등은 배에 붙어 있어 배와 같이 흔들린다. 켜지기 전에도 몸체는 뱃머리에 보인다 — 그래야 "켜졌다"가 읽힌다. */
-    function lampPos() { return tf(shipL + deckW * .985, deckY + hullH * .16); }
+    function lampPos() { return tf(shipL + deckW * .975, deckY + hullH * .38); }   // 뱃머리 옆면, 앞 빛 타원과 같은 높이(사용자 "조금 더 아래로, 빛줄기랑 중심 맞춰")
     function housing() {
       var L = lampPos();
       ctx.beginPath(); ctx.arc(L[0], L[1], 2.4, 0, 6.283); ctx.fillStyle = '#5a2a10'; ctx.fill();
@@ -198,7 +198,7 @@
       ctx.save(); ctx.translate(L[0], L[1]); ctx.rotate(sh.a);
       var g = ctx.createLinearGradient(0, 0, len, 0);                    // 앞(오른쪽)으로 퍼지는 타원 빛 — 프로펠러 뒤에 있던 그 빛을 뱃머리로 옮긴 것(사용자 지정)
       g.addColorStop(0, 'rgba(255,190,130,' + Math.min(1, .36 * I * fl).toFixed(3) + ')'); g.addColorStop(.4, 'rgba(255,160,90,' + Math.min(1, .13 * I * fl).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,140,70,0)');
-      ctx.beginPath(); ctx.ellipse(len * .5, hullH * .2, len * .5, hh * (1 + .05 * fl), 0, 0, 6.283); ctx.fillStyle = g; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(len * .5, 0, len * .5, hh * (1 + .05 * fl), 0, 0, 6.283); ctx.fillStyle = g; ctx.fill();   // 등과 같은 높이에서 앞으로
       var R = 16, pg = ctx.createRadialGradient(0, 0, 0, 0, 0, R);        // 등 자체의 빛
       pg.addColorStop(0, 'rgba(255,240,220,' + Math.min(1, .9 * I).toFixed(3) + ')'); pg.addColorStop(.25, 'rgba(255,200,150,' + Math.min(1, .4 * I).toFixed(3) + ')'); pg.addColorStop(1, 'rgba(255,180,120,0)');
       ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
