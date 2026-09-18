@@ -99,18 +99,20 @@
   var set2 = !/[?&]set=1/.test(location.search);   // 2번(크루 승선)이 기본. `?set=1`이면 1번(빛의 귀환)으로 되돌려 본다
   if (set2) html.classList.add('set2');
   function crewBoarding(host, fin) {
-    var cv = document.createElement('canvas'); cv.className = 'crewcv'; cv.setAttribute('aria-hidden', 'true');
-    host.appendChild(cv);
+    /* 캔버스 두 장(같은 좌표계, .btns 중앙에 겹침) — 뒤(z -1): 날아오는 빛·잔광 / 앞(z 1): 빛줄기·프로펠러·갑판 크루.
+       사용자 "빛줄기는 배 뒤가 아니라 앞으로" — 앞에 그릴 것과 뒤에 그릴 것을 층으로 나눈다. 클릭은 둘 다 통과한다. */
+    var cvB = document.createElement('canvas'), cvF = document.createElement('canvas');
+    cvB.className = 'crewcv'; cvF.className = 'crewcv front';
+    cvB.setAttribute('aria-hidden', 'true'); cvF.setAttribute('aria-hidden', 'true');
+    host.appendChild(cvB); host.appendChild(cvF);
     var btn = fin.querySelector('.btn');
-    var ctx = cv.getContext('2d'), W, H, dpr, mob = window.matchMedia('(max-width: 639px)').matches;
+    var ctxB = cvB.getContext('2d'), ctxF = cvF.getContext('2d'), ctx = ctxF, W, H, dpr, mob = window.matchMedia('(max-width: 639px)').matches;
     var slow = parseFloat((/[?&]slow=([\d.]+)/.exec(location.search) || [])[1]) || 1;   // 진단: ?slow=4 면 4배 느리게
-    var deckY, deckW, hullH, shipL;                                        // 갑판 y·배 폭·배 높이·선미 x — 캔버스 좌표(캔버스는 .btns 중앙에 겹쳐 있다)
+    var deckY, deckW, hullH, shipL;                                        // 갑판 y·배 폭·배 높이·배 왼쪽(뱃머리) x — 캔버스 좌표
     function size() {
       dpr = Math.min(devicePixelRatio || 1, 2);
       W = Math.min(1100, innerWidth * .96); H = mob ? 300 : 380;
-      cv.style.width = W + 'px'; cv.style.height = H + 'px';
-      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      [cvB, cvF].forEach(function (c) { c.style.width = W + 'px'; c.style.height = H + 'px'; c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); });
       var keep = btn.style.transform; btn.style.transform = '';             // 흔들리는 중에 재면 그만큼 어긋난다
       var br = btn.getBoundingClientRect(), hr = host.getBoundingClientRect();
       deckY = H / 2 + (br.top - (hr.top + hr.height / 2)); deckW = br.width; hullH = br.height;
@@ -130,7 +132,7 @@
     }
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0);
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
-    function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }
+    function spot(p) { return shipL + deckW * (.925 - p.slot * .755); }    // 배가 왼쪽을 보므로 뱃머리(왼쪽 17%)를 비운다
     function at(p, u) {                                                    // 완만한 호를 그리며 자기 자리로
       var sx = p.sx * W, sy = p.sy * H, tx = spot(p), ty = deckY;
       var cx = (sx + tx) / 2 - (ty - sy) * p.arc, cy = (sy + ty) / 2 + (tx - sx) * p.arc;
@@ -154,15 +156,16 @@
       ctx.lineTo(w * .32, 0); ctx.lineTo(-w * .32, 0); ctx.closePath(); ctx.fill();
       ctx.restore();
     }
-    /* 프로펠러 — 선미 아래, 수면 밑. 처음엔 멈춰 있다가 전원 탑승하면 빠르게 돈다(2026-09-18 사용자 "굴뚝 연기보다 프로펠러가 낫겠다").
+    /* 프로펠러 — 선미(오른쪽) 한가운데. 처음엔 멈춰 있다가 전원 탑승하면 빠르게 돈다(사용자 "굴뚝 연기보다 프로펠러", "뒤 중앙에, 조금 더 크게").
        옆에서 본 원판이라 세운 타원으로 그린다(rx = ry의 36%). 빨라지면 날개 대신 잔상 원판과 흐린 날개로 — 그래야 돈다고 읽힌다. */
-    var ang = 0;
+    var ang = 0, t_ = 0;
     function propeller(spin, dt) {
-      var hub = tf(shipL + deckW * .036, deckY + hullH * .82), ry = Math.max(10, hullH * .22), rx = ry * .36, b, th, tx, ty, mx, my, nx, ny, bw = ry * .30;
+      var ry = Math.max(12, hullH * .30), rx = ry * .36, hub = tf(shipL + deckW * .985 + rx * .55, deckY + hullH * .5);
+      var b, th, tx, ty, mx, my, nx, ny, bw = ry * .30;
       ang += spin * .024 * dt;                                            // 최고 약 3.8회전/초
       ctx.save(); ctx.translate(hub[0], hub[1]); ctx.rotate(sh.a);
-      ctx.strokeStyle = 'rgba(110,46,14,.95)'; ctx.lineWidth = 2;        // 축
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(9, 0); ctx.stroke();
+      ctx.strokeStyle = 'rgba(110,46,14,.95)'; ctx.lineWidth = 2.5;      // 축 — 선미로 들어간다
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-rx - 6, 0); ctx.stroke();
       if (spin > .1) {                                                   // 회전 잔상 — 돌수록 원판이 차오른다
         ctx.beginPath(); ctx.ellipse(0, 0, rx * 1.05, ry * 1.05, 0, 0, 6.283);
         ctx.fillStyle = 'rgba(255,168,96,' + (.08 + .16 * spin).toFixed(3) + ')'; ctx.fill();
@@ -170,30 +173,30 @@
       var blades = spin > .5 ? 6 : 3, step = 6.283 / blades, al = spin > .5 ? .38 : 1 - .5 * spin;
       for (b = 0; b < blades; b++) {
         th = ang + b * step; tx = rx * Math.cos(th); ty = ry * Math.sin(th);
-        mx = tx * .5; my = ty * .5; nx = -ty; ny = tx;                    // 날개 폭 방향(화면 기준 수직)
+        mx = tx * .5; my = ty * .5; nx = -ty; ny = tx;                    // 날개 폭 방향
         var nl = Math.hypot(nx, ny) || 1; nx = nx / nl * bw; ny = ny / nl * bw;
         var g = ctx.createLinearGradient(0, 0, tx, ty);
         g.addColorStop(0, 'rgba(244,146,72,' + al.toFixed(3) + ')'); g.addColorStop(1, 'rgba(168,74,24,' + al.toFixed(3) + ')');
         ctx.fillStyle = g; ctx.beginPath();
         ctx.moveTo(0, 0); ctx.quadraticCurveTo(mx + nx, my + ny, tx, ty); ctx.quadraticCurveTo(mx - nx, my - ny, 0, 0); ctx.fill();
-        if (spin < .5) { ctx.lineWidth = .8; ctx.strokeStyle = 'rgba(255,200,160,' + (.55 * al).toFixed(3) + ')'; ctx.stroke(); }   // 멈춰 있을 땐 가는 밝은 테로 검은 배경에서 살린다
+        if (spin < .5) { ctx.lineWidth = .8; ctx.strokeStyle = 'rgba(255,200,160,' + (.55 * al).toFixed(3) + ')'; ctx.stroke(); }   // 멈춰 있을 땐 가는 밝은 테로 살린다
       }
       ctx.beginPath(); ctx.arc(0, 0, ry * .22, 0, 6.283); ctx.fillStyle = '#e8853f'; ctx.fill();   // 허브
       ctx.beginPath(); ctx.arc(0, 0, ry * .22, 0, 6.283); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(70,28,8,.9)'; ctx.stroke();
       ctx.restore();
-      if (spin > .05) {                                                  // 프로펠러 물살 — 뒤로 뻗는 따뜻한 빛, 회전에 맞춰 일렁인다
+      if (spin > .05) {                                                  // 프로펠러 물살 — 뒤(오른쪽)로 뻗는 따뜻한 빛, 회전에 맞춰 일렁인다
         var fl = .8 + .2 * Math.sin(t_ / 61) + .1 * Math.sin(t_ / 23), wl = deckW * .34;
-        var wg = ctx.createLinearGradient(hub[0], 0, hub[0] - wl, 0);
+        var wg = ctx.createLinearGradient(hub[0], 0, hub[0] + wl, 0);
         wg.addColorStop(0, 'rgba(255,170,100,' + (.30 * spin * fl).toFixed(3) + ')'); wg.addColorStop(.4, 'rgba(255,140,70,' + (.10 * spin * fl).toFixed(3) + ')'); wg.addColorStop(1, 'rgba(255,120,50,0)');
-        ctx.beginPath(); ctx.ellipse(hub[0] - wl * .5, hub[1], wl * .5, ry * .95 * (1 + .1 * fl), 0, 0, 6.283); ctx.fillStyle = wg; ctx.fill();
+        ctx.beginPath(); ctx.ellipse(hub[0] + wl * .5, hub[1], wl * .5, ry * .95 * (1 + .1 * fl), 0, 0, 6.283); ctx.fillStyle = wg; ctx.fill();
       }
     }
-    /* 빛줄기 — 탑승 완료의 신호(2026-09-18 사용자 "일자로 된 빛줄기가 배에는 강하게, 멀어질수록 줄어들며 은은하게").
-       인트로를 열었던 수평선의 빛이 배의 수면에서 다시 켜진다: 뱃고동 순간 배에서 좌우로 뻗어 나가며 한 번 세게 빛나고, 그 뒤엔 은은하게 숨 쉬며 남는다.
-       가는 심선 + 얇은 블룸 + 넓은 안개 세 겹, 셋 다 배에서 멀어질수록 잦아든다. 캔버스가 배 뒤에 있어 배는 빛을 등진 실루엣이 된다. */
+    /* 빛줄기 — 탑승 완료의 신호(사용자 "일자로 된 빛줄기가 배에는 강하게, 멀어질수록 줄어들며 은은하게", "배 앞으로").
+       인트로를 열었던 수평선의 빛이 배 앞 수면에서 다시 켜진다: 뱃고동 순간 배에서 좌우로 뻗어 나가며 한 번 세게 빛나고, 그 뒤엔 은은하게 숨 쉬며 남는다.
+       가는 심선 + 얇은 블룸 + 넓은 안개 세 겹, 셋 다 배에서 멀어질수록 잦아든다. 앞 캔버스라 배 위를 지난다. */
     function beam(k, I) {                                                // k: 뻗은 정도 0~1, I: 밝기
       var cx = shipL + deckW / 2, y = deckY + hullH * .755, half = W * .5 * k, q;   // 수면(어두운 띠가 시작되는 높이)
-      var layers = [[18, .50], [60, .16]];                                // [세로 반폭, 중심 알파]
+      var layers = [[16, .50], [56, .15]];                                // [세로 반폭, 중심 알파]
       for (q = 0; q < 2; q++) {
         ctx.save(); ctx.translate(cx, y); ctx.scale(half, layers[q][0]);
         var rg = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
@@ -208,10 +211,9 @@
       lg.addColorStop(.75, 'rgba(255,224,190,' + (c * .30).toFixed(3) + ')'); lg.addColorStop(1, 'rgba(255,224,190,0)');
       ctx.fillStyle = lg; ctx.fillRect(cx - half, y - .75, half * 2, 1.5);
     }
-    var t_ = 0;
     var t0 = performance.now(), prevT = 0, litSet = false;
     function frame(now) {
-      var t = now - t0, dt = Math.min(64, t - prevT); prevT = t;
+      var t = now - t0, dt = Math.min(64, t - prevT); prevT = t; t_ = t;
       var vr = fin.getBoundingClientRect();
       if (vr.bottom < 0 || vr.top > innerHeight) { requestAnimationFrame(frame); return; }   // 화면 밖이면 그리지 않는다
       var lit = 0, k;
@@ -219,9 +221,9 @@
       // 시동 — 뱃고동 뒤 1.6초에 걸쳐 차오른다(smoothstep)
       var e = t < ENG ? 0 : Math.min(1, (t - ENG) / 1600); e = e * e * (3 - 2 * e);
       var swell = Math.sin(t / 1500) * 2.4, tremor = Math.sin(t / 43) * .26 + Math.sin(t / 19) * .14;
-      var surge = 1.4 * (.5 + .5 * Math.sin(t / 2400));                   // 밧줄에 매인 채 앞으로 밀리다 돌아온다
-      sh.x = e * (Math.sin(t / 29) * .2 + surge); sh.y = e * (swell + tremor);
-      sh.a = e * (Math.sin(t / 1500 + .7) * .0052 - .0095);              // -.0095rad ≈ 뱃머리가 0.54° 든다(음수 = 반시계 = 오른쪽이 위로)
+      var surge = 1.4 * (.5 + .5 * Math.sin(t / 2400));                   // 밧줄에 매인 채 앞(왼쪽)으로 밀리다 돌아온다
+      sh.x = e * (Math.sin(t / 29) * .2 - surge); sh.y = e * (swell + tremor);
+      sh.a = e * (Math.sin(t / 1500 + .7) * .0052 + .0095);              // +.0095rad ≈ 뱃머리(왼쪽)가 0.54° 든다(양수 = 시계 = 왼쪽이 위로)
       btn.style.transform = e ? 'translate(' + sh.x.toFixed(2) + 'px,' + sh.y.toFixed(2) + 'px) rotate(' + (sh.a * 57.2958).toFixed(3) + 'deg)' : '';
       // 뱃고동 — 탑승 완료의 한 박자. 선체가 잠깐 밝아지며 수면의 빛줄기가 켜지고, 별도 한 번 빨라진다(출항 때처럼)
       var flash = 0;
@@ -230,7 +232,8 @@
         var fp = Math.min(1, (t - HORN) / 560); flash = Math.sin(fp * Math.PI) * .8;
         btn.style.backgroundColor = fp < 1 ? 'rgb(' + Math.round(237 + 18 * flash) + ',' + Math.round(109 + 112 * flash) + ',' + Math.round(32 + 150 * flash) + ')' : '';
       }
-      ctx.clearRect(0, 0, W, H);
+      // ── 뒤 캔버스: 잔광 + 날아오는 빛 ──
+      ctx = ctxB; ctx.clearRect(0, 0, W, H);
       if (lit) {                                                           // 탄 사람이 늘수록 배가 밝아진다
         var f = lit / N, g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * .40);
         g.addColorStop(0, 'rgba(237,109,32,' + (.26 * f).toFixed(3) + ')');
@@ -238,34 +241,10 @@
         g.addColorStop(1, 'rgba(237,109,32,0)');
         ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       }
-      t_ = t;
-      if (t >= HORN) {                                                   // 빛줄기 — 900ms 동안 뻗어 나가며 한 번 세게, 그 뒤엔 은은하게 숨 쉰다
-        var bk = Math.min(1, (t - HORN) / 900), be = 1 - Math.pow(1 - bk, 3);
-        var breath = 1 + .05 * Math.sin(t / 1300) + e * (.02 * Math.sin(t / 43));
-        beam(.12 + .88 * be, (1 + .9 * (1 - be)) * breath);
-      }
-      var spin = t < HORN + 300 ? 0 : Math.min(1, (t - HORN - 300) / 1300); spin = spin * spin * (3 - 2 * spin);
-      propeller(spin, dt);
       ctx.lineCap = 'round';
       for (k = 0; k < N; k++) {
         var p = P[k], u = (t - p.d) / p.dur;
-        if (u < 0) continue;
-        if (u >= 1) {                                                      // 승선 — 빛이 갑판 위에 사람으로 선다
-          var age2 = t - (p.d + p.dur), a = Math.min(1, age2 / 300);
-          var pos = tf(spot(p), deckY), ph2 = p.h * (.55 + .45 * a);
-          var tilt = sh.a + p.lean * a + e * Math.sin(t / 650 + p.ph) * .02;   // 시동이 걸리면 각자 미세하게 몸을 가눈다
-          person(pos[0], pos[1] - (1 - a) * 4, ph2, .92 * a, tilt);
-          if (age2 < 280) {                                                // 발 딛는 순간의 짧은 섬광
-            var fa = 1 - age2 / 280;
-            ctx.beginPath(); ctx.arc(pos[0], pos[1], 1.5 + 5 * (1 - fa), 0, 6.283);
-            ctx.fillStyle = 'rgba(255,214,170,' + (.5 * fa * fa).toFixed(3) + ')'; ctx.fill();
-          }
-          if (flash > 0) {                                                 // 뱃고동에 전원이 함께 빛난다
-            ctx.beginPath(); ctx.arc(pos[0], pos[1] - ph2 + ph2 * .34 * .6, 1.6 + 2.2 * flash, 0, 6.283);
-            ctx.fillStyle = 'rgba(255,240,220,' + (.55 * flash).toFixed(3) + ')'; ctx.fill();
-          }
-          continue;
-        }
+        if (u < 0 || u >= 1) continue;
         var e2 = 1 - Math.pow(1 - u, 2.2);                                 // 다가갈수록 느려진다
         var cur = at(p, e2), prev = at(p, Math.max(0, e2 - .11));          // 꼬리
         var al = Math.min(1, u / .12) * (u > .84 ? (1 - u) / .16 : 1);     // 갑판에 닿으며 스며든다
@@ -276,6 +255,32 @@
         ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cur[0], cur[1]); ctx.stroke();
         ctx.beginPath(); ctx.arc(cur[0], cur[1], p.w * .95, 0, 6.283);     // 머리의 빛점
         ctx.fillStyle = 'rgba(255,226,196,' + (.95 * al).toFixed(3) + ')'; ctx.fill();
+      }
+      // ── 앞 캔버스: 빛줄기 → 프로펠러 → 갑판 크루 ──
+      ctx = ctxF; ctx.clearRect(0, 0, W, H);
+      if (t >= HORN) {                                                   // 빛줄기 — 900ms 동안 뻗어 나가며 한 번 세게, 그 뒤엔 은은하게 숨 쉰다
+        var bk = Math.min(1, (t - HORN) / 900), be = 1 - Math.pow(1 - bk, 3);
+        var breath = 1 + .05 * Math.sin(t / 1300) + e * (.02 * Math.sin(t / 43));
+        beam(.12 + .88 * be, (1 + .9 * (1 - be)) * breath);
+      }
+      var spin = t < HORN + 300 ? 0 : Math.min(1, (t - HORN - 300) / 1300); spin = spin * spin * (3 - 2 * spin);
+      propeller(spin, dt);
+      for (k = 0; k < N; k++) {
+        var p2 = P[k], u3 = (t - p2.d) / p2.dur;
+        if (u3 < 1) continue;                                              // 승선 — 빛이 갑판 위에 사람으로 선다
+        var age2 = t - (p2.d + p2.dur), a = Math.min(1, age2 / 300);
+        var pos = tf(spot(p2), deckY), ph2 = p2.h * (.55 + .45 * a);
+        var tilt = sh.a + p2.lean * a + e * Math.sin(t / 650 + p2.ph) * .02;   // 시동이 걸리면 각자 미세하게 몸을 가눈다
+        person(pos[0], pos[1] - (1 - a) * 4, ph2, .92 * a, tilt);
+        if (age2 < 280) {                                                  // 발 딛는 순간의 짧은 섬광
+          var fa = 1 - age2 / 280;
+          ctx.beginPath(); ctx.arc(pos[0], pos[1], 1.5 + 5 * (1 - fa), 0, 6.283);
+          ctx.fillStyle = 'rgba(255,214,170,' + (.5 * fa * fa).toFixed(3) + ')'; ctx.fill();
+        }
+        if (flash > 0) {                                                   // 뱃고동에 전원이 함께 빛난다
+          ctx.beginPath(); ctx.arc(pos[0], pos[1] - ph2 + ph2 * .34 * .6, 1.6 + 2.2 * flash, 0, 6.283);
+          ctx.fillStyle = 'rgba(255,240,220,' + (.55 * flash).toFixed(3) + ')'; ctx.fill();
+        }
       }
       requestAnimationFrame(frame);       // 캔버스는 지우지 않는다 — 크루가 갑판에 남아 배와 함께 흔들린다
     }
