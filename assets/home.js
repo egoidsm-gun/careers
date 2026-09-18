@@ -154,20 +154,61 @@
       ctx.lineTo(w * .32, 0); ctx.lineTo(-w * .32, 0); ctx.closePath(); ctx.fill();
       ctx.restore();
     }
-    var FX = .30, RAKE = -.13, fh = mob ? 15 : 21, fw;                    // 굴뚝 — 선미 쪽 30% 지점, 뒤로 살짝 기울어(레이크) 앞으로 나갈 배처럼
-    function funnelBase() { return tf(shipL + deckW * FX, deckY); }
-    function funnelTop() { var b = funnelBase(), th = sh.a + RAKE; return [b[0] + fh * Math.sin(th), b[1] - fh * Math.cos(th)]; }
-    function funnel() {
-      fw = Math.max(9, Math.min(13, deckW * .048));
-      var b = funnelBase();
-      ctx.save(); ctx.translate(b[0], b[1]); ctx.rotate(sh.a + RAKE);
-      var g = ctx.createLinearGradient(-fw / 2, 0, fw / 2, 0);
-      g.addColorStop(0, '#d9662b'); g.addColorStop(1, '#9a4212');
-      ctx.fillStyle = g; ctx.fillRect(-fw / 2, -fh, fw, fh);
-      ctx.fillStyle = 'rgba(38,16,6,.92)'; ctx.fillRect(-fw / 2 - 1, -fh, fw + 2, 3);   // 검은 캡
+    /* 프로펠러 — 선미 아래, 수면 밑. 처음엔 멈춰 있다가 전원 탑승하면 빠르게 돈다(2026-09-18 사용자 "굴뚝 연기보다 프로펠러가 낫겠다").
+       옆에서 본 원판이라 세운 타원으로 그린다(rx = ry의 36%). 빨라지면 날개 대신 잔상 원판과 흐린 날개로 — 그래야 돈다고 읽힌다. */
+    var ang = 0;
+    function propeller(spin, dt) {
+      var hub = tf(shipL + deckW * .036, deckY + hullH * .82), ry = Math.max(10, hullH * .22), rx = ry * .36, b, th, tx, ty, mx, my, nx, ny, bw = ry * .30;
+      ang += spin * .024 * dt;                                            // 최고 약 3.8회전/초
+      ctx.save(); ctx.translate(hub[0], hub[1]); ctx.rotate(sh.a);
+      ctx.strokeStyle = 'rgba(110,46,14,.95)'; ctx.lineWidth = 2;        // 축
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(9, 0); ctx.stroke();
+      if (spin > .1) {                                                   // 회전 잔상 — 돌수록 원판이 차오른다
+        ctx.beginPath(); ctx.ellipse(0, 0, rx * 1.05, ry * 1.05, 0, 0, 6.283);
+        ctx.fillStyle = 'rgba(255,168,96,' + (.08 + .16 * spin).toFixed(3) + ')'; ctx.fill();
+      }
+      var blades = spin > .5 ? 6 : 3, step = 6.283 / blades, al = spin > .5 ? .38 : 1 - .5 * spin;
+      for (b = 0; b < blades; b++) {
+        th = ang + b * step; tx = rx * Math.cos(th); ty = ry * Math.sin(th);
+        mx = tx * .5; my = ty * .5; nx = -ty; ny = tx;                    // 날개 폭 방향(화면 기준 수직)
+        var nl = Math.hypot(nx, ny) || 1; nx = nx / nl * bw; ny = ny / nl * bw;
+        var g = ctx.createLinearGradient(0, 0, tx, ty);
+        g.addColorStop(0, 'rgba(244,146,72,' + al.toFixed(3) + ')'); g.addColorStop(1, 'rgba(168,74,24,' + al.toFixed(3) + ')');
+        ctx.fillStyle = g; ctx.beginPath();
+        ctx.moveTo(0, 0); ctx.quadraticCurveTo(mx + nx, my + ny, tx, ty); ctx.quadraticCurveTo(mx - nx, my - ny, 0, 0); ctx.fill();
+        if (spin < .5) { ctx.lineWidth = .8; ctx.strokeStyle = 'rgba(255,200,160,' + (.55 * al).toFixed(3) + ')'; ctx.stroke(); }   // 멈춰 있을 땐 가는 밝은 테로 검은 배경에서 살린다
+      }
+      ctx.beginPath(); ctx.arc(0, 0, ry * .22, 0, 6.283); ctx.fillStyle = '#e8853f'; ctx.fill();   // 허브
+      ctx.beginPath(); ctx.arc(0, 0, ry * .22, 0, 6.283); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(70,28,8,.9)'; ctx.stroke();
       ctx.restore();
+      if (spin > .05) {                                                  // 프로펠러 물살 — 뒤로 뻗는 따뜻한 빛, 회전에 맞춰 일렁인다
+        var fl = .8 + .2 * Math.sin(t_ / 61) + .1 * Math.sin(t_ / 23), wl = deckW * .34;
+        var wg = ctx.createLinearGradient(hub[0], 0, hub[0] - wl, 0);
+        wg.addColorStop(0, 'rgba(255,170,100,' + (.30 * spin * fl).toFixed(3) + ')'); wg.addColorStop(.4, 'rgba(255,140,70,' + (.10 * spin * fl).toFixed(3) + ')'); wg.addColorStop(1, 'rgba(255,120,50,0)');
+        ctx.beginPath(); ctx.ellipse(hub[0] - wl * .5, hub[1], wl * .5, ry * .95 * (1 + .1 * fl), 0, 0, 6.283); ctx.fillStyle = wg; ctx.fill();
+      }
     }
-    var smoke = [], lastPuff = 0;
+    /* 빛줄기 — 탑승 완료의 신호(2026-09-18 사용자 "일자로 된 빛줄기가 배에는 강하게, 멀어질수록 줄어들며 은은하게").
+       인트로를 열었던 수평선의 빛이 배의 수면에서 다시 켜진다: 뱃고동 순간 배에서 좌우로 뻗어 나가며 한 번 세게 빛나고, 그 뒤엔 은은하게 숨 쉬며 남는다.
+       가는 심선 + 얇은 블룸 + 넓은 안개 세 겹, 셋 다 배에서 멀어질수록 잦아든다. 캔버스가 배 뒤에 있어 배는 빛을 등진 실루엣이 된다. */
+    function beam(k, I) {                                                // k: 뻗은 정도 0~1, I: 밝기
+      var cx = shipL + deckW / 2, y = deckY + hullH * .755, half = W * .5 * k, q;   // 수면(어두운 띠가 시작되는 높이)
+      var layers = [[18, .50], [60, .16]];                                // [세로 반폭, 중심 알파]
+      for (q = 0; q < 2; q++) {
+        ctx.save(); ctx.translate(cx, y); ctx.scale(half, layers[q][0]);
+        var rg = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+        rg.addColorStop(0, 'rgba(255,170,100,' + Math.min(1, layers[q][1] * I).toFixed(3) + ')');
+        rg.addColorStop(.35, 'rgba(255,150,80,' + Math.min(1, layers[q][1] * .34 * I).toFixed(3) + ')');
+        rg.addColorStop(1, 'rgba(255,130,60,0)');
+        ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, 1, 0, 6.283); ctx.fill(); ctx.restore();
+      }
+      var lg = ctx.createLinearGradient(cx - half, 0, cx + half, 0), c = Math.min(1, .95 * I);
+      lg.addColorStop(0, 'rgba(255,224,190,0)'); lg.addColorStop(.25, 'rgba(255,224,190,' + (c * .30).toFixed(3) + ')');
+      lg.addColorStop(.5, 'rgba(255,236,214,' + c.toFixed(3) + ')');
+      lg.addColorStop(.75, 'rgba(255,224,190,' + (c * .30).toFixed(3) + ')'); lg.addColorStop(1, 'rgba(255,224,190,0)');
+      ctx.fillStyle = lg; ctx.fillRect(cx - half, y - .75, half * 2, 1.5);
+    }
+    var t_ = 0;
     var t0 = performance.now(), prevT = 0, litSet = false;
     function frame(now) {
       var t = now - t0, dt = Math.min(64, t - prevT); prevT = t;
@@ -182,11 +223,11 @@
       sh.x = e * (Math.sin(t / 29) * .2 + surge); sh.y = e * (swell + tremor);
       sh.a = e * (Math.sin(t / 1500 + .7) * .0052 - .0095);              // -.0095rad ≈ 뱃머리가 0.54° 든다(음수 = 반시계 = 오른쪽이 위로)
       btn.style.transform = e ? 'translate(' + sh.x.toFixed(2) + 'px,' + sh.y.toFixed(2) + 'px) rotate(' + (sh.a * 57.2958).toFixed(3) + 'deg)' : '';
-      // 뱃고동 — 탑승 완료의 한 박자. 선체가 백열로 번쩍이고 빛의 파동이 한 번 퍼진다. 별도 한 번 빨라진다(출항 때처럼)
+      // 뱃고동 — 탑승 완료의 한 박자. 선체가 잠깐 밝아지며 수면의 빛줄기가 켜지고, 별도 한 번 빨라진다(출항 때처럼)
       var flash = 0;
       if (t >= HORN) {
         if (!litSet) { litSet = true; fin.classList.add('lit'); boost = Math.max(boost, 1.6); }
-        var fp = Math.min(1, (t - HORN) / 560); flash = Math.sin(fp * Math.PI);
+        var fp = Math.min(1, (t - HORN) / 560); flash = Math.sin(fp * Math.PI) * .8;
         btn.style.backgroundColor = fp < 1 ? 'rgb(' + Math.round(237 + 18 * flash) + ',' + Math.round(109 + 112 * flash) + ',' + Math.round(32 + 150 * flash) + ')' : '';
       }
       ctx.clearRect(0, 0, W, H);
@@ -197,44 +238,14 @@
         g.addColorStop(1, 'rgba(237,109,32,0)');
         ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       }
-      var hk = (t - HORN) / 950;
-      if (hk >= 0 && hk < 1) {                                             // 파동 — 배 중심에서 타원으로 퍼지는 링 둘 + 짧은 폭발광
-        var c = tf(shipL + deckW / 2, deckY + hullH / 2), ke = 1 - Math.pow(1 - hk, 2.4);
-        var bg = ctx.createRadialGradient(c[0], c[1], 0, c[0], c[1], Math.max(1, ke * W * .28));
-        bg.addColorStop(0, 'rgba(255,214,170,' + (.34 * Math.pow(1 - hk, 2)).toFixed(3) + ')'); bg.addColorStop(1, 'rgba(255,214,170,0)');
-        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-        var rings = [[hk, 1], [hk - .14, .55]], q;
-        for (q = 0; q < 2; q++) {
-          var rk = rings[q][0]; if (rk <= 0) continue;
-          var re = 1 - Math.pow(1 - rk, 2.4);
-          ctx.beginPath(); ctx.ellipse(c[0], c[1], re * W * .5, re * H * .46, 0, 0, 6.283);
-          ctx.lineWidth = 2.4 * (1 - re) + .6;
-          ctx.strokeStyle = 'rgba(255,214,170,' + (.62 * Math.pow(1 - rk, 1.3) * rings[q][1]).toFixed(3) + ')'; ctx.stroke();
-        }
+      t_ = t;
+      if (t >= HORN) {                                                   // 빛줄기 — 900ms 동안 뻗어 나가며 한 번 세게, 그 뒤엔 은은하게 숨 쉰다
+        var bk = Math.min(1, (t - HORN) / 900), be = 1 - Math.pow(1 - bk, 3);
+        var breath = 1 + .05 * Math.sin(t / 1300) + e * (.02 * Math.sin(t / 43));
+        beam(.12 + .88 * be, (1 + .9 * (1 - be)) * breath);
       }
-      if (e > .05) {                                                       // 추진광 — 선미 수면에서 뒤로 뻗는 따뜻한 빛, 엔진 진동에 맞춰 일렁인다
-        var st = tf(shipL + deckW * .05, deckY + hullH * .86), fl = .8 + .2 * Math.sin(t / 61) + .1 * Math.sin(t / 23);
-        var wg = ctx.createLinearGradient(st[0], 0, st[0] - deckW * .55, 0);
-        wg.addColorStop(0, 'rgba(255,170,100,' + (.30 * e * fl).toFixed(3) + ')'); wg.addColorStop(.35, 'rgba(255,140,70,' + (.12 * e * fl).toFixed(3) + ')'); wg.addColorStop(1, 'rgba(255,120,50,0)');
-        ctx.save(); ctx.translate(st[0], st[1]); ctx.rotate(sh.a); ctx.translate(-st[0], -st[1]);
-        ctx.beginPath(); ctx.ellipse(st[0] - deckW * .27, st[1], deckW * .30, hullH * .16 * (1 + .12 * fl), 0, 0, 6.283);
-        ctx.fillStyle = wg; ctx.fill(); ctx.restore();
-      }
-      // 연기 — 굴뚝에서 피어올라 뒤(선미 쪽)로 흘러간다. 배에서 떨어진 뒤엔 배와 함께 흔들리지 않는다(공기 중이니까)
-      if (e > .12 && t - lastPuff > 82) {
-        lastPuff = t; var ft = funnelTop();
-        smoke.push({ x: ft[0], y: ft[1], vx: -(.034 + Math.random() * .022), vy: -(.046 + Math.random() * .02),
-                     r0: 2.2 + Math.random() * 1.2, life: 1400 + Math.random() * 500, t0: t, ph: Math.random() * 6.283 });
-      }
-      for (k = smoke.length - 1; k >= 0; k--) {
-        var s = smoke[k], age = t - s.t0;
-        if (age > s.life) { smoke.splice(k, 1); continue; }
-        var u2 = age / s.life, sa = .24 * (1 - u2) * Math.min(1, age / 160);
-        var sx2 = s.x + s.vx * age + Math.sin(age / 280 + s.ph) * 3.2, sy2 = s.y + s.vy * age * (1 - u2 * .42);
-        ctx.beginPath(); ctx.arc(sx2, sy2, s.r0 + age * .0074, 0, 6.283);
-        ctx.fillStyle = 'rgba(214,200,190,' + sa.toFixed(3) + ')'; ctx.fill();
-      }
-      funnel();
+      var spin = t < HORN + 300 ? 0 : Math.min(1, (t - HORN - 300) / 1300); spin = spin * spin * (3 - 2 * spin);
+      propeller(spin, dt);
       ctx.lineCap = 'round';
       for (k = 0; k < N; k++) {
         var p = P[k], u = (t - p.d) / p.dur;
