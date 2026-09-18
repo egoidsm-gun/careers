@@ -136,13 +136,18 @@
                w: 1.2 + Math.random() * 1.7,
                /* 개성(사용자 "사람들마다 개성이 느껴지게") — 직업 소지품 대신 사람 자체의 다양성: 키·체격·머리·자세·몸 방향·각자의 리듬 */
                h: cap ? 18 : 12 + Math.random() * 2.5, wf: cap ? .40 : .33 + Math.random() * .06,   // 키 12~14.5 · 체격 .33~.39 — 편차는 작게(사용자 "크기 차이 너무 크지 않게"), 개성은 머리·자세·방향·리듬으로
-               hair: cap ? 0 : Math.random() < .3 ? 1 : Math.random() < .2 ? 2 : 0,               // 0 짧은 머리 · 1 긴 머리(어깨까지) · 2 올린 머리(똥머리)
-               cap: cap, pose: cap ? 0 : [0, 0, 1, 2, 3, 4, 5][Math.floor(Math.random() * 7)],      // 0 팔 내림 · 1 손 흔들기 · 2 주머니 손 · 3 팔짱 · 4 한 손 들어 인사 · 5 뒷짐
+               hair: 0, cap: cap, pose: 0,                                                        // 개성(머리·자세)은 아래에서 겹치지 않게 배정한다
                face: cap ? 1 : Math.random() < .35 ? -1 : 1,                                       // 몸 방향 — 일부는 옆사람 쪽(뒤)을 본다
                lean: cap ? 0 : (Math.random() - .5) * .16, ph: Math.random() * 6.283, tempo: .7 + Math.random() * .6 });   // 각자 다른 리듬
     }
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0) + 220;   // + 배 밑→갑판 등장 시간
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
+    /* 개성 배정(사용자 "개성적인 사람들끼리 겹치지 않게") — 자세 5종(손 흔들기·주머니 손·팔짱·한 손 인사·뒷짐)과 머리 2종(긴 머리·올린 머리)을
+       각각 한 명씩만, 그리고 서로 나란히 서지 않게(홀수 번째 자리에만) 뿌린다. 나머지는 기본형. 캡틴(P[0])은 제외. */
+    var traits = [[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [0, 1], [0, 2]], odd = [];   // [pose, hair]
+    for (i = 1; i < N; i += 2) odd.push(i);                                // 자리는 i 순서대로 선미→뱃머리라 홀수 i끼리는 이웃이 아니다
+    for (i = traits.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), tmp = traits[i]; traits[i] = traits[j]; traits[j] = tmp; }
+    for (i = 0; i < traits.length && i < odd.length; i++) { P[odd[i]].pose = traits[i][0]; P[odd[i]].hair = traits[i][1]; }
     function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
     var BOARD = 220;                                                       // 배 밑에 스며든 뒤 갑판에 나타나기까지
     function under(p) { return shipL + deckW * Math.max(.22, Math.min(.74, .075 + p.slot * .755)); }   // 배 밑 도착점 x — 키일(선체 바닥 20~76%) 아래로 모인다
@@ -185,11 +190,8 @@
       ctx.beginPath(); ctx.moveTo(-w * .2, hy); ctx.lineTo(-w * sp, 0); ctx.moveTo(w * .2, hy); ctx.lineTo(w * sp, 0); ctx.stroke();
       ctx.lineWidth = aw;
       var tp = p ? p.tempo : 1;
-      if (cap) {                                                                              // 캡틴 — 제복 모자(밝은 챙이 앞으로), 왼팔은 뒤로 짚고 오른팔은 뱃머리(앞)를 가리킨다
-        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.25, hy * .95); ctx.stroke();
-        var hx = ax + h * .40, hy2 = ay - h * .09;                                            // 곧게 뻗은 팔 + 손
-        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(hx, hy2); ctx.stroke();
-        ctx.beginPath(); ctx.arc(hx + aw * .4, hy2, aw * .75, 0, 6.283); ctx.fill();
+      if (cap) {                                                                              // 캡틴 — 제복 모자(밝은 챙이 앞으로), 팔은 정상 자세
+        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();   // 양팔 내림 — 가리키는 팔은 사용자 지시로 뺐다
         ctx.fillStyle = 'rgba(255,236,214,' + a.toFixed(3) + ')';
         ctx.fillRect(-r * 1.0, -h - r * .35, r * 2.0, r * .95);                              // 모자 몸통
         ctx.fillStyle = 'rgba(255,176,112,' + a.toFixed(3) + ')';
