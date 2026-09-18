@@ -101,38 +101,63 @@
   function crewBoarding(host, fin) {
     var cv = document.createElement('canvas'); cv.className = 'crewcv'; cv.setAttribute('aria-hidden', 'true');
     host.appendChild(cv);
+    var btn = fin.querySelector('.btn');
     var ctx = cv.getContext('2d'), W, H, dpr, mob = window.matchMedia('(max-width: 639px)').matches;
     var slow = parseFloat((/[?&]slow=([\d.]+)/.exec(location.search) || [])[1]) || 1;   // 진단: ?slow=4 면 4배 느리게
+    var deckY, deckW;                                                      // 갑판(배의 윗면) — 캔버스는 .btns 중앙에 겹쳐 있으므로 그 기준으로 잰다
     function size() {
       dpr = Math.min(devicePixelRatio || 1, 2);
       W = Math.min(1100, innerWidth * .96); H = mob ? 300 : 380;
       cv.style.width = W + 'px'; cv.style.height = H + 'px';
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var keep = btn.style.transform; btn.style.transform = '';             // 흔들리는 중에 재면 그만큼 어긋난다
+      var br = btn.getBoundingClientRect(), hr = host.getBoundingClientRect();
+      deckY = H / 2 + (br.top - (hr.top + hr.height / 2)); deckW = br.width;
+      btn.style.transform = keep;
     }
     size(); window.addEventListener('resize', size);
     var N = mob ? 18 : 30, P = [], i, r;
     for (i = 0; i < N; i++) {
       var side = i % 2 ? 1 : -1; r = .30 + Math.random() * .34;
-      P.push({ sx: .5 + side * r, sy: .80 + Math.random() * .40,          // 버튼 아래 좌우에서 출발 — 글자 위를 지나지 않는다
-               tx: .5 + (Math.random() - .5) * .05, ty: .5 + (Math.random() - .5) * .06,
+      P.push({ sx: .5 + side * r, sy: .80 + Math.random() * .40,            // 버튼 아래 좌우에서 출발 — 글자 위를 지나지 않는다
+               slot: (i + .5) / N + (Math.random() - .5) * .55 / N,         // 갑판에서 설 자리 — 좌우로 고르게 퍼진다
                arc: side * (.05 + Math.random() * .09),
                d: (140 + i * 48 + Math.random() * 80) * slow, dur: (880 + Math.random() * 520) * slow,
-               w: 1.2 + Math.random() * 1.7 });
+               w: 1.2 + Math.random() * 1.7,
+               h: (mob ? 9 : 11) + Math.random() * (mob ? 4 : 5), lean: (Math.random() - .5) * .16 });
     }
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0);
-    function at(p, u) {                                                    // 완만한 호를 그리며 승선구로
-      var sx = p.sx * W, sy = p.sy * H, tx = p.tx * W, ty = p.ty * H;
+    function spot(p) { return W / 2 + (p.slot - .5) * deckW * .86; }        // 각자 갑판 위 자리
+    function at(p, u) {                                                    // 완만한 호를 그리며 자기 자리로
+      var sx = p.sx * W, sy = p.sy * H, tx = spot(p), ty = deckY;
       var cx = (sx + tx) / 2 - (ty - sy) * p.arc, cy = (sy + ty) / 2 + (tx - sx) * p.arc;
       var k = 1 - u;
       return [k * k * sx + 2 * k * u * cx + u * u * tx, k * k * sy + 2 * k * u * cy + u * u * ty];
     }
-    var t0 = performance.now();
+    function person(x, y, h, a, tilt) {                                    // 갑판에 선 크루 — 머리 + 어깨에서 발로 좁아지는 몸
+      var w = h * .34;
+      ctx.save(); ctx.translate(x, y); if (tilt) ctx.rotate(tilt);
+      ctx.fillStyle = 'rgba(255,228,198,' + a.toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(0, -h + w * .6, w * .6, 0, 6.283); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-w * .5, -h + w * 1.3); ctx.lineTo(w * .5, -h + w * 1.3);
+      ctx.lineTo(w * .32, 0); ctx.lineTo(-w * .32, 0); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+    var t0 = performance.now(), prevT = 0, sail = 0, litSet = false;
     function frame(now) {
-      var t = now - t0, lit = 0, k;
-      ctx.clearRect(0, 0, W, H);
+      var t = now - t0, dt = Math.min(64, t - prevT); prevT = t;
+      var vr = fin.getBoundingClientRect();
+      if (vr.bottom < 0 || vr.top > innerHeight) { requestAnimationFrame(frame); return; }   // 화면 밖이면 그리지 않는다
+      var lit = 0, k;
       for (k = 0; k < N; k++) if (t >= P[k].d + P[k].dur) lit++;
-      if (lit) {                                                           // 도착한 크루 수만큼 배가 밝아진다
+      if (lit === N) sail = Math.min(1, sail + dt / 1400);                 // 전원 승선 → 배가 물결에 흔들리기 시작한다
+      // 배와 갑판의 크루는 반드시 같은 위상으로 흔들린다(그래서 배 쪽도 CSS가 아니라 여기서 준다)
+      var bob = Math.sin(t / 1500) * 2.7 * sail, roll = Math.sin(t / 1500 + .7) * .0062 * sail;
+      btn.style.transform = sail ? 'translateY(' + bob.toFixed(2) + 'px) rotate(' + (roll * 57.3).toFixed(3) + 'deg)' : '';
+      ctx.clearRect(0, 0, W, H);
+      if (lit) {                                                           // 탄 사람이 늘수록 배가 밝아진다
         var f = lit / N, g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * .40);
         g.addColorStop(0, 'rgba(237,109,32,' + (.26 * f).toFixed(3) + ')');
         g.addColorStop(.45, 'rgba(237,109,32,' + (.09 * f).toFixed(3) + ')');
@@ -143,18 +168,21 @@
       for (k = 0; k < N; k++) {
         var p = P[k], u = (t - p.d) / p.dur;
         if (u < 0) continue;
-        if (u >= 1) {                                                      // 승선 순간의 짧은 섬광
-          var age = t - (p.d + p.dur);
-          if (age < 280) {
-            var a = 1 - age / 280, pos = at(p, 1);
-            ctx.beginPath(); ctx.arc(pos[0], pos[1], 1.5 + 5 * (1 - a), 0, 6.283);
-            ctx.fillStyle = 'rgba(255,214,170,' + (.5 * a * a).toFixed(3) + ')'; ctx.fill();
+        if (u >= 1) {                                                      // 승선 — 빛이 갑판 위에 사람으로 선다
+          var age = t - (p.d + p.dur), a = Math.min(1, age / 300);
+          var dx = spot(p) - W / 2;                                        // 배가 기운 만큼 갑판 위 자리도 같이 돈다
+          var px = W / 2 + dx * Math.cos(roll), py = deckY + bob + dx * Math.sin(roll);
+          person(px, py - (1 - a) * 4, p.h * (.55 + .45 * a), .92 * a, roll + p.lean * a);
+          if (age < 280) {                                                 // 발 딛는 순간의 짧은 섬광
+            var fa = 1 - age / 280;
+            ctx.beginPath(); ctx.arc(px, py, 1.5 + 5 * (1 - fa), 0, 6.283);
+            ctx.fillStyle = 'rgba(255,214,170,' + (.5 * fa * fa).toFixed(3) + ')'; ctx.fill();
           }
           continue;
         }
         var e = 1 - Math.pow(1 - u, 2.2);                                  // 다가갈수록 느려진다
         var cur = at(p, e), prev = at(p, Math.max(0, e - .11));            // 꼬리
-        var al = Math.min(1, u / .12) * (u > .84 ? (1 - u) / .16 : 1);     // 승선구에 닿으며 스며든다
+        var al = Math.min(1, u / .12) * (u > .84 ? (1 - u) / .16 : 1);     // 갑판에 닿으며 스며든다
         var grd = ctx.createLinearGradient(prev[0], prev[1], cur[0], cur[1]);
         grd.addColorStop(0, 'rgba(237,109,32,0)');
         grd.addColorStop(1, 'rgba(255,190,130,' + (.9 * al).toFixed(3) + ')');
@@ -163,8 +191,8 @@
         ctx.beginPath(); ctx.arc(cur[0], cur[1], p.w * .95, 0, 6.283);     // 머리의 빛점
         ctx.fillStyle = 'rgba(255,226,196,' + (.95 * al).toFixed(3) + ')'; ctx.fill();
       }
-      if (t < last + 420) requestAnimationFrame(frame);
-      else { fin.classList.add('lit'); cv.style.opacity = 0; setTimeout(function () { cv.remove(); }, 800); }
+      if (!litSet && t >= last + 420) { litSet = true; fin.classList.add('lit'); }
+      requestAnimationFrame(frame);       // 캔버스는 지우지 않는다 — 크루가 갑판에 남아 배와 함께 흔들린다
     }
     requestAnimationFrame(frame);
   }

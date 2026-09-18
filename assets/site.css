@@ -191,7 +191,8 @@ html.js:not(.set2) .final.in .btns::before{animation:boardGlow 1.4s cubic-bezier
 /* 승선 버튼은 배다 — 크루의 빛이 이 선체로 올라탄다(2026-09-18 사용자 "배 모양으로 만들어줘, 진짜 사람들이 배에 타는 것 같잖아").
    위는 갑판(직선), 아래는 선체(둥글게 좁아진다). 좌표가 %라 어느 폭에서도 같은 실루엣이고, clip-path는 클릭 영역까지 같이 잘라 준다.
    좌우 패딩은 선체가 좁아지는 만큼 넉넉히 — 글자가 뱃전에 닿으면 안 된다. */
-.final .btn{position:relative;overflow:hidden;height:auto;padding:14px 52px 24px;
+/* 흔들림(transform)은 home.js가 매 프레임 준다 — .btn의 `transition:.18s`가 transform까지 먹으면 매 프레임 전환이 다시 시작돼 배가 끈적하게 끌린다 */
+.final .btn{position:relative;overflow:hidden;height:auto;padding:14px 52px 24px;transition:background-color .18s,border-color .18s;will-change:transform;
   clip-path:polygon(0% 0%,100% 0%,100% 42%,96% 66%,89% 84%,79% 95%,66% 100%,34% 100%,21% 95%,11% 84%,4% 66%,0% 42%)}
 /* 선체 음영 — 갑판 쪽이 밝고 물에 잠기는 아래가 어둡다. 가로선 하나 긋는 것보다 이쪽이 배로 읽힌다(가로선은 글자를 가로질러 묻혔다) */
 .final .btn,.final .btn:hover{background-image:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,0) 34%,rgba(0,0,0,.22))}
