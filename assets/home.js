@@ -136,18 +136,20 @@
                w: 1.2 + Math.random() * 1.7,
                /* 개성(사용자 "사람들마다 개성이 느껴지게") — 직업 소지품 대신 사람 자체의 다양성: 키·체격·머리·자세·몸 방향·각자의 리듬 */
                h: cap ? 18 : 12 + Math.random() * 2.5, wf: cap ? .40 : .33 + Math.random() * .06,   // 키 12~14.5 · 체격 .33~.39 — 편차는 작게(사용자 "크기 차이 너무 크지 않게"), 개성은 머리·자세·방향·리듬으로
-               hair: 0, cap: cap, pose: 0,                                                        // 개성(머리·자세)은 아래에서 겹치지 않게 배정한다
+               hair: 0, cap: cap, pose: 0, extra: 0,                                              // 개성(머리·자세·매력)은 아래에서 겹치지 않게 배정한다
                face: cap ? 1 : Math.random() < .35 ? -1 : 1,                                       // 몸 방향 — 일부는 옆사람 쪽(뒤)을 본다
                lean: cap ? 0 : (Math.random() - .5) * .16, ph: Math.random() * 6.283, tempo: .7 + Math.random() * .6 });   // 각자 다른 리듬
     }
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0) + 220;   // + 배 밑→갑판 등장 시간
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
-    /* 개성 배정(사용자 "개성적인 사람들끼리 겹치지 않게") — 자세 5종(손 흔들기·주머니 손·팔짱·한 손 인사·뒷짐)과 머리 2종(긴 머리·올린 머리)을
-       각각 한 명씩만, 그리고 서로 나란히 서지 않게(홀수 번째 자리에만) 뿌린다. 나머지는 기본형. 캡틴(P[0])은 제외. */
-    var traits = [[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [0, 1], [0, 2]], odd = [];   // [pose, hair]
-    for (i = 1; i < N; i += 2) odd.push(i);                                // 자리는 i 순서대로 선미→뱃머리라 홀수 i끼리는 이웃이 아니다
+    /* 개성 배정(사용자 "개성적인 사람들끼리 겹치지 않게" → "2~3명 더, 매력적이게") — 특징 10가지를 각각 한 명씩만.
+       자세 5종(손 흔들기·주머니 손·팔짱·한 손 인사·뒷짐) · 머리 2종(긴 머리·올린 머리) · 매력 3종(강아지와 함께·목말 탄 아이·휘날리는 스카프).
+       강아지는 옆자리를 쓰므로 캡틴과 간격이 있는 마지막 자리(i=N-1) 고정, 나머지 9가지는 기본형 3명(i=2·6·10)을 남기고 셔플. 캡틴(P[0]) 제외. */
+    var traits = [[1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0], [5, 0, 0], [0, 1, 0], [0, 2, 0], [0, 0, 2], [0, 0, 3]],   // [pose, hair, extra]
+        slots = [1, 3, 4, 5, 7, 8, 9, 11, 12];
     for (i = traits.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), tmp = traits[i]; traits[i] = traits[j]; traits[j] = tmp; }
-    for (i = 0; i < traits.length && i < odd.length; i++) { P[odd[i]].pose = traits[i][0]; P[odd[i]].hair = traits[i][1]; }
+    for (i = 0; i < traits.length; i++) { var q = P[slots[i]]; q.pose = traits[i][0]; q.hair = traits[i][1]; q.extra = traits[i][2]; if (q.extra) q.face = 1; }   // 스카프·강아지는 진행 방향을 봐야 한다
+    P[N - 1].pose = 0; P[N - 1].hair = 0; P[N - 1].extra = 1; P[N - 1].face = 1;   // 강아지
     function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
     var BOARD = 220;                                                       // 배 밑에 스며든 뒤 갑판에 나타나기까지
     function under(p) { return shipL + deckW * Math.max(.22, Math.min(.74, .075 + p.slot * .755)); }   // 배 밑 도착점 x — 키일(선체 바닥 20~76%) 아래로 모인다
@@ -214,6 +216,32 @@
         ctx.beginPath(); ctx.arc(0, hy * .98, aw * .8, 0, 6.283); ctx.fill();
       } else if (pose !== 2) {                                                                // 팔 내림
         ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();
+      }
+      var extra = p ? p.extra : 0, warm = 'rgba(255,176,112,' + a.toFixed(3) + ')';
+      if (extra === 1) {                                                                      // 강아지와 함께 — 발밑 앞쪽에 작은 강아지, 줄, 살랑이는 꼬리
+        var dx = tw * 1.15 + h * .34, wag = Math.sin(tb / 110 + (p ? p.ph : 0)) * .5;
+        ctx.strokeStyle = warm; ctx.lineWidth = Math.max(.7, aw * .5);
+        ctx.beginPath(); ctx.moveTo(tw * 1.15, hy * .9); ctx.quadraticCurveTo(tw * 1.15 + h * .12, hy * .55, dx - h * .04, -h * .2); ctx.stroke();   // 줄 — 손에서 목까지
+        ctx.fillStyle = g; ctx.strokeStyle = g;
+        ctx.beginPath(); ctx.ellipse(dx + h * .1, -h * .12, h * .17, h * .075, 0, 0, 6.283); ctx.fill();                  // 몸
+        ctx.beginPath(); ctx.arc(dx - h * .02, -h * .19, h * .07, 0, 6.283); ctx.fill();                                  // 머리
+        ctx.beginPath(); ctx.moveTo(dx - h * .07, -h * .24); ctx.lineTo(dx - h * .08, -h * .3); ctx.lineTo(dx - h * .03, -h * .25); ctx.fill();   // 귀
+        ctx.lineWidth = Math.max(.8, w * .16);
+        ctx.beginPath(); ctx.moveTo(dx + h * .02, -h * .08); ctx.lineTo(dx + h * .02, 0); ctx.moveTo(dx + h * .2, -h * .08); ctx.lineTo(dx + h * .2, 0); ctx.stroke();   // 다리
+        ctx.beginPath(); ctx.moveTo(dx + h * .26, -h * .15); ctx.quadraticCurveTo(dx + h * .34, -h * .22 - wag * h * .06, dx + h * .3, -h * .3 + wag * h * .05); ctx.stroke();   // 꼬리
+      } else if (extra === 2) {                                                                // 목말 탄 아이 — 어깨 위에 작은 아이, 두 손을 번쩍
+        var ch = h * .42, cr = ch * .16, cy0 = ny + w * .05;                                    // 아이 발 = 어깨
+        ctx.beginPath(); ctx.arc(0, cy0 - ch + cr, cr, 0, 6.283); ctx.fill();                                              // 머리
+        ctx.beginPath(); ctx.moveTo(-ch * .2, cy0 - ch + cr * 2.2); ctx.lineTo(ch * .2, cy0 - ch + cr * 2.2); ctx.lineTo(ch * .16, cy0 - ch * .32); ctx.lineTo(-ch * .16, cy0 - ch * .32); ctx.closePath(); ctx.fill();   // 몸
+        ctx.lineWidth = Math.max(.8, aw * .6);
+        ctx.beginPath(); ctx.moveTo(-ch * .16, cy0 - ch * .32); ctx.lineTo(-ch * .3, cy0); ctx.moveTo(ch * .16, cy0 - ch * .32); ctx.lineTo(ch * .3, cy0); ctx.stroke();   // 다리 — 어깨 양옆으로
+        var up = Math.sin(tb / 300 + (p ? p.ph : 0)) * ch * .06;
+        ctx.beginPath(); ctx.moveTo(-ch * .2, cy0 - ch + cr * 2.4); ctx.lineTo(-ch * .42, cy0 - ch * 1.25 - up); ctx.moveTo(ch * .2, cy0 - ch + cr * 2.4); ctx.lineTo(ch * .42, cy0 - ch * 1.25 + up); ctx.stroke();   // 두 손 번쩍
+      } else if (extra === 3) {                                                                // 휘날리는 스카프 — 목에서 뒤(선미 쪽)로 물결치며 흐른다
+        ctx.strokeStyle = warm; ctx.lineWidth = Math.max(.9, aw * .95); ctx.beginPath(); ctx.moveTo(-r * .3, ny - h * .02);
+        var kq, seg = h * .12;
+        for (kq = 1; kq <= 5; kq++) ctx.lineTo(-r * .3 - kq * seg, ny - h * .02 - kq * h * .025 + Math.sin(tb / 170 + kq * .9 + (p ? p.ph : 0)) * h * .045 * Math.min(1, kq / 2));
+        ctx.stroke();
       }
       ctx.restore();
     }
