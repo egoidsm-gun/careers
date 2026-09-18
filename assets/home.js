@@ -73,10 +73,17 @@
     if (total <= 0) return 1;
     return Math.max(0, Math.min(1, -r.top / total));
   }
+  var crewStarted = false;
   function updatePins() {
     pins.forEach(function (sec) {
       var p = progress(sec), ship = sec.classList.contains('ship');
       if (ship) sec.style.setProperty('--p', p.toFixed(3));
+      // 크루 행렬은 승선 구간이 화면을 붙잡고 조금 지난 뒤에 — 화면이 멈춰 있는 동안 벌어져야 시선이 모인다
+      // 핀이 꺼진 화면(짧은 세로)에서는 progress()가 항상 1이라 섹션이 눈에 들어왔는지도 함께 본다
+      if (sec.classList.contains('final') && !crewStarted && p > .12 && sec.getBoundingClientRect().top < vh * .5) {
+        crewStarted = true;
+        if (set2 && !reduced && !editing) crewBoarding(sec.querySelector('.btns'), sec);
+      }
       var all = [];
       sec.querySelectorAll('.words').forEach(function (g) { (g.__w || []).forEach(function (w) { all.push(w); }); });
       if (!all.length) return;
@@ -164,19 +171,14 @@
 
   var fin = document.querySelector('.final');
   if (fin) {
+    // 글자 등장·별 가속만 여기서. 크루 행렬은 핀이 걸린 뒤 updatePins에서 시작한다
     var board = function () { fin.classList.add('in'); boost = Math.max(boost, 2.2); };
-    var crew = function () { if (set2 && !reduced && !editing) crewBoarding(fin.querySelector('.btns'), fin); };
     if ('IntersectionObserver' in window) {
-      var once = function (el, margin, fn) {
-        var io = new IntersectionObserver(function (es) {
-          es.forEach(function (e) { if (e.isIntersecting) { fn(); io.disconnect(); } });
-        }, { rootMargin: margin });
-        io.observe(el);
-      };
-      once(fin.querySelector('.eyebrow') || fin, '0px 0px -12% 0px', board);
-      // 크루 행렬은 승선구(버튼)가 화면 안으로 충분히 들어온 뒤에 — 화면 끄트머리에서 시작하면 행렬 절반을 못 보고 지나친다
-      once(fin.querySelector('.btns') || fin, '0px 0px -25% 0px', crew);
-    } else { board(); crew(); }
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { board(); io.disconnect(); } });
+      }, { rootMargin: '0px 0px -12% 0px' });
+      io.observe(fin.querySelector('.eyebrow') || fin);
+    } else board();
   }
 
 
