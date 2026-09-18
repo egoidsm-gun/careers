@@ -111,7 +111,7 @@
     var deckY, deckW, hullH, shipL, lampLen;                               // 갑판 y·배 폭·배 높이·배 왼쪽(뱃머리) x·등 빛 길이 — 캔버스 좌표
     function size() {
       dpr = Math.min(devicePixelRatio || 1, 2);
-      var bw = btn.getBoundingClientRect().width; W = Math.min(1100, Math.max(innerWidth * .96, bw * 2.8)); H = mob ? 300 : 380;   // 좁은 화면에서도 뱃머리 앞 빛이 캔버스 끝에 잘리지 않게
+      var bw = btn.getBoundingClientRect().width; W = Math.min(1100, Math.max(innerWidth * .96, bw * 2.8)); H = 380;   // 좁은 화면에서도 뱃머리 앞 빛이 캔버스 끝에 잘리지 않게
       [cvB, cvF].forEach(function (c) { c.style.width = W + 'px'; c.style.height = H + 'px'; c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); });
       var keep = btn.style.transform; btn.style.transform = '';             // 흔들리는 중에 재면 그만큼 어긋난다
       var br = btn.getBoundingClientRect(), hr = host.getBoundingClientRect();
@@ -126,15 +126,15 @@
     size(); window.addEventListener('resize', size);
     /* 크루 14명(모바일 9) — 30명은 너무 많았다(사용자). 직업별 소지품은 넣었다가 롤백(사용자 지시), 캡틴만 남긴다.
        P[0] = 캡틴: 가장 먼저 승선해 뱃머리 맨 앞에 무리와 간격을 두고 홀로 선다(사용자 "캡틴이 잘 안 보인다, 눈에 띄게"). */
-    var N = mob ? 9 : 14, P = [], i, r;
+    var N = 12, P = [], i, r;                                             // 전 폭 동일 — 배가 같은 크기니 사람 수도 같아야 한다(폭별 9/14로 갈렸던 것을 통일)
     for (i = 0; i < N; i++) {
       var side = i % 2 ? 1 : -1, cap = i === 0; r = .30 + Math.random() * .34;
       P.push({ sx: .5 + side * r, sy: .80 + Math.random() * .40,            // 버튼 아래 좌우에서 출발 — 글자 위를 지나지 않는다
                slot: cap ? 1.02 : (i - 1 + .5) / (N - 1) * .84 + (Math.random() - .5) * .5 / N,   // 크루는 선미 7.5%~71%, 캡틴은 84.5%(사이가 비어 눈에 띈다)
                arc: side * (.05 + Math.random() * .09),
-               d: (140 + i * (mob ? 130 : 95) + (cap ? 0 : Math.random() * 80)) * slow, dur: (880 + Math.random() * 520) * slow,
+               d: (140 + i * 105 + (cap ? 0 : Math.random() * 80)) * slow, dur: (880 + Math.random() * 520) * slow,
                w: 1.2 + Math.random() * 1.7,
-               h: cap ? (mob ? 15 : 18) : (mob ? 9 : 11) + Math.random() * 4, wf: cap ? .40 : .33 + Math.random() * .07,
+               h: cap ? 18 : 11 + Math.random() * 4, wf: cap ? .40 : .33 + Math.random() * .07,
                cap: cap, pose: cap ? 0 : Math.random() < .18 ? 1 : Math.random() < .22 ? 2 : 0,   // 0 팔 내림 · 1 손 흔들기 · 2 주머니에 손
                lean: cap ? 0 : (Math.random() - .5) * .16, ph: Math.random() * 6.283 });
     }
@@ -176,7 +176,9 @@
       ctx.lineWidth = aw;
       if (cap) {                                                                              // 캡틴 — 제복 모자(밝은 챙이 앞으로), 왼팔은 뒤로 짚고 오른팔은 뱃머리(앞)를 가리킨다
         ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.25, hy * .95); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + h * .22, ay - h * .06); ctx.lineTo(ax + h * .42, ay - h * .2); ctx.stroke();
+        var hx = ax + h * .40, hy2 = ay - h * .09;                                          // 곧게 뻗은 팔 + 손 — 두 마디로 꺾으면 이 크기에선 뭉쳐 기형처럼 보인다
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(hx, hy2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(hx + aw * .4, hy2, aw * .75, 0, 6.283); ctx.fill();
         ctx.fillStyle = 'rgba(255,236,214,' + a.toFixed(3) + ')';
         ctx.fillRect(-r * 1.0, -h - r * .35, r * 2.0, r * .95);                              // 모자 몸통
         ctx.fillStyle = 'rgba(255,176,112,' + a.toFixed(3) + ')';
