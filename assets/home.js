@@ -138,12 +138,14 @@
                cap: cap, pose: cap ? 0 : Math.random() < .18 ? 1 : Math.random() < .22 ? 2 : 0,   // 0 팔 내림 · 1 손 흔들기 · 2 주머니에 손
                lean: cap ? 0 : (Math.random() - .5) * .16, ph: Math.random() * 6.283 });
     }
-    var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0);
+    var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0) + 220;   // + 배 밑→갑판 등장 시간
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
     function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
-    function at(p, u) {                                                    // 완만한 호를 그리며 자기 자리로
-      var sx = p.sx * W, sy = p.sy * H, tx = spot(p), ty = deckY;
-      var cx = (sx + tx) / 2 - (ty - sy) * p.arc, cy = (sy + ty) / 2 + (tx - sx) * p.arc;
+    var BOARD = 220;                                                       // 배 밑에 스며든 뒤 갑판에 나타나기까지
+    function under(p) { return shipL + deckW * Math.max(.22, Math.min(.74, .075 + p.slot * .755)); }   // 배 밑 도착점 x — 키일(선체 바닥 20~76%) 아래로 모인다
+    function at(p, u) {                                                    // 아래·옆에서 배 밑으로 몰려드는 호 — 선체 위로는 올라가지 않는다(사용자 "갑판 위로가 아니라 배 밑으로")
+      var sx = p.sx * W, sy = p.sy * H, tx = under(p), ty = deckY + hullH + 4;
+      var cx = (sx + tx) / 2 - (ty - sy) * p.arc, cy = Math.max((sy + ty) / 2 + (tx - sx) * p.arc, ty + 6);
       var k = 1 - u;
       return [k * k * sx + 2 * k * u * cx + u * u * tx, k * k * sy + 2 * k * u * cy + u * u * ty];
     }
@@ -280,10 +282,15 @@
       ctx.lineCap = 'round';
       for (k = 0; k < N; k++) {
         var p = P[k], u = (t - p.d) / p.dur;
-        if (u < 0 || u >= 1) continue;
+        if (u < 0) continue;
+        if (u >= 1) {                                                      // 배 밑에 스며드는 순간 — 키일 아래 짧은 섬광
+          var ag = t - (p.d + p.dur);
+          if (ag < 300) { var fa0 = 1 - ag / 300, kp = at(p, 1); ctx.beginPath(); ctx.arc(kp[0], kp[1], 1.5 + 6 * (1 - fa0), 0, 6.283); ctx.fillStyle = 'rgba(255,214,170,' + (.55 * fa0 * fa0).toFixed(3) + ')'; ctx.fill(); }
+          continue;
+        }
         var e2 = 1 - Math.pow(1 - u, 2.2);                                 // 다가갈수록 느려진다
         var cur = at(p, e2), prev = at(p, Math.max(0, e2 - .11));          // 꼬리
-        var al = Math.min(1, u / .12) * (u > .84 ? (1 - u) / .16 : 1);     // 갑판에 닿으며 스며든다
+        var al = Math.min(1, u / .12) * (u > .84 ? (1 - u) / .16 : 1);     // 배 밑에 닿으며 스며든다
         var grd = ctx.createLinearGradient(prev[0], prev[1], cur[0], cur[1]);
         grd.addColorStop(0, 'rgba(237,109,32,0)');
         grd.addColorStop(1, 'rgba(255,190,130,' + (.9 * al).toFixed(3) + ')');
@@ -302,13 +309,13 @@
       var spin = t < HORN + 300 ? 0 : Math.min(1, (t - HORN - 300) / 1300); spin = spin * spin * (3 - 2 * spin);
       propeller(spin, dt);
       for (k = 0; k < N; k++) {
-        var p2 = P[k], u3 = (t - p2.d) / p2.dur;
-        if (u3 < 1) continue;                                              // 승선 — 빛이 갑판 위에 사람으로 선다
-        var age2 = t - (p2.d + p2.dur), a = Math.min(1, age2 / 300);
+        var p2 = P[k], age2 = t - (p2.d + p2.dur) - BOARD;
+        if (age2 < 0) continue;                                            // 승선 — 배 밑에 스며든 빛이 한 박자 뒤 갑판 위에 사람으로 솟아오른다
+        var a = Math.min(1, age2 / 300);
         var pos = tf(spot(p2), deckY), ph2 = p2.h * (.55 + .45 * a);
         var tilt = sh.a + p2.lean * a + e * Math.sin(t / 650 + p2.ph) * .02;   // 시동이 걸리면 각자 미세하게 몸을 가눈다
-        person(pos[0], pos[1] - (1 - a) * 4, ph2, .92 * a, tilt, p2, age2);
-        if (age2 < 280) {                                                  // 발 딛는 순간의 짧은 섬광
+        person(pos[0], pos[1] - (1 - a) * 6, ph2, .92 * a, tilt, p2, age2);
+        if (age2 < 280) {                                                  // 갑판에 솟는 순간의 짧은 섬광
           var fa = 1 - age2 / 280;
           ctx.beginPath(); ctx.arc(pos[0], pos[1], 1.5 + 5 * (1 - fa), 0, 6.283);
           ctx.fillStyle = 'rgba(255,214,170,' + (.5 * fa * fa).toFixed(3) + ')'; ctx.fill();
