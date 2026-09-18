@@ -300,12 +300,12 @@
     function drawDog(t) {
       var age = t - dogBorn; if (age < 0) return;
       var a = Math.min(1, age / 300), rise = (1 - a) * 4, pos = tf(shipL + deckW * DOGX, deckY);
-      var wag = Math.sin(t / 150) * 1.6, tiltH = Math.sin(t / 1100) * .07;                     // 꼬리는 늘, 고개는 가끔
+      var wag = Math.sin(t / 150) * 1.4, tiltH = Math.sin(t / 1100) * .07;                     // 꼬리는 늘, 고개는 가끔
       ctx.save(); ctx.translate(pos[0], pos[1] - rise); ctx.rotate(sh.a);
       ctx.shadowColor = 'rgba(255,190,130,' + (.5 * a).toFixed(3) + ')'; ctx.shadowBlur = 2;
       var g = ctx.createLinearGradient(0, -8, 0, 0); g.addColorStop(0, 'rgba(255,236,214,' + (.95 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,206,166,' + (.95 * a).toFixed(3) + ')');
       ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineWidth = 1.1;
-      ctx.beginPath(); ctx.moveTo(-3.4, -2.2); ctx.quadraticCurveTo(-5.2, -5.2 + wag * .3, -4.6 + wag, -7.6); ctx.stroke();   // 꼬리 — 위로 세워 살랑살랑(사용자 지정)
+      ctx.beginPath(); ctx.moveTo(-3.4, -2.4); ctx.quadraticCurveTo(-5.4, -4.2 + wag * .45, -6.6 + Math.abs(wag) * .25, -5.4 + wag); ctx.stroke();   // 꼬리 — 뒤로 45° 뻗어 끝이 위아래로 살랑(사용자 "너무 솟았다, 45도로 위아래로")
       ctx.beginPath(); ctx.ellipse(-1.4, -2.5, 2.7, 2.4, 0, 0, 6.283); ctx.fill();                                            // 엉덩이(앉은 자세)
       ctx.save(); ctx.translate(.9, -3.8); ctx.rotate(-.45); ctx.beginPath(); ctx.ellipse(0, 0, 1.8, 3.1, 0, 0, 6.283); ctx.fill(); ctx.restore();   // 세운 몸통
       ctx.beginPath(); ctx.moveTo(1.7, -3.2); ctx.lineTo(1.7, 0); ctx.moveTo(2.7, -3.2); ctx.lineTo(2.7, 0); ctx.stroke();  // 앞다리
