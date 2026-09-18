@@ -111,7 +111,7 @@
     var deckY, deckW, hullH, shipL, lampLen;                               // 갑판 y·배 폭·배 높이·배 왼쪽(뱃머리) x·등 빛 길이 — 캔버스 좌표
     function size() {
       dpr = Math.min(devicePixelRatio || 1, 2);
-      var bw = btn.getBoundingClientRect().width; W = Math.min(1100, Math.max(innerWidth * .96, bw * 2.8)); H = 380;   // 좁은 화면에서도 뱃머리 앞 빛이 캔버스 끝에 잘리지 않게
+      var bw = btn.getBoundingClientRect().width; W = Math.min(1100, Math.max(innerWidth * .96, bw * 2.8)); H = 460;   // 좁은 화면에서도 뱃머리 앞 빛이 캔버스 끝에 잘리지 않게
       [cvB, cvF].forEach(function (c) { c.style.width = W + 'px'; c.style.height = H + 'px'; c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); });
       var keep = btn.style.transform; btn.style.transform = '';             // 흔들리는 중에 재면 그만큼 어긋난다
       var br = btn.getBoundingClientRect(), hr = host.getBoundingClientRect();
@@ -266,13 +266,16 @@
       }
       // ── 뒤 캔버스: 잔광 + 날아오는 빛 ──
       ctx = ctxB; ctx.clearRect(0, 0, W, H);
-      if (lit) {                                                           // 탄 사람이 늘수록 배가 밝아진다 — 뱃고동 뒤엔 한 단계 더 세게, 은은히 숨 쉬며(사용자 "중앙에서 퍼지는 조명은 조금 더 강하게")
-        var f = lit / N * (t >= HORN ? 1.35 + .1 * Math.sin(t / 1300) + flash * .4 : 1);   // 사용자 "배 주위 빛이 조금 과하다" → 약 25% 낮춤
-        var g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * .42);
+      if (lit) {                                                           // 탄 사람이 늘수록 배가 밝아진다 — 뱃고동 뒤엔 한 단계 더 세게, 은은히 숨 쉬며
+        var f = lit / N * (t >= HORN ? 1.35 + .1 * Math.sin(t / 1300) + flash * .4 : 1);
+        /* 캔버스 안에서 완전히 사라지는 타원으로 그린다 — 원형(반지름 W*.42)은 넓은 화면에서 캔버스 위아래 끝에 아직 밝은 채 잘려
+           벽에 막힌 것처럼 끊겨 보였다(사용자 지적). ry는 캔버스 반높이의 96%. */
+        ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(W * .42, H * .48);
+        var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
         g.addColorStop(0, 'rgba(242,120,40,' + Math.min(1, .22 * f).toFixed(3) + ')');
         g.addColorStop(.4, 'rgba(237,109,32,' + Math.min(1, .08 * f).toFixed(3) + ')');
         g.addColorStop(1, 'rgba(237,109,32,0)');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, 6.283); ctx.fill(); ctx.restore();
       }
       ctx.lineCap = 'round';
       for (k = 0; k < N; k++) {
