@@ -150,11 +150,23 @@
     for (i = traits.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), tmp = traits[i]; traits[i] = traits[j]; traits[j] = tmp; }
     for (i = 0; i < traits.length; i++) { var q = P[slots[i]]; q.pose = traits[i][0]; q.hair = traits[i][1]; q.extra = traits[i][2]; if (q.extra) q.face = 1; }   // 스카프·강아지는 진행 방향을 봐야 한다
     function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
-    var BOARD = 220;                                                       // 배 밑에 스며든 뒤 갑판에 나타나기까지
-    function under(p) { return shipL + deckW * Math.max(.22, Math.min(.74, .075 + p.slot * .755)); }   // 배 밑 도착점 x — 키일(선체 바닥 20~76%) 아래로 모인다
-    function at(p, u) {                                                    // 아래·옆에서 배 밑으로 몰려드는 호 — 선체 위로는 올라가지 않는다(사용자 "갑판 위로가 아니라 배 밑으로")
-      var sx = p.sx * W, sy = p.sy * H, tx = under(p), ty = deckY + hullH + 4;
-      var cx = (sx + tx) / 2 - (ty - sy) * p.arc, cy = Math.max((sy + ty) / 2 + (tx - sx) * p.arc, ty + 6);
+    var BOARD = 220;                                                       // 선체에 스며든 뒤 갑판에 나타나기까지
+    /* 도착점은 선체 윤곽 전체(사용자 "배 아래에만 집중돼 부자연스럽다 → 자연스럽게 배로 모여드는 느낌"):
+       선미 쪽 사람은 선미 옆면, 뱃머리 쪽은 뱃머리 옆면, 가운데는 바닥으로 — 자기 자리 아래의 선체 가장자리에 닿는다. */
+    function under(p) {
+      var f = .075 + p.slot * .755, u = (f - .45) / .4;                     // u: -1(선미)~+1(뱃머리)
+      var x = f < .16 ? shipL - 3 : f > .78 ? shipL + deckW + 3 : shipL + deckW * f;
+      var yk = Math.max(.5, 1.06 - .5 * u * u);                              // 가운데 1.06(키일 아래) → 양끝 .5(옆면 중간)
+      return [x, deckY + hullH * yk];
+    }
+    function start(p) {                                                    // 출발은 도착 방향에 맞춰 넓게 — 왼쪽 사람은 왼쪽에서, 오른쪽은 오른쪽에서, 가운데는 아래에서
+      var f = .075 + p.slot * .755, base = f < .3 ? Math.PI : f > .6 ? 0 : Math.PI * 1.5, ang = base + p.arc * 4.5, rad = 150 + Math.abs(p.arc) * 1300 + p.sy * 90;
+      var tgt = under(p), sx = tgt[0] + Math.cos(ang) * rad, sy = tgt[1] - Math.sin(ang) * rad;
+      return [sx, Math.max(sy, deckY + 8)];                                 // 갑판 위에서 출발하지 않는다
+    }
+    function at(p, u) {                                                    // 넓게서 배로 모여드는 호 — 선체 위로는 올라가지 않는다
+      var st = start(p), tg = under(p), sx = st[0], sy = st[1], tx = tg[0], ty = tg[1];
+      var cx = (sx + tx) / 2 - (ty - sy) * p.arc * .6, cy = Math.max((sy + ty) / 2 + (tx - sx) * p.arc * .6, deckY + 8);
       var k = 1 - u;
       return [k * k * sx + 2 * k * u * cx + u * u * tx, k * k * sy + 2 * k * u * cy + u * u * ty];
     }
@@ -288,12 +300,12 @@
     function drawDog(t) {
       var age = t - dogBorn; if (age < 0) return;
       var a = Math.min(1, age / 300), rise = (1 - a) * 4, pos = tf(shipL + deckW * DOGX, deckY);
-      var wag = Math.sin(t / 140) * 1.3, tiltH = Math.sin(t / 1100) * .07;                     // 꼬리는 늘, 고개는 가끔
+      var wag = Math.sin(t / 150) * 1.6, tiltH = Math.sin(t / 1100) * .07;                     // 꼬리는 늘, 고개는 가끔
       ctx.save(); ctx.translate(pos[0], pos[1] - rise); ctx.rotate(sh.a);
       ctx.shadowColor = 'rgba(255,190,130,' + (.5 * a).toFixed(3) + ')'; ctx.shadowBlur = 2;
       var g = ctx.createLinearGradient(0, -8, 0, 0); g.addColorStop(0, 'rgba(255,236,214,' + (.95 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,206,166,' + (.95 * a).toFixed(3) + ')');
       ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineWidth = 1.1;
-      ctx.beginPath(); ctx.moveTo(-3.4, -1.2); ctx.quadraticCurveTo(-5.6, -2.4 + wag, -6.2 - wag * .5, -.6); ctx.stroke();   // 꼬리 — 갑판을 쓸며 살랑
+      ctx.beginPath(); ctx.moveTo(-3.4, -2.2); ctx.quadraticCurveTo(-5.2, -5.2 + wag * .3, -4.6 + wag, -7.6); ctx.stroke();   // 꼬리 — 위로 세워 살랑살랑(사용자 지정)
       ctx.beginPath(); ctx.ellipse(-1.4, -2.5, 2.7, 2.4, 0, 0, 6.283); ctx.fill();                                            // 엉덩이(앉은 자세)
       ctx.save(); ctx.translate(.9, -3.8); ctx.rotate(-.45); ctx.beginPath(); ctx.ellipse(0, 0, 1.8, 3.1, 0, 0, 6.283); ctx.fill(); ctx.restore();   // 세운 몸통
       ctx.beginPath(); ctx.moveTo(1.7, -3.2); ctx.lineTo(1.7, 0); ctx.moveTo(2.7, -3.2); ctx.lineTo(2.7, 0); ctx.stroke();  // 앞다리
