@@ -124,24 +124,20 @@
       lampLen = Math.max(24, Math.min(deckW * .62, margin / .78));
     }
     size(); window.addEventListener('resize', size);
-    /* 직업(class, 2026-09-18 사용자 "사람들마다 직업이 느껴지게") — 얼굴이 없는 12~16px 실루엣이라 소지품과 자세로 말한다. 소지품은 몸과 다른 따뜻한 오렌지 톤.
-       0 기본(절반은 가방) · 1 손 흔들기 · 2 주머니에 손 · 3 디자이너(베레모+태블릿) · 4 개발자(헤드폰+노트북) · 5 마케터(메가폰) · 6 물류·운영(안전모+상자)
-       · 7 포토그래퍼(카메라) · 8 캡틴(제복 모자, 앞을 가리킴 — 뱃머리 맨 앞 한 명만, 생성 뒤 배정) */
-    var CLS = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7];
-    var N = mob ? 18 : 30, P = [], i, r;
+    /* 크루 14명(모바일 9) — 30명은 너무 많았다(사용자). 직업별 소지품은 넣었다가 롤백(사용자 지시), 캡틴만 남긴다.
+       P[0] = 캡틴: 가장 먼저 승선해 뱃머리 맨 앞에 무리와 간격을 두고 홀로 선다(사용자 "캡틴이 잘 안 보인다, 눈에 띄게"). */
+    var N = mob ? 9 : 14, P = [], i, r;
     for (i = 0; i < N; i++) {
-      var side = i % 2 ? 1 : -1; r = .30 + Math.random() * .34;
+      var side = i % 2 ? 1 : -1, cap = i === 0; r = .30 + Math.random() * .34;
       P.push({ sx: .5 + side * r, sy: .80 + Math.random() * .40,            // 버튼 아래 좌우에서 출발 — 글자 위를 지나지 않는다
-               slot: (i + .5) / N + (Math.random() - .5) * .5 / N,          // 갑판에서 설 자리 — 선미에서 뱃머리 앞까지 고르게, 뱃머리 끝은 비워 둔다
+               slot: cap ? 1.02 : (i - 1 + .5) / (N - 1) * .84 + (Math.random() - .5) * .5 / N,   // 크루는 선미 7.5%~71%, 캡틴은 84.5%(사이가 비어 눈에 띈다)
                arc: side * (.05 + Math.random() * .09),
-               d: (140 + i * 48 + Math.random() * 80) * slow, dur: (880 + Math.random() * 520) * slow,
+               d: (140 + i * (mob ? 130 : 95) + (cap ? 0 : Math.random() * 80)) * slow, dur: (880 + Math.random() * 520) * slow,
                w: 1.2 + Math.random() * 1.7,
-               h: (mob ? 10 : 12) + Math.random() * 4, wf: .33 + Math.random() * .07,  // 키·체형
-               cls: CLS[Math.floor(Math.random() * CLS.length)], bag: Math.random() < .5,   // 직업(아래 CLS) · 기본형은 절반이 가방을 멨다
-               lean: (Math.random() - .5) * .16, ph: Math.random() * 6.283 });
+               h: cap ? (mob ? 15 : 18) : (mob ? 9 : 11) + Math.random() * 4, wf: cap ? .40 : .33 + Math.random() * .07,
+               cap: cap, pose: cap ? 0 : Math.random() < .18 ? 1 : Math.random() < .22 ? 2 : 0,   // 0 팔 내림 · 1 손 흔들기 · 2 주머니에 손
+               lean: cap ? 0 : (Math.random() - .5) * .16, ph: Math.random() * 6.283 });
     }
-    var capI = 0; for (i = 1; i < N; i++) if (P[i].slot > P[capI].slot) capI = i;   // 뱃머리 맨 앞 = 캡틴
-    P[capI].cls = 8; P[capI].h *= 1.08;
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0);
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
     function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
@@ -162,12 +158,14 @@
        머리·목·둥근 어깨·허리가 들어간 몸통·두 다리·팔. 자세 셋(팔 내림 / 손 흔들기(움직임) / 주머니에 손), 키·체형 각자 다름,
        위가 밝고 아래가 어두운 톤 + 부드러운 림 라이트. 발(0,0) 기준으로 그린다. */
     function person(x, y, h, a, tilt, p, tb) {
-      var cls = p ? p.cls : 0, w = h * (p ? p.wf : .36), r = h * .15, ny = -h + r * 2 + h * .05, hy = -h * .44;   // 어깨 y, 골반 y
-      var tw = cls === 2 ? w * .56 : w * .5, aw = Math.max(.9, w * .24), ax = tw * .9, ay = ny + w * .35;      // 몸통 반폭, 팔 굵기, 어깨점
+      var cap = !!(p && p.cap), w = h * (p ? p.wf : .36), r = h * .15, ny = -h + r * 2 + h * .05, hy = -h * .44;   // 어깨 y, 골반 y
+      var tw = p && p.pose === 2 ? w * .56 : w * .5, aw = Math.max(.9, w * .24), ax = tw * .9, ay = ny + w * .35;
       ctx.save(); ctx.translate(x, y); if (tilt) ctx.rotate(tilt);
-      ctx.shadowColor = 'rgba(255,190,130,' + (.55 * a).toFixed(3) + ')'; ctx.shadowBlur = 2.5;   // 림 라이트
-      var g = ctx.createLinearGradient(0, -h, 0, 0), prop = 'rgba(255,176,112,' + a.toFixed(3) + ')';
-      g.addColorStop(0, 'rgba(255,238,218,' + a.toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,208,170,' + (a * .92).toFixed(3) + ')');
+      ctx.shadowColor = cap ? 'rgba(255,214,170,' + (.9 * a).toFixed(3) + ')' : 'rgba(255,190,130,' + (.55 * a).toFixed(3) + ')';   // 림 라이트 — 캡틴은 더 세게
+      ctx.shadowBlur = cap ? 5 : 2.5;
+      var g = ctx.createLinearGradient(0, -h, 0, 0);
+      if (cap) { g.addColorStop(0, 'rgba(255,250,244,' + a.toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,226,196,' + a.toFixed(3) + ')'); }   // 캡틴은 한 톤 더 하얗다
+      else { g.addColorStop(0, 'rgba(255,238,218,' + a.toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,208,170,' + (a * .92).toFixed(3) + ')'); }
       ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.beginPath(); ctx.arc(0, -h + r, r, 0, 6.283); ctx.fill();                          // 머리
       ctx.beginPath();                                                                        // 몸통 — 둥근 어깨, 허리가 살짝 들어가 골반으로
@@ -176,46 +174,21 @@
       ctx.lineWidth = Math.max(1, w * .3);                                                    // 두 다리
       ctx.beginPath(); ctx.moveTo(-w * .2, hy); ctx.lineTo(-w * .26, 0); ctx.moveTo(w * .2, hy); ctx.lineTo(w * .26, 0); ctx.stroke();
       ctx.lineWidth = aw;
-      function armL() { ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.stroke(); }
-      function armR() { ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke(); }
-      if (cls === 1) {                                                                        // 손 흔들기 — 탄 뒤 400ms부터 팔이 흔들린다
-        var wv = tb > 400 ? Math.sin(tb / 230 + (p ? p.ph : 0)) * .38 : -.6;
-        armL(); var ex = ax + Math.cos(-1.0 + wv) * h * .34, ey = ay + Math.sin(-1.0 + wv) * h * .34;
-        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + (ex - ax) * .5, ay + (ey - ay) * .5 + h * .02); ctx.lineTo(ex, ey); ctx.stroke();
-      } else if (cls === 3) {                                                                 // 디자이너 — 베레모, 옆구리에 낀 태블릿
-        armL(); armR(); ctx.fillStyle = prop;
-        ctx.save(); ctx.translate(-tw * 1.2, hy * .82); ctx.rotate(.22); ctx.fillRect(-w * .17, -h * .13, w * .34, h * .26); ctx.restore();
-        ctx.save(); ctx.translate(r * .35, -h + r * .2); ctx.rotate(-.35); ctx.beginPath(); ctx.ellipse(0, 0, r * 1.15, r * .5, 0, 0, 6.283); ctx.fill(); ctx.restore();
-      } else if (cls === 4) {                                                                 // 개발자 — 헤드폰, 옆구리에 낀 노트북
-        armL(); armR(); ctx.fillStyle = prop; ctx.strokeStyle = prop;
-        ctx.fillRect(tw * .95, hy * 1.02, w * .58, h * .11);
-        ctx.lineWidth = aw * .85; ctx.beginPath(); ctx.arc(0, -h + r, r * 1.12, Math.PI * 1.02, Math.PI * 1.98); ctx.stroke();
-        ctx.beginPath(); ctx.arc(-r * 1.08, -h + r * 1.05, r * .34, 0, 6.283); ctx.arc(r * 1.08, -h + r * 1.05, r * .34, 0, 6.283); ctx.fill();
-      } else if (cls === 5) {                                                                 // 마케터 — 메가폰을 위로 들었다
-        armL(); var mx = ax + h * .2, my = ay - h * .2;
-        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(mx, my); ctx.stroke();
-        ctx.fillStyle = prop; ctx.save(); ctx.translate(mx, my); ctx.rotate(-.75);
-        ctx.beginPath(); ctx.moveTo(0, -h * .03); ctx.lineTo(h * .24, -h * .09); ctx.lineTo(h * .24, h * .09); ctx.lineTo(0, h * .03); ctx.closePath(); ctx.fill(); ctx.restore();
-      } else if (cls === 6) {                                                                 // 물류·운영 — 안전모, 두 손으로 든 상자
-        ctx.fillStyle = prop; var by = ny + w * .38, bh = h * .2;
-        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-w * .42, by + bh * .6); ctx.moveTo(ax, ay); ctx.lineTo(w * .42, by + bh * .6); ctx.stroke();
-        ctx.fillRect(-w * .46, by, w * .92, bh);
-        ctx.fillRect(-r * .95, -h - r * .12, r * 1.9, r * .9); ctx.fillRect(-r * 1.3, -h + r * .62, r * 2.6, r * .3);
-      } else if (cls === 7) {                                                                 // 포토그래퍼 — 눈앞에 든 카메라, 양팔 올림
-        var cy0 = -h + r * .8, cw = w * .7, ch = h * .15;
-        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(tw * .3, cy0 + ch); ctx.moveTo(ax, ay); ctx.lineTo(tw * .75, cy0 + ch); ctx.stroke();
-        ctx.fillStyle = prop; ctx.fillRect(tw * .15, cy0, cw, ch);
-        ctx.beginPath(); ctx.arc(tw * .15 + cw, cy0 + ch * .5, h * .05, 0, 6.283); ctx.fill();
-      } else if (cls === 8) {                                                                 // 캡틴 — 제복 모자, 뱃머리(앞)를 가리킨다
-        armL(); ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + h * .36, ay - h * .15); ctx.stroke();
-        ctx.fillStyle = prop; ctx.fillRect(-r * .95, -h - r * .08, r * 1.9, r * .85); ctx.fillRect(-r * .5, -h + r * .62, r * 1.95, r * .3);
-      } else if (cls !== 2) {                                                                 // 기본 — 팔 내림, 절반은 가방을 멨다
-        armL(); armR();
-        if (p && p.bag) {
-          ctx.strokeStyle = prop; ctx.fillStyle = prop; ctx.lineWidth = aw * .6;
-          ctx.beginPath(); ctx.moveTo(-tw * .55, ny + w * .1); ctx.lineTo(tw * .9, hy * .85); ctx.stroke();
-          ctx.fillRect(tw * .7, hy * .78, w * .42, h * .16);
-        }
+      if (cap) {                                                                              // 캡틴 — 제복 모자(밝은 챙이 앞으로), 왼팔은 뒤로 짚고 오른팔은 뱃머리(앞)를 가리킨다
+        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.25, hy * .95); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + h * .22, ay - h * .06); ctx.lineTo(ax + h * .42, ay - h * .2); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,236,214,' + a.toFixed(3) + ')';
+        ctx.fillRect(-r * 1.0, -h - r * .35, r * 2.0, r * .95);                              // 모자 몸통
+        ctx.fillStyle = 'rgba(255,176,112,' + a.toFixed(3) + ')';
+        ctx.fillRect(-r * .55, -h + r * .5, r * 2.25, r * .34);                              // 챙 — 앞으로 길게
+        ctx.fillRect(-r * 1.0, -h + r * .3, r * 2.0, r * .22);                               // 모자 띠
+      } else if (!p || p.pose === 0) {
+        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();
+      } else if (p.pose === 1) {                                                              // 손 흔들기 — 탄 뒤 400ms부터 팔이 흔들린다
+        var wv = tb > 400 ? Math.sin(tb / 230 + p.ph) * .38 : -.6;
+        ctx.beginPath(); ctx.moveTo(-ax, ay + w * .05); ctx.lineTo(-tw * 1.15, hy * .9);
+        ctx.moveTo(ax, ay); var ex = ax + Math.cos(-1.0 + wv) * h * .34, ey = ay + Math.sin(-1.0 + wv) * h * .34;
+        ctx.lineTo(ax + (ex - ax) * .5, ay + (ey - ay) * .5 + h * .02); ctx.lineTo(ex, ey); ctx.stroke();
       }
       ctx.restore();
     }
