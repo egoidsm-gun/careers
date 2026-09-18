@@ -282,41 +282,26 @@
       ctx.beginPath(); ctx.arc(0, 0, 1.7, 0, 6.283); ctx.fillStyle = 'rgba(255,250,240,' + Math.min(1, I).toFixed(3) + ')'; ctx.fill();
       ctx.restore();
     }
-    /* 갑판의 강아지(사용자 "목줄 말고 독립적으로, 사람들 사이를 가로질러 배 양쪽 끝을 뛰어다니면 재밌겠다") —
-       첫 크루가 타면 선미에서 뛰어 올라와 뱃머리~선미를 왕복한다. 끝에 닿으면 멈춰 서서 방향을 돌리고, 가끔 아무 데서나 멈춰 킁킁댄다.
-       오른쪽으로 달릴 땐 사람들 앞으로, 돌아올 땐 뒤로 지나가 사이를 가로지르는 깊이가 생긴다. 네 다리 교차·몸 들썩임·꼬리는 달릴 때 빠르게. */
-    var dog = { x: 0, dir: 1, mode: 'run', until: 0, speed: .07, born: (P[1] ? P[1].d + P[1].dur : 900) + BOARD + 250, on: false };
-    function dogStep(t, dt) {
-      var xl = shipL + deckW * .06, xr = shipL + deckW * .92;
-      if (!dog.on) { dog.on = true; dog.x = xl - 6; dog.dir = 1; }
-      if (dog.mode === 'run') {
-        dog.x += dog.dir * dog.speed * dt;
-        if (dog.x >= xr) { dog.x = xr; dog.mode = 'turn'; dog.until = t + 350 + Math.random() * 450; }
-        else if (dog.x <= xl) { dog.x = xl; dog.mode = 'turn'; dog.until = t + 350 + Math.random() * 450; }
-        else if (Math.random() < dt * .00045) { dog.mode = 'sniff'; dog.until = t + 350 + Math.random() * 500; }   // 가끔 멈춰 킁킁
-      } else if (t >= dog.until) {
-        if (dog.mode === 'turn') dog.dir *= -1;
-        dog.mode = 'run'; dog.speed = .06 + Math.random() * .03;
-      }
-    }
+    /* 갑판의 강아지 — 선장 뒤(선미 쪽) 갑판에 앉아 꼬리만 살랑살랑 흔든다(사용자: 뛰어다니는 건 "너무 나댄다" → "선장 뒤에 앉아서 꼬리 흔드는 걸로").
+       선장이 승선한 직후 옆에 나타나(300ms 페이드·4px 솟음), 가끔 고개를 선장 쪽으로 살짝 든다. 배 자세(tf)를 따른다. */
+    var DOGX = .79, dogBorn = P[0].d + P[0].dur + BOARD + 150;
     function drawDog(t) {
-      var pos = tf(dog.x, deckY), run = dog.mode === 'run', ph = t / 45, bob = run ? Math.abs(Math.sin(ph)) * .9 : 0;
-      var L = 8.5, Hh = 4.6, a = .95;                                     // 몸길이·어깨높이
-      ctx.save(); ctx.translate(pos[0], pos[1] - bob); ctx.rotate(sh.a); ctx.scale(dog.dir, 1);
-      ctx.shadowColor = 'rgba(255,190,130,.5)'; ctx.shadowBlur = 2;
-      var g = ctx.createLinearGradient(0, -Hh - 2, 0, 0); g.addColorStop(0, 'rgba(255,236,214,' + a + ')'); g.addColorStop(1, 'rgba(255,206,166,' + a + ')');
+      var age = t - dogBorn; if (age < 0) return;
+      var a = Math.min(1, age / 300), rise = (1 - a) * 4, pos = tf(shipL + deckW * DOGX, deckY);
+      var wag = Math.sin(t / 140) * 1.3, tiltH = Math.sin(t / 1100) * .07;                     // 꼬리는 늘, 고개는 가끔
+      ctx.save(); ctx.translate(pos[0], pos[1] - rise); ctx.rotate(sh.a);
+      ctx.shadowColor = 'rgba(255,190,130,' + (.5 * a).toFixed(3) + ')'; ctx.shadowBlur = 2;
+      var g = ctx.createLinearGradient(0, -8, 0, 0); g.addColorStop(0, 'rgba(255,236,214,' + (.95 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,206,166,' + (.95 * a).toFixed(3) + ')');
       ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineWidth = 1.1;
-      var sniff = dog.mode === 'sniff' ? Math.sin(t / 120) * .6 : 0;
-      ctx.beginPath(); ctx.ellipse(0, -Hh * .78, L * .5, Hh * .42, 0, 0, 6.283); ctx.fill();                                 // 몸
-      ctx.beginPath(); ctx.arc(L * .55, -Hh * 1.05 + sniff, Hh * .42, 0, 6.283); ctx.fill();                                 // 머리 — 킁킁댈 땐 아래로
-      ctx.beginPath(); ctx.moveTo(L * .38, -Hh * 1.35 + sniff); ctx.lineTo(L * .3, -Hh * 1.75 + sniff); ctx.lineTo(L * .5, -Hh * 1.4 + sniff); ctx.fill();   // 귀
-      var s1 = run ? Math.sin(ph) * 2.2 : 0, s2 = -s1;                                                                        // 네 다리 교차
-      ctx.beginPath();
-      ctx.moveTo(L * .32, -Hh * .5); ctx.lineTo(L * .32 + s1, 0); ctx.moveTo(L * .18, -Hh * .5); ctx.lineTo(L * .18 + s2, 0);
-      ctx.moveTo(-L * .2, -Hh * .5); ctx.lineTo(-L * .2 + s2, 0); ctx.moveTo(-L * .36, -Hh * .5); ctx.lineTo(-L * .36 + s1, 0); ctx.stroke();
-      var wag = Math.sin(t / (run ? 60 : 130)) * .9;                                                                          // 꼬리 — 달릴 때 빠르게
-      ctx.beginPath(); ctx.moveTo(-L * .48, -Hh * .95); ctx.quadraticCurveTo(-L * .62, -Hh * 1.4 + wag, -L * .55 - wag * .4, -Hh * 1.75); ctx.stroke();
-      ctx.restore();
+      ctx.beginPath(); ctx.moveTo(-3.4, -1.2); ctx.quadraticCurveTo(-5.6, -2.4 + wag, -6.2 - wag * .5, -.6); ctx.stroke();   // 꼬리 — 갑판을 쓸며 살랑
+      ctx.beginPath(); ctx.ellipse(-1.4, -2.5, 2.7, 2.4, 0, 0, 6.283); ctx.fill();                                            // 엉덩이(앉은 자세)
+      ctx.save(); ctx.translate(.9, -3.8); ctx.rotate(-.45); ctx.beginPath(); ctx.ellipse(0, 0, 1.8, 3.1, 0, 0, 6.283); ctx.fill(); ctx.restore();   // 세운 몸통
+      ctx.beginPath(); ctx.moveTo(1.7, -3.2); ctx.lineTo(1.7, 0); ctx.moveTo(2.7, -3.2); ctx.lineTo(2.7, 0); ctx.stroke();  // 앞다리
+      ctx.save(); ctx.translate(2.5, -6.7); ctx.rotate(tiltH);
+      ctx.beginPath(); ctx.arc(0, 0, 1.9, 0, 6.283); ctx.fill();                                                              // 머리
+      ctx.beginPath(); ctx.moveTo(-1.2, -1.3); ctx.lineTo(-1.6, -3.3); ctx.lineTo(.1, -1.9); ctx.fill();                      // 귀
+      ctx.beginPath(); ctx.ellipse(1.9, .4, 1.0, .7, 0, 0, 6.283); ctx.fill();                                                // 주둥이 — 선장 쪽을 본다
+      ctx.restore(); ctx.restore();
     }
     var t0 = performance.now(), prevT = 0, litSet = false;
     function frame(now) {
@@ -381,8 +366,6 @@
       }
       var spin = t < HORN + 300 ? 0 : Math.min(1, (t - HORN - 300) / 1300); spin = spin * spin * (3 - 2 * spin);
       propeller(spin, dt);
-      var dogOn = t >= dog.born; if (dogOn) dogStep(t, dt);
-      if (dogOn && dog.dir < 0) drawDog(t);                                // 돌아올 땐 사람들 뒤로 지나간다
       for (k = 0; k < N; k++) {
         var p2 = P[k], age2 = t - (p2.d + p2.dur) - BOARD;
         if (age2 < 0) continue;                                            // 승선 — 배 밑에 스며든 빛이 한 박자 뒤 갑판 위에 사람으로 솟아오른다
@@ -400,7 +383,7 @@
           ctx.fillStyle = 'rgba(255,240,220,' + (.55 * flash).toFixed(3) + ')'; ctx.fill();
         }
       }
-      if (dogOn && dog.dir > 0) drawDog(t);                                // 오른쪽으로 달릴 땐 사람들 앞으로
+      drawDog(t);                                                          // 선장 뒤에 앉은 강아지
       requestAnimationFrame(frame);       // 캔버스는 지우지 않는다 — 크루가 갑판에 남아 배와 함께 흔들린다
     }
     requestAnimationFrame(frame);
