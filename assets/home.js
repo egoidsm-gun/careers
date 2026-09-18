@@ -143,13 +143,12 @@
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0) + 220;   // + 배 밑→갑판 등장 시간
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
     /* 개성 배정(사용자 "개성적인 사람들끼리 겹치지 않게" → "2~3명 더, 매력적이게") — 특징 10가지를 각각 한 명씩만.
-       자세 5종(손 흔들기·주머니 손·팔짱·한 손 인사·뒷짐) · 머리 2종(긴 머리·올린 머리) · 매력 3종(강아지와 함께·목말 탄 아이·휘날리는 스카프).
-       강아지는 옆자리를 쓰므로 캡틴과 간격이 있는 마지막 자리(i=N-1) 고정, 나머지 9가지는 기본형 3명(i=2·6·10)을 남기고 셔플. 캡틴(P[0]) 제외. */
+       자세 5종(손 흔들기·주머니 손·팔짱·한 손 인사·뒷짐) · 머리 2종(긴 머리·올린 머리) · 매력 2종(목말 탄 아이·휘날리는 스카프).
+       9가지를 기본형 4명(i=2·6·10·13)을 남기고 셔플. 캡틴(P[0]) 제외. 강아지는 사람에 딸리지 않고 따로 갑판을 뛰어다닌다(아래 dog). */
     var traits = [[1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0], [5, 0, 0], [0, 1, 0], [0, 2, 0], [0, 0, 2], [0, 0, 3]],   // [pose, hair, extra]
         slots = [1, 3, 4, 5, 7, 8, 9, 11, 12];
     for (i = traits.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), tmp = traits[i]; traits[i] = traits[j]; traits[j] = tmp; }
     for (i = 0; i < traits.length; i++) { var q = P[slots[i]]; q.pose = traits[i][0]; q.hair = traits[i][1]; q.extra = traits[i][2]; if (q.extra) q.face = 1; }   // 스카프·강아지는 진행 방향을 봐야 한다
-    P[N - 1].pose = 0; P[N - 1].hair = 0; P[N - 1].extra = 1; P[N - 1].face = 1;   // 강아지
     function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
     var BOARD = 220;                                                       // 배 밑에 스며든 뒤 갑판에 나타나기까지
     function under(p) { return shipL + deckW * Math.max(.22, Math.min(.74, .075 + p.slot * .755)); }   // 배 밑 도착점 x — 키일(선체 바닥 20~76%) 아래로 모인다
@@ -218,18 +217,7 @@
         ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();
       }
       var extra = p ? p.extra : 0, warm = 'rgba(255,176,112,' + a.toFixed(3) + ')';
-      if (extra === 1) {                                                                      // 강아지와 함께 — 발밑 앞쪽에 작은 강아지, 줄, 살랑이는 꼬리
-        var dx = tw * 1.15 + h * .34, wag = Math.sin(tb / 110 + (p ? p.ph : 0)) * .5;
-        ctx.strokeStyle = warm; ctx.lineWidth = Math.max(.7, aw * .5);
-        ctx.beginPath(); ctx.moveTo(tw * 1.15, hy * .9); ctx.quadraticCurveTo(tw * 1.15 + h * .12, hy * .55, dx - h * .04, -h * .2); ctx.stroke();   // 줄 — 손에서 목까지
-        ctx.fillStyle = g; ctx.strokeStyle = g;
-        ctx.beginPath(); ctx.ellipse(dx + h * .1, -h * .12, h * .17, h * .075, 0, 0, 6.283); ctx.fill();                  // 몸
-        ctx.beginPath(); ctx.arc(dx - h * .02, -h * .19, h * .07, 0, 6.283); ctx.fill();                                  // 머리
-        ctx.beginPath(); ctx.moveTo(dx - h * .07, -h * .24); ctx.lineTo(dx - h * .08, -h * .3); ctx.lineTo(dx - h * .03, -h * .25); ctx.fill();   // 귀
-        ctx.lineWidth = Math.max(.8, w * .16);
-        ctx.beginPath(); ctx.moveTo(dx + h * .02, -h * .08); ctx.lineTo(dx + h * .02, 0); ctx.moveTo(dx + h * .2, -h * .08); ctx.lineTo(dx + h * .2, 0); ctx.stroke();   // 다리
-        ctx.beginPath(); ctx.moveTo(dx + h * .26, -h * .15); ctx.quadraticCurveTo(dx + h * .34, -h * .22 - wag * h * .06, dx + h * .3, -h * .3 + wag * h * .05); ctx.stroke();   // 꼬리
-      } else if (extra === 2) {                                                                // 목말 탄 아이 — 어깨 위에 작은 아이, 두 손을 번쩍
+      if (extra === 2) {                                                                // 목말 탄 아이 — 어깨 위에 작은 아이, 두 손을 번쩍
         var ch = h * .42, cr = ch * .16, cy0 = ny + w * .05;                                    // 아이 발 = 어깨
         ctx.beginPath(); ctx.arc(0, cy0 - ch + cr, cr, 0, 6.283); ctx.fill();                                              // 머리
         ctx.beginPath(); ctx.moveTo(-ch * .2, cy0 - ch + cr * 2.2); ctx.lineTo(ch * .2, cy0 - ch + cr * 2.2); ctx.lineTo(ch * .16, cy0 - ch * .32); ctx.lineTo(-ch * .16, cy0 - ch * .32); ctx.closePath(); ctx.fill();   // 몸
@@ -292,6 +280,42 @@
       pg.addColorStop(0, 'rgba(255,240,220,' + Math.min(1, .9 * I).toFixed(3) + ')'); pg.addColorStop(.25, 'rgba(255,200,150,' + Math.min(1, .4 * I).toFixed(3) + ')'); pg.addColorStop(1, 'rgba(255,180,120,0)');
       ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
       ctx.beginPath(); ctx.arc(0, 0, 1.7, 0, 6.283); ctx.fillStyle = 'rgba(255,250,240,' + Math.min(1, I).toFixed(3) + ')'; ctx.fill();
+      ctx.restore();
+    }
+    /* 갑판의 강아지(사용자 "목줄 말고 독립적으로, 사람들 사이를 가로질러 배 양쪽 끝을 뛰어다니면 재밌겠다") —
+       첫 크루가 타면 선미에서 뛰어 올라와 뱃머리~선미를 왕복한다. 끝에 닿으면 멈춰 서서 방향을 돌리고, 가끔 아무 데서나 멈춰 킁킁댄다.
+       오른쪽으로 달릴 땐 사람들 앞으로, 돌아올 땐 뒤로 지나가 사이를 가로지르는 깊이가 생긴다. 네 다리 교차·몸 들썩임·꼬리는 달릴 때 빠르게. */
+    var dog = { x: 0, dir: 1, mode: 'run', until: 0, speed: .07, born: (P[1] ? P[1].d + P[1].dur : 900) + BOARD + 250, on: false };
+    function dogStep(t, dt) {
+      var xl = shipL + deckW * .06, xr = shipL + deckW * .92;
+      if (!dog.on) { dog.on = true; dog.x = xl - 6; dog.dir = 1; }
+      if (dog.mode === 'run') {
+        dog.x += dog.dir * dog.speed * dt;
+        if (dog.x >= xr) { dog.x = xr; dog.mode = 'turn'; dog.until = t + 350 + Math.random() * 450; }
+        else if (dog.x <= xl) { dog.x = xl; dog.mode = 'turn'; dog.until = t + 350 + Math.random() * 450; }
+        else if (Math.random() < dt * .00045) { dog.mode = 'sniff'; dog.until = t + 350 + Math.random() * 500; }   // 가끔 멈춰 킁킁
+      } else if (t >= dog.until) {
+        if (dog.mode === 'turn') dog.dir *= -1;
+        dog.mode = 'run'; dog.speed = .06 + Math.random() * .03;
+      }
+    }
+    function drawDog(t) {
+      var pos = tf(dog.x, deckY), run = dog.mode === 'run', ph = t / 45, bob = run ? Math.abs(Math.sin(ph)) * .9 : 0;
+      var L = 8.5, Hh = 4.6, a = .95;                                     // 몸길이·어깨높이
+      ctx.save(); ctx.translate(pos[0], pos[1] - bob); ctx.rotate(sh.a); ctx.scale(dog.dir, 1);
+      ctx.shadowColor = 'rgba(255,190,130,.5)'; ctx.shadowBlur = 2;
+      var g = ctx.createLinearGradient(0, -Hh - 2, 0, 0); g.addColorStop(0, 'rgba(255,236,214,' + a + ')'); g.addColorStop(1, 'rgba(255,206,166,' + a + ')');
+      ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineWidth = 1.1;
+      var sniff = dog.mode === 'sniff' ? Math.sin(t / 120) * .6 : 0;
+      ctx.beginPath(); ctx.ellipse(0, -Hh * .78, L * .5, Hh * .42, 0, 0, 6.283); ctx.fill();                                 // 몸
+      ctx.beginPath(); ctx.arc(L * .55, -Hh * 1.05 + sniff, Hh * .42, 0, 6.283); ctx.fill();                                 // 머리 — 킁킁댈 땐 아래로
+      ctx.beginPath(); ctx.moveTo(L * .38, -Hh * 1.35 + sniff); ctx.lineTo(L * .3, -Hh * 1.75 + sniff); ctx.lineTo(L * .5, -Hh * 1.4 + sniff); ctx.fill();   // 귀
+      var s1 = run ? Math.sin(ph) * 2.2 : 0, s2 = -s1;                                                                        // 네 다리 교차
+      ctx.beginPath();
+      ctx.moveTo(L * .32, -Hh * .5); ctx.lineTo(L * .32 + s1, 0); ctx.moveTo(L * .18, -Hh * .5); ctx.lineTo(L * .18 + s2, 0);
+      ctx.moveTo(-L * .2, -Hh * .5); ctx.lineTo(-L * .2 + s2, 0); ctx.moveTo(-L * .36, -Hh * .5); ctx.lineTo(-L * .36 + s1, 0); ctx.stroke();
+      var wag = Math.sin(t / (run ? 60 : 130)) * .9;                                                                          // 꼬리 — 달릴 때 빠르게
+      ctx.beginPath(); ctx.moveTo(-L * .48, -Hh * .95); ctx.quadraticCurveTo(-L * .62, -Hh * 1.4 + wag, -L * .55 - wag * .4, -Hh * 1.75); ctx.stroke();
       ctx.restore();
     }
     var t0 = performance.now(), prevT = 0, litSet = false;
@@ -357,6 +381,8 @@
       }
       var spin = t < HORN + 300 ? 0 : Math.min(1, (t - HORN - 300) / 1300); spin = spin * spin * (3 - 2 * spin);
       propeller(spin, dt);
+      var dogOn = t >= dog.born; if (dogOn) dogStep(t, dt);
+      if (dogOn && dog.dir < 0) drawDog(t);                                // 돌아올 땐 사람들 뒤로 지나간다
       for (k = 0; k < N; k++) {
         var p2 = P[k], age2 = t - (p2.d + p2.dur) - BOARD;
         if (age2 < 0) continue;                                            // 승선 — 배 밑에 스며든 빛이 한 박자 뒤 갑판 위에 사람으로 솟아오른다
@@ -374,6 +400,7 @@
           ctx.fillStyle = 'rgba(255,240,220,' + (.55 * flash).toFixed(3) + ')'; ctx.fill();
         }
       }
+      if (dogOn && dog.dir > 0) drawDog(t);                                // 오른쪽으로 달릴 땐 사람들 앞으로
       requestAnimationFrame(frame);       // 캔버스는 지우지 않는다 — 크루가 갑판에 남아 배와 함께 흔들린다
     }
     requestAnimationFrame(frame);
