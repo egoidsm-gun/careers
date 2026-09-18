@@ -452,9 +452,9 @@ a.row:hover .t{color:var(--acc)}
 @media (max-height:520px){.final{height:auto}.final .pin-in{position:static;height:auto;min-height:100svh}
   /* 가운데 정렬이 남기는 버튼 아래 여백만큼 문서 끝에서 버튼이 위로 밀린다 — 위 패딩을 키워 콘텐츠를 내려 그 여백을 없앤다 */
   .final .wrap{padding-top:calc(var(--nav) + 96px)}
-  .final .btn{padding:9px 36px 16px}}   /* 배도 납작하게 — 세로 375px에 내비·문구·배·푸터가 다 들어가야 한다 */
+  .final .btn{padding:7px 32px 13px}}   /* 배도 납작하게 — 세로 375px에 내비·문구·배·푸터가 다 들어가야 한다 */
 @media (max-height:520px) and (max-width:1179px){
   :root{--nav:56px}
-  .foot{padding:24px 0}
+  .foot{padding:24px 0;margin-top:16px}   /* QA(2026-09-18): 승선 버튼이 배 모양이 되며 42→50px로 높아져 812×375·667×375에서 다시 내비 밑에 살짝 잠겼다(실측 텍스트 기준 0.2~2.2px, 배 갑판까지 치면 최대 14px) — 버튼-푸터 간격이 아니라 이 아래(푸터) 여백을 더 줄여 확보한다 */
   .btn{height:42px}
 }
