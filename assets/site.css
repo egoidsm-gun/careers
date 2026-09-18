@@ -435,6 +435,10 @@ a.row:hover .t{color:var(--acc)}
 .flogo{height:18px;width:auto;margin-bottom:16px}
 .f1 p{margin:0;color:var(--fg2);line-height:1.6}
 .f1 .disp{color:var(--mute);letter-spacing:.1em;font-size:11px}
+/* 대표 서명 크레딧(2026-09-18, 사용자 요청) — 푸터 워드마크 블록 아래 조용히. 서명 PNG는 흰색 단색 알파 */
+.sig{margin-top:20px;opacity:.5}
+.sig span{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:5px}
+.sig .sign{display:block;width:112px;height:auto}
 .f3{border-top:1px solid var(--line);padding-top:24px;display:flex;flex-wrap:wrap;gap:8px 24px}
 .f3 a:hover{color:var(--fg)}
 
