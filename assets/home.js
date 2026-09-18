@@ -144,9 +144,13 @@
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
     /* 개성 배정(사용자 "개성적인 사람들끼리 겹치지 않게" → "2~3명 더, 매력적이게") — 특징 10가지를 각각 한 명씩만.
        자세 5종(손 흔들기·주머니 손·팔짱·한 손 인사·뒷짐) · 머리 2종(긴 머리·올린 머리) · 매력 2종(목말 탄 아이·휘날리는 스카프).
-       9가지를 기본형 4명(i=2·6·10·13)을 남기고 셔플. 캡틴(P[0]) 제외. 강아지는 사람에 딸리지 않고 따로 갑판을 뛰어다닌다(아래 dog). */
+       9가지를 기본형 4명(i=1·6·10·13)을 남기고 셔플. 캡틴(P[0]) 제외. 강아지는 사람에 딸리지 않고 따로 갑판을 뛰어다닌다(아래 dog).
+       i=1(선미 첫 자리)은 항상 기본형으로 비워 둔다(QA) — 프로펠러와 가장 가까운 자리라, 손 흔들기·한 손 인사가
+       몸 방향(face=-1, 옆사람 쪽을 보는 35%)과 겹치면 흔든 손이 반대로 뒤집혀 프로펠러 쪽으로 뻗고,
+       스카프의 뒤로 흐르는 물결도 그쪽으로 뻗어 실측 300회 시뮬레이션에서 12%가 프로펠러와 겹쳤다(최대 -6.3px).
+       i=2로 옮기면(자리가 7.5%p 더 배 안쪽) 같은 시뮬레이션에서 0% — 여유가 3px 이상으로 늘어난다. */
     var traits = [[1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0], [5, 0, 0], [0, 1, 0], [0, 2, 0], [0, 0, 2], [0, 0, 3]],   // [pose, hair, extra]
-        slots = [1, 3, 4, 5, 7, 8, 9, 11, 12];
+        slots = [2, 3, 4, 5, 7, 8, 9, 11, 12];
     for (i = traits.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), tmp = traits[i]; traits[i] = traits[j]; traits[j] = tmp; }
     for (i = 0; i < traits.length; i++) { var q = P[slots[i]]; q.pose = traits[i][0]; q.hair = traits[i][1]; q.extra = traits[i][2]; if (q.extra) q.face = 1; }   // 스카프·강아지는 진행 방향을 봐야 한다
     function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
@@ -239,7 +243,7 @@
         ctx.beginPath(); ctx.moveTo(-ch * .2, cy0 - ch + cr * 2.4); ctx.lineTo(-ch * .42, cy0 - ch * 1.25 - up); ctx.moveTo(ch * .2, cy0 - ch + cr * 2.4); ctx.lineTo(ch * .42, cy0 - ch * 1.25 + up); ctx.stroke();   // 두 손 번쩍
       } else if (extra === 3) {                                                                // 휘날리는 스카프 — 목에서 뒤(선미 쪽)로 물결치며 흐른다
         ctx.strokeStyle = warm; ctx.lineWidth = Math.max(.9, aw * .95); ctx.beginPath(); ctx.moveTo(-r * .3, ny - h * .02);
-        var kq, seg = h * .12;
+        var kq, seg = h * .04;   // 뒷사람과의 평균 간격은 9.5px이지만 5퍼센타일이 6px대라(QA) .12는 뒷사람 머리를 가로지르는 프레임이 절반 넘게 나왔다 — 짧게
         for (kq = 1; kq <= 5; kq++) ctx.lineTo(-r * .3 - kq * seg, ny - h * .02 - kq * h * .025 + Math.sin(tb / 170 + kq * .9 + (p ? p.ph : 0)) * h * .045 * Math.min(1, kq / 2));
         ctx.stroke();
       }
@@ -295,8 +299,9 @@
       ctx.restore();
     }
     /* 갑판의 강아지 — 선장 뒤(선미 쪽) 갑판에 앉아 꼬리만 살랑살랑 흔든다(사용자: 뛰어다니는 건 "너무 나댄다" → "선장 뒤에 앉아서 꼬리 흔드는 걸로").
-       선장이 승선한 직후 옆에 나타나(300ms 페이드·4px 솟음), 가끔 고개를 선장 쪽으로 살짝 든다. 배 자세(tf)를 따른다. */
-    var DOGX = .79, dogBorn = P[0].d + P[0].dur + BOARD + 150;
+       선장이 승선한 직후 옆에 나타나(300ms 페이드·4px 솟음), 가끔 고개를 선장 쪽으로 살짝 든다. 배 자세(tf)를 따른다.
+       .79는 선장(정상 자세로 돌아온 양팔) 코와 0.87px까지 붙어 있었다(QA 실측) — .776으로 살짝 내려 양쪽(선장·왼쪽 크루)에 약 3.6px씩 여유. */
+    var DOGX = .776, dogBorn = P[0].d + P[0].dur + BOARD + 150;
     function drawDog(t) {
       var age = t - dogBorn; if (age < 0) return;
       var a = Math.min(1, age / 300), rise = (1 - a) * 4, pos = tf(shipL + deckW * DOGX, deckY);
@@ -360,7 +365,11 @@
         }
         var e2 = 1 - Math.pow(1 - u, 2.2);                                 // 다가갈수록 느려진다
         var cur = at(p, e2), prev = at(p, Math.max(0, e2 - .11));          // 꼬리
-        var al = Math.min(1, u / .12) * (u > .84 ? (1 - u) / .16 : 1);     // 배 밑에 닿으며 스며든다
+        // 출발점이 캔버스 밖 150~450px 밖이라(사용자 "넓게서 모여드는" 지시) u=0부터 밝기를 올리면 캔버스에
+        // 들어오기도 전에 다 밝아져, 좁은 화면(뷰포트 <640px)에서는 실측 100%가 이미 완전히 밝은 채로 뿅 나타났다(QA) —
+        // 화면 안에 처음 들어온 순간(vu0)을 따로 기억해 그때부터 밝기를 올린다.
+        if (p.vu0 == null && cur[0] >= 0 && cur[0] <= W && cur[1] >= 0 && cur[1] <= H) p.vu0 = u;
+        var al = Math.min(1, (p.vu0 == null ? 0 : u - p.vu0) / .12) * (u > .84 ? (1 - u) / .16 : 1);
         var grd = ctx.createLinearGradient(prev[0], prev[1], cur[0], cur[1]);
         grd.addColorStop(0, 'rgba(237,109,32,0)');
         grd.addColorStop(1, 'rgba(255,190,130,' + (.9 * al).toFixed(3) + ')');
