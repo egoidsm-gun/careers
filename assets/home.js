@@ -82,8 +82,10 @@
       // 크루 행렬은 승선 구간이 화면을 붙잡고 조금 지난 뒤에 — 화면이 멈춰 있는 동안 벌어져야 시선이 모인다
       // 핀이 꺼진 화면(짧은 세로)에서는 progress()가 항상 1이라 섹션이 눈에 들어왔는지도 함께 본다
       if (sec.classList.contains('final') && !crewStarted && p > .12 && sec.getBoundingClientRect().top < vh * .5) {
-        crewStarted = true;
-        if (startBoarding) startBoarding();                                // 캔버스는 이미 떠 있다 — 여기서는 빛의 행렬만 출발시킨다
+        // 보통은 IntersectionObserver(board)가 먼저 돌아 캔버스가 이미 떠 있다. 단 한 번에 이 지점으로 뛰어들면
+        // (앵커·빠른 스크롤·중간에서 새로고침) 이 트리거가 먼저 와서 startBoarding이 아직 없다 — 그때는 여기서 띄운다.
+        if (!startBoarding && typeof board === 'function') board();
+        if (startBoarding) { crewStarted = true; startBoarding(); }        // 캔버스가 떠야 행렬이 출발한다 — 실패하면 다음 프레임에 다시 시도
       }
       var all = [];
       sec.querySelectorAll('.words').forEach(function (g) { (g.__w || []).forEach(function (w) { all.push(w); }); });
@@ -133,7 +135,7 @@
       P.push({ sx: .5 + side * r, sy: .80 + Math.random() * .40,            // 버튼 아래 좌우에서 출발 — 글자 위를 지나지 않는다
                slot: cap ? 1.02 : (i - 1 + .5) / (N - 1) * .84 + (Math.random() - .5) * .5 / N,   // 크루는 선미 7.5%~71%, 캡틴은 84.5%(사이가 비어 눈에 띈다)
                arc: side * (.05 + Math.random() * .09),
-               d: (140 + i * 105 + (cap ? 0 : Math.random() * 80)) * slow, dur: (880 + Math.random() * 520) * slow,
+               d: (140 + i * 135 + (cap ? 0 : Math.random() * 90)) * slow, dur: (1080 + Math.random() * 620) * slow,   // 시차·비행 시간 모두 여유 있게(2026-09-19 사용자 "빛이 몰리는 시간과 탑승 시간을 조금 더 길게")
                w: 1.2 + Math.random() * 1.7,
                /* 개성(사용자 "사람들마다 개성이 느껴지게") — 직업 소지품 대신 사람 자체의 다양성: 키·체격·머리·자세·몸 방향·각자의 리듬 */
                h: cap ? 18 : 12 + Math.random() * 2.5, wf: cap ? .40 : .33 + Math.random() * .06,   // 키 12~14.5 · 체격 .33~.39 — 편차는 작게(사용자 "크기 차이 너무 크지 않게"), 개성은 머리·자세·방향·리듬으로
@@ -143,16 +145,16 @@
     }
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0) + 220;   // + 배 밑→갑판 등장 시간
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
-    /* 빛은 20줄기(2026-09-19 사용자 30 → 25 → "아직도 많다, 20개로") — 그중 14개가 크루가 되고, 나머지 6개는 선체에 스며들기만 한다.
+    /* 빛은 28줄기(2026-09-19 사용자 30 → 25 → 20 → "28개로") — 그중 14개가 크루가 되고, 나머지 14개는 선체에 스며들기만 한다.
        ★ 굵기·속도·밝기는 크루의 빛과 똑같다: 앞서 가늘고 옅은 빛을 따로 뿌렸을 때 사용자가 "별로"라며 되돌렸다(커밋 304c598).
        시차만 크루 구간(140~last) 사이에 끼워 넣어 같은 시간에 두 배가 몰려들게 한다. */
-    var NS = 6, S = [];
+    var NS = 14, S = [];
     for (i = 0; i < NS; i++) {
       var sside = i % 2 ? 1 : -1, sr = .30 + Math.random() * .34;
       S.push({ sx: .5 + sside * sr, sy: .80 + Math.random() * .40, slot: Math.random(),
                arc: sside * (.05 + Math.random() * .09),
                d: (140 + (i + Math.random()) / NS * (P[N - 1].d / slow - 140)) * slow,
-               dur: (880 + Math.random() * 520) * slow, w: 1.2 + Math.random() * 1.7 });
+               dur: (1080 + Math.random() * 620) * slow, w: 1.2 + Math.random() * 1.7 });
     }
     S.forEach(function (q) { if (q.d + q.dur > last - 260) q.d = Math.max(120 * slow, last - 260 - q.dur); });   // 뱃고동 뒤까지 날아오지 않게
     /* 개성 배정(사용자 "개성적인 사람들끼리 겹치지 않게" → "2~3명 더, 매력적이게") — 특징 10가지를 각각 한 명씩만.
@@ -167,7 +169,7 @@
     for (i = traits.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), tmp = traits[i]; traits[i] = traits[j]; traits[j] = tmp; }
     for (i = 0; i < traits.length; i++) { var q = P[slots[i]]; q.pose = traits[i][0]; q.hair = traits[i][1]; q.extra = traits[i][2]; if (q.extra) q.face = 1; }   // 스카프·강아지는 진행 방향을 봐야 한다
     function spot(p) { return shipL + deckW * (.075 + p.slot * .755); }    // 배가 오른쪽을 보므로 뱃머리(오른쪽 17%)를 비운다
-    var BOARD = 220;                                                       // 선체에 스며든 뒤 갑판에 나타나기까지
+    var BOARD = 260;                                                       // 선체에 스며든 뒤 갑판에 나타나기까지
     /* 도착점은 선체 윤곽 전체(사용자 "배 아래에만 집중돼 부자연스럽다 → 자연스럽게 배로 모여드는 느낌"):
        선미 쪽 사람은 선미 옆면, 뱃머리 쪽은 뱃머리 옆면, 가운데는 바닥으로 — 자기 자리 아래의 선체 가장자리에 닿는다. */
     function under(p) {
