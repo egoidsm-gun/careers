@@ -623,7 +623,7 @@
 
   /* ---------- 크루의 별자리(2026-09-19) — 사진 타일 대신 크루를 별로 그린다 ----------
      항해자는 별로 길을 찾고, 이 배의 별자리가 크루다. 헤드라인 단어가 채워지는 리듬(핀 진행도)에 맞춰 별이 하나씩
-     켜지고 그 사이로 가는 선이 이어져 하나의 별자리가 된다. 별은 승선 구간의 크루와 같은 14개 — 별자리였던 크루가
+     켜지고 그 사이로 가는 선이 이어져 하나의 별자리가 된다. 별은 갑판에 오르는 식구 수와 같은 15개(크루 14 + 강아지 1) — 별자리였던 이들이
      마지막에 배에 오른다. 점·선 그래프처럼 보이지 않게: 선은 최소 신장 트리 + 닫는 선 하나(다른 선과 교차하지 않을 때만),
      굵기 1px, 별은 밝기 3등급(밝은 3·보통 7·옅은 4). 글자 상자(눈썹~서브 카피)를 Range로 실측해 그 둘레 바깥에만 놓고,
      위는 내비 아래부터. 모양은 결정적 난수라 방문마다 같다. 켜질 때는 링 없이 심이 잠깐 세지는 것만(파동 링은 폐기된 어휘).
@@ -632,7 +632,7 @@
     var sec = document.querySelector('.pin.crew'), host = sec && sec.querySelector('.pin-in'); if (!host) return;
     var cv = document.createElement('canvas'); cv.className = 'sky'; cv.setAttribute('aria-hidden', 'true');
     host.insertBefore(cv, host.firstChild);
-    var ctx = cv.getContext('2d'), W = 0, H = 0, N = 14, stars = [], edges = [], ok = false, still = reduced || editing;
+    var ctx = cv.getContext('2d'), W = 0, H = 0, N = 15, stars = [], edges = [], ok = false, still = reduced || editing;   // 15 = 갑판의 크루 14 + 강아지 1(2026-09-19 사용자 "강아지도 별 하나로 쳐줘")
     function rng(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
     function textBox() {                                                   // 눈썹~서브 카피 글자 상자(캔버스 좌표)
       var hr = host.getBoundingClientRect(), els = sec.querySelectorAll('.wrap > *'), b = null;
