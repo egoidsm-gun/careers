@@ -8,7 +8,8 @@
      뒤로가기(back_forward)와 앵커(#해시)는 건드리지 않는다 — 그때는 보던 자리로 돌아가는 게 맞다 -->
 <script>try{var h=document.documentElement;if(location.hash==='#edit'){h.classList.add('ident-off')}else{var nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];var reload=nv&&nv.type==='reload';var back=nv&&nv.type==='back_forward';if(!location.hash&&'scrollRestoration' in history)history.scrollRestoration=back?'auto':'manual';var same=document.referrer&&document.referrer.indexOf(location.origin)===0;if(same&&!reload)h.classList.add('ident-seen');
 /* 인트로가 도는 동안 화면을 붙잡는다(2026-09-19 사용자 지시 "로딩중일 땐 로딩 화면만, 뷰가 고정") — 조금만 내려가도 빛이 amb 감쇠로 꺼져 로딩이 반쯤 지나간 채로 보인다.
-   푸는 시각 = 히어로 글자가 다 자리 잡는 때(--t0 + 마지막 단어 지연 .52s + rise 1.05s)에 여유를 더한 값. 뒤로가기·앵커 진입은 보던 자리로 가는 게 맞으니 잠그지 않는다 */
+   푸는 시각 = 히어로 글자가 뜨기 시작하는 --t0(3.08s / 복귀 .5s) — 글자가 다 자리 잡을 때(4.7s)까지 잡아 두면 답답해서 사용자가 줄였다(2026-09-19).
+   뒤로가기·앵커 진입은 보던 자리로 가는 게 맞으니 잠그지 않는다 */
 var mo=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
 if(!back&&!location.hash&&!mo){h.classList.add('intro-lock');
 /* overflow:hidden만으로는 프로그래밍 스크롤(앵커 점프·복원·스크립트)이 그대로 통과한다 — 실측 확인.
@@ -17,7 +18,7 @@ var hold=function(){if(window.pageYOffset)window.scrollTo(0,0)},stop=function(e)
 key=function(e){if(' PageDown PageUp ArrowDown ArrowUp End Home'.split(' ').indexOf(e.key)>=0)e.preventDefault()},
 unlock=function(){h.classList.remove('intro-lock');removeEventListener('scroll',hold);removeEventListener('wheel',stop);removeEventListener('touchmove',stop);removeEventListener('keydown',key)};
 addEventListener('scroll',hold,{passive:true});addEventListener('wheel',stop,{passive:false});addEventListener('touchmove',stop,{passive:false});addEventListener('keydown',key);
-setTimeout(unlock,h.classList.contains('ident-seen')?2100:4700);
+setTimeout(unlock,h.classList.contains('ident-seen')?600:3100);
 /* 인트로 도중에 다른 페이지로 갔다가 뒤로 오면 잠긴 DOM이 bfcache에서 그대로 복원되는데 타이머는 다시 돌지 않는다 — 그대로 두면 영구 잠금 */
 addEventListener('pageshow',function(e){if(e.persisted)unlock()})}}}catch(e){}</script>
 <canvas id="aurora" aria-hidden="true"></canvas>
