@@ -164,11 +164,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .pin .w.on{opacity:1}
 .crew{height:210svh}   /* 크루 핀 — 이미지 없이 글자만이라 개척선(240)보다 조금 짧게 붙잡는다 */
 
-/* 크루의 별자리(2026-09-19, 사용자 "주변 사진들이 진짜 마음에 안들어 → 추천안(별자리)으로 진행") — 사진 타일 대신
-   home.js `constellation()`이 <canvas class="sky">에 크루 14명을 별로 그린다. 글자 상자 바깥, 내비 아래에만 놓이고
-   핀 진행도에 맞춰 하나씩 켜지며 가는 선으로 이어진다. 이 구간만 가운데 정렬(.center)인 것은 그대로. */
 .crew .wrap > *{position:relative;z-index:2}
-.crew .sky{position:absolute;inset:0;z-index:-1;pointer-events:none}
 /* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 가장자리를 스친다.
    눈썹(--eb)은 홈 공통값이라 건드리지 않는다(구간마다 비율이 다른 건 의도된 것 — CLAUDE.md 눈썹 규칙) */
 .crew .giant{font-size:clamp(38px,8.2vw,124px)}
@@ -176,7 +172,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
    문구는 내 초안이라 편집 모드로 고칠 수 있다(2026-09-19 사용자 "넷플릭스처럼 아래 서브 카피를") */
 .crew .lead{margin:clamp(20px,2.2vw,34px) auto 0;max-width:min(560px,86vw);font-size:clamp(16px,1.6vw,21px);text-wrap:balance}
 /* 짧은 세로 화면(랜드스케이프 폰) — 키운 글자가 네 줄이라 그대로 두면 화면을 넘긴다. 글자를 줄이고 사진은 접는다 */
-@media (max-height:520px){.crew .giant{font-size:clamp(26px,4.4vw,52px)}.crew .sky{display:none}}
+@media (max-height:520px){.crew .giant{font-size:clamp(26px,4.4vw,52px)}}
 .ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95);transform:scale(calc(1.22 - var(--p,0)*.22));-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent)}
 .ship .pin-in::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(11,11,12,.4);opacity:var(--p,0);-webkit-mask-image:linear-gradient(180deg,transparent,#000 25%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 25%,#000 70%,transparent)}
 
