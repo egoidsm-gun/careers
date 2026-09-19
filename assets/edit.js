@@ -56,7 +56,16 @@
   }
 
   function n(s) { return s.replace(/\s+/g, ' ').trim(); }
-  function clean(h) { return h.replace(/&nbsp;/g, ' ').replace(/(<br\s*\/?>)+\s*$/, ''); }
+  /* 저장 직전 정리. <div>·<p>는 줄바꿈으로 바꾼다 — contenteditable에서 Enter는 insertLineBreak로 가로채 두었지만
+     붙여넣기나 브라우저 기본 동작으로 블록이 끼어드는 경우가 있고, <p> 안에 <div>가 들어가면 파싱 규칙상
+     그 자리에서 문단이 강제로 닫혀 뒷부분이 스타일 밖으로 튕겨 나간다(2026-09-19 크루 서브 카피 둘째 줄이
+     작게 나온 원인). 나머지 태그는 손대지 않는다 — <br>·<span> 같은 건 문구에 쓰인다. */
+  function clean(h) {
+    return h.replace(/&nbsp;/g, ' ')
+            .replace(/<(div|p)\b[^>]*>/gi, '<br>').replace(/<\/(div|p)>/gi, '')
+            .replace(/^(\s*<br\s*\/?>)+/i, '')
+            .replace(/(<br\s*\/?>)+\s*$/, '');
+  }
   function changed() { return els.filter(function (el) { return n(el.innerHTML) !== n(orig[el.getAttribute('data-e')]); }); }
   function refresh() {
     var c = changed().length;
