@@ -164,7 +164,47 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .pin .w.on{opacity:1}
 .crew{height:210svh}   /* 크루 핀 — 이미지 없이 글자만이라 개척선(240)보다 조금 짧게 붙잡는다 */
 
-.crew .wrap > *{position:relative;z-index:2}
+/* 크루 얼굴 카드(2026-09-20) — 레퍼런스 jobs.netflix.com "Dream team": 거대 글자가 한가운데, 진짜 사람 사진이 귀퉁이에서
+   화면 밖으로 걸쳐 잘린 라운드 카드로 어둡게 깔린다. 처음 사진 타일(2026-09-18)이 실패한 건 배치가 아니라 내용(스톡 우주·손 조각)이었다 —
+   이번엔 블로그 크루 인터뷰의 대화 중 얼굴이라 같은 배치가 살아난다. 카드는 <a>(인터뷰 링크)이고 호버/포커스에 캡션(글 제목 = 직군+한 일)이
+   뜬다. 터치 기기는 캡션을 늘 보인다. 움직임은 핀 진행도 --p만(JS 없음). 폭별로 2(폰)/3/5/6/7장. */
+.crew .wrap > *{position:relative;z-index:2;pointer-events:auto}
+.crew .wrap{pointer-events:none}   /* 글자 상자(투명)가 좌우 가장자리 카드 위를 덮어 호버·클릭을 가로채지 않게 — 글자 자체는 auto */
+.shots{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.shot{position:absolute;display:block;border-radius:14px;overflow:hidden;line-height:0;pointer-events:auto;color:#fff;
+  box-shadow:0 26px 70px rgba(0,0,0,.6);
+  opacity:calc(.04 + var(--p,0) * .96);
+  transform:translate3d(0,calc((1 - var(--p,0)) * var(--dy,70px)),0) scale(calc(1.07 - var(--p,0) * .07));
+  will-change:transform,opacity}
+.shot img{width:100%;height:100%;object-fit:cover;filter:brightness(.78) saturate(.9);transition:filter .35s,transform .6s}
+/* 카드 안쪽을 눌러 어둠과 이어 붙이고, 아래는 캡션이 앉을 만큼 더 어둡게 */
+.shot::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(11,11,12,.26),rgba(11,11,12,0) 38%,rgba(11,11,12,.64)),
+             radial-gradient(120% 120% at 50% 50%,transparent 62%,rgba(11,11,12,.36))}
+.shot span{position:absolute;left:14px;right:14px;bottom:12px;z-index:1;font-size:12px;line-height:1.4;font-weight:600;letter-spacing:-.01em;
+  opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+.shot span b{display:block;margin-top:3px;font-size:11px;font-weight:500;color:var(--acc)}
+.shot:hover img,.shot:focus-visible img{filter:brightness(.96) saturate(1);transform:scale(1.03)}
+.shot:hover span,.shot:focus-visible span{opacity:1;transform:none}
+.shot:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+@media (hover:none){.shot span{opacity:1;transform:none}}
+/* 자리 — 글자가 가운데를 넓게 쓰므로 네 귀퉁이 + 좌우 가장자리 중간 + (넓은 화면) 위 띠. top은 내비 아래부터 */
+.shot.s1{top:calc(var(--nav) + 12px);left:-8%;width:clamp(240px,25vw,360px);aspect-ratio:3/2;--dy:86px}   /* 1440px에서 헤드라인 첫 글자와 7,400px² 겹쳐 폭·비율을 줄였다 */
+.shot.s2{top:calc(var(--nav) + 40px);right:-6%;width:clamp(150px,16vw,250px);aspect-ratio:1/1;--dy:54px}
+.shot.s3{bottom:8%;left:-7%;width:clamp(180px,21vw,336px);aspect-ratio:5/4;--dy:112px}
+.shot.s4{bottom:4%;right:-4%;width:clamp(210px,25vw,394px);aspect-ratio:7/4;--dy:70px}
+.shot.s5{top:44%;right:-2%;width:clamp(130px,13vw,208px);aspect-ratio:1/1;--dy:132px}
+.shot.s6{top:40%;left:-3%;width:clamp(120px,11vw,176px);aspect-ratio:3/4;--dy:96px;display:none}
+.shot.s7{top:calc(var(--nav) + 10px);left:30%;width:clamp(180px,14vw,240px);aspect-ratio:16/9;--dy:60px;display:none}
+@media (min-width:1280px){.shot.s6{display:block}}
+@media (min-width:1600px){.shot.s7{display:block}}
+@media (max-width:1023px){.shot.s2,.shot.s5{display:none}}
+@media (max-width:639px){
+  .shot.s3{display:none}
+  .shot.s1{top:calc(var(--nav) + 10px);left:-10%;width:66vw}
+  .shot.s4{bottom:5%;right:-10%;width:60vw}
+}
+@media (prefers-reduced-motion:reduce){.shot{transform:none;opacity:.9}}
 /* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 가장자리를 스친다.
    눈썹(--eb)은 홈 공통값이라 건드리지 않는다(구간마다 비율이 다른 건 의도된 것 — CLAUDE.md 눈썹 규칙) */
 .crew .giant{font-size:clamp(38px,8.2vw,124px)}
@@ -172,7 +212,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
    문구는 내 초안이라 편집 모드로 고칠 수 있다(2026-09-19 사용자 "넷플릭스처럼 아래 서브 카피를") */
 .crew .lead{margin:clamp(20px,2.2vw,34px) auto 0;max-width:min(560px,86vw);font-size:clamp(16px,1.6vw,21px);text-wrap:balance}
 /* 짧은 세로 화면(랜드스케이프 폰) — 키운 글자가 네 줄이라 그대로 두면 화면을 넘긴다. 글자를 줄이고 사진은 접는다 */
-@media (max-height:520px){.crew .giant{font-size:clamp(26px,4.4vw,52px)}}
+@media (max-height:520px){.crew .giant{font-size:clamp(26px,4.4vw,52px)}.shots{display:none}}   /* 랜드스케이프 폰 — 글자만으로도 빠듯해 카드는 접는다 */
 .ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95);transform:scale(calc(1.22 - var(--p,0)*.22));-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent)}
 .ship .pin-in::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(11,11,12,.4);opacity:var(--p,0);-webkit-mask-image:linear-gradient(180deg,transparent,#000 25%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 25%,#000 70%,transparent)}
 
