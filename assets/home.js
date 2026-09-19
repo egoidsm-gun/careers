@@ -143,6 +143,18 @@
     }
     var last = P.reduce(function (m, p) { return Math.max(m, p.d + p.dur); }, 0) + 220;   // + 배 밑→갑판 등장 시간
     var HORN = last + 260, ENG = HORN + 700;                               // 마지막 크루가 발을 딛고 한 박자 뒤 뱃고동 → 이어서 시동
+    /* 빛은 30줄기(2026-09-19 사용자 "빛 숫자만 30개로") — 그중 14개가 크루가 되고, 나머지 16개는 선체에 스며들기만 한다.
+       ★ 굵기·속도·밝기는 크루의 빛과 똑같다: 앞서 가늘고 옅은 빛을 따로 뿌렸을 때 사용자가 "별로"라며 되돌렸다(커밋 304c598).
+       시차만 크루 구간(140~last) 사이에 끼워 넣어 같은 시간에 두 배가 몰려들게 한다. */
+    var NS = 16, S = [];
+    for (i = 0; i < NS; i++) {
+      var sside = i % 2 ? 1 : -1, sr = .30 + Math.random() * .34;
+      S.push({ sx: .5 + sside * sr, sy: .80 + Math.random() * .40, slot: Math.random(),
+               arc: sside * (.05 + Math.random() * .09),
+               d: (140 + (i + Math.random()) / NS * (P[N - 1].d / slow - 140)) * slow,
+               dur: (880 + Math.random() * 520) * slow, w: 1.2 + Math.random() * 1.7 });
+    }
+    S.forEach(function (q) { if (q.d + q.dur > last - 260) q.d = Math.max(120 * slow, last - 260 - q.dur); });   // 뱃고동 뒤까지 날아오지 않게
     /* 개성 배정(사용자 "개성적인 사람들끼리 겹치지 않게" → "2~3명 더, 매력적이게") — 특징 10가지를 각각 한 명씩만.
        자세 5종(손 흔들기·주머니 손·팔짱·한 손 인사·뒷짐) · 머리 2종(긴 머리·올린 머리) · 매력 2종(목말 탄 아이·휘날리는 스카프).
        9가지를 기본형 4명(i=1·6·10·13)을 남기고 셔플. 캡틴(P[0]) 제외. 강아지는 사람에 딸리지 않고 따로 갑판을 뛰어다닌다(아래 dog).
@@ -322,6 +334,30 @@
       ctx.restore(); ctx.restore();
     }
     var t0 = performance.now(), prevT = 0, litSet = false;
+    /* 날아오는 빛 한 줄기 — 크루가 될 빛(P)과 스며들기만 하는 빛(S)이 똑같이 이 함수로 그려진다 */
+    function flyer(p, t) {
+      var u = (t - p.d) / p.dur;
+      if (u < 0) return;
+      if (u >= 1) {                                                        // 선체에 스며드는 순간 — 짧은 섬광
+        var ag = t - (p.d + p.dur);
+        if (ag < 300) { var fa0 = 1 - ag / 300, kp = at(p, 1); ctx.beginPath(); ctx.arc(kp[0], kp[1], 1.5 + 6 * (1 - fa0), 0, 6.283); ctx.fillStyle = 'rgba(255,214,170,' + (.55 * fa0 * fa0).toFixed(3) + ')'; ctx.fill(); }
+        return;
+      }
+      var e2 = 1 - Math.pow(1 - u, 2.2);                                   // 다가갈수록 느려진다
+      var cur = at(p, e2), prev = at(p, Math.max(0, e2 - .11));            // 꼬리
+      // 출발점이 캔버스 밖 150~450px 밖이라(사용자 "넓게서 모여드는" 지시) u=0부터 밝기를 올리면 캔버스에
+      // 들어오기도 전에 다 밝아져, 좁은 화면(뷰포트 <640px)에서는 실측 100%가 이미 완전히 밝은 채로 뿅 나타났다(QA) —
+      // 화면 안에 처음 들어온 순간(vu0)을 따로 기억해 그때부터 밝기를 올린다.
+      if (p.vu0 == null && cur[0] >= 0 && cur[0] <= W && cur[1] >= 0 && cur[1] <= H) p.vu0 = u;
+      var al = Math.min(1, (p.vu0 == null ? 0 : u - p.vu0) / .12) * (u > .84 ? (1 - u) / .16 : 1);
+      var grd = ctx.createLinearGradient(prev[0], prev[1], cur[0], cur[1]);
+      grd.addColorStop(0, 'rgba(237,109,32,0)');
+      grd.addColorStop(1, 'rgba(255,190,130,' + (.9 * al).toFixed(3) + ')');
+      ctx.strokeStyle = grd; ctx.lineWidth = p.w;
+      ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cur[0], cur[1]); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cur[0], cur[1], p.w * .95, 0, 6.283);       // 머리의 빛점
+      ctx.fillStyle = 'rgba(255,226,196,' + (.95 * al).toFixed(3) + ')'; ctx.fill();
+    }
     function frame(now) {
       var t = now - t0, dt = Math.min(64, t - prevT); prevT = t; t_ = t;
       var vr = fin.getBoundingClientRect();
@@ -356,29 +392,8 @@
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, 6.283); ctx.fill(); ctx.restore();
       }
       ctx.lineCap = 'round';
-      for (k = 0; k < N; k++) {
-        var p = P[k], u = (t - p.d) / p.dur;
-        if (u < 0) continue;
-        if (u >= 1) {                                                      // 배 밑에 스며드는 순간 — 키일 아래 짧은 섬광
-          var ag = t - (p.d + p.dur);
-          if (ag < 300) { var fa0 = 1 - ag / 300, kp = at(p, 1); ctx.beginPath(); ctx.arc(kp[0], kp[1], 1.5 + 6 * (1 - fa0), 0, 6.283); ctx.fillStyle = 'rgba(255,214,170,' + (.55 * fa0 * fa0).toFixed(3) + ')'; ctx.fill(); }
-          continue;
-        }
-        var e2 = 1 - Math.pow(1 - u, 2.2);                                 // 다가갈수록 느려진다
-        var cur = at(p, e2), prev = at(p, Math.max(0, e2 - .11));          // 꼬리
-        // 출발점이 캔버스 밖 150~450px 밖이라(사용자 "넓게서 모여드는" 지시) u=0부터 밝기를 올리면 캔버스에
-        // 들어오기도 전에 다 밝아져, 좁은 화면(뷰포트 <640px)에서는 실측 100%가 이미 완전히 밝은 채로 뿅 나타났다(QA) —
-        // 화면 안에 처음 들어온 순간(vu0)을 따로 기억해 그때부터 밝기를 올린다.
-        if (p.vu0 == null && cur[0] >= 0 && cur[0] <= W && cur[1] >= 0 && cur[1] <= H) p.vu0 = u;
-        var al = Math.min(1, (p.vu0 == null ? 0 : u - p.vu0) / .12) * (u > .84 ? (1 - u) / .16 : 1);
-        var grd = ctx.createLinearGradient(prev[0], prev[1], cur[0], cur[1]);
-        grd.addColorStop(0, 'rgba(237,109,32,0)');
-        grd.addColorStop(1, 'rgba(255,190,130,' + (.9 * al).toFixed(3) + ')');
-        ctx.strokeStyle = grd; ctx.lineWidth = p.w;
-        ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cur[0], cur[1]); ctx.stroke();
-        ctx.beginPath(); ctx.arc(cur[0], cur[1], p.w * .95, 0, 6.283);     // 머리의 빛점
-        ctx.fillStyle = 'rgba(255,226,196,' + (.95 * al).toFixed(3) + ')'; ctx.fill();
-      }
+      for (k = 0; k < N; k++) flyer(P[k], t);                              // 크루가 될 빛 14
+      for (k = 0; k < NS; k++) flyer(S[k], t);                             // 스며들기만 하는 빛 16 — 같은 굵기·속도·밝기
       // ── 앞 캔버스: 뱃머리 등 → 프로펠러 → 갑판 크루 ──
       ctx = ctxF; ctx.clearRect(0, 0, W, H);
       housing();
