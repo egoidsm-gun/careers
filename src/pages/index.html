@@ -6,7 +6,20 @@
      상단 바는 처음부터 보인다. 사이트 안에서 홈으로 돌아올 때(같은 출처 referrer, 새로고침 아님)는 잔광 상태에서 바로 시작, #edit는 정지 화면.
      새로고침·새 진입은 브라우저의 스크롤 복원을 끄고 맨 위에서 연다 — 중간 위치로 복원되면 인트로가 화면 밖에서 재생돼 아무것도 안 보인다(사용자 지시 2026-09-18).
      뒤로가기(back_forward)와 앵커(#해시)는 건드리지 않는다 — 그때는 보던 자리로 돌아가는 게 맞다 -->
-<script>try{var h=document.documentElement;if(location.hash==='#edit'){h.classList.add('ident-off')}else{var nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];var reload=nv&&nv.type==='reload';if(!location.hash&&'scrollRestoration' in history)history.scrollRestoration=(nv&&nv.type==='back_forward')?'auto':'manual';var same=document.referrer&&document.referrer.indexOf(location.origin)===0;if(same&&!reload)h.classList.add('ident-seen')}}catch(e){}</script>
+<script>try{var h=document.documentElement;if(location.hash==='#edit'){h.classList.add('ident-off')}else{var nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];var reload=nv&&nv.type==='reload';var back=nv&&nv.type==='back_forward';if(!location.hash&&'scrollRestoration' in history)history.scrollRestoration=back?'auto':'manual';var same=document.referrer&&document.referrer.indexOf(location.origin)===0;if(same&&!reload)h.classList.add('ident-seen');
+/* 인트로가 도는 동안 화면을 붙잡는다(2026-09-19 사용자 지시 "로딩중일 땐 로딩 화면만, 뷰가 고정") — 조금만 내려가도 빛이 amb 감쇠로 꺼져 로딩이 반쯤 지나간 채로 보인다.
+   푸는 시각 = 히어로 글자가 다 자리 잡는 때(--t0 + 마지막 단어 지연 .52s + rise 1.05s)에 여유를 더한 값. 뒤로가기·앵커 진입은 보던 자리로 가는 게 맞으니 잠그지 않는다 */
+var mo=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+if(!back&&!location.hash&&!mo){h.classList.add('intro-lock');
+/* overflow:hidden만으로는 프로그래밍 스크롤(앵커 점프·복원·스크립트)이 그대로 통과한다 — 실측 확인.
+   그래서 제스처는 preventDefault로 막고, 어떤 경로로든 밀려난 위치는 scroll에서 0으로 되돌린다 */
+var hold=function(){if(window.pageYOffset)window.scrollTo(0,0)},stop=function(e){e.preventDefault()},
+key=function(e){if(' PageDown PageUp ArrowDown ArrowUp End Home'.split(' ').indexOf(e.key)>=0)e.preventDefault()},
+unlock=function(){h.classList.remove('intro-lock');removeEventListener('scroll',hold);removeEventListener('wheel',stop);removeEventListener('touchmove',stop);removeEventListener('keydown',key)};
+addEventListener('scroll',hold,{passive:true});addEventListener('wheel',stop,{passive:false});addEventListener('touchmove',stop,{passive:false});addEventListener('keydown',key);
+setTimeout(unlock,h.classList.contains('ident-seen')?2100:4700);
+/* 인트로 도중에 다른 페이지로 갔다가 뒤로 오면 잠긴 DOM이 bfcache에서 그대로 복원되는데 타이머는 다시 돌지 않는다 — 그대로 두면 영구 잠금 */
+addEventListener('pageshow',function(e){if(e.persisted)unlock()})}}}catch(e){}</script>
 <canvas id="aurora" aria-hidden="true"></canvas>
 <canvas id="stars" aria-hidden="true"></canvas>
 
