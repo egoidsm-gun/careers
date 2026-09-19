@@ -192,6 +192,9 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 /* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 가장자리를 스친다.
    눈썹(--eb)은 홈 공통값이라 건드리지 않는다(구간마다 비율이 다른 건 의도된 것 — CLAUDE.md 눈썹 규칙) */
 .crew .giant{font-size:clamp(38px,8.2vw,124px)}
+/* 헤드라인 아래 서브 카피 — 레퍼런스(jobs.netflix.com "Dream team")처럼 두 줄쯤에서 접히도록 폭을 묶는다.
+   문구는 내 초안이라 편집 모드로 고칠 수 있다(2026-09-19 사용자 "넷플릭스처럼 아래 서브 카피를") */
+.crew .lead{margin:clamp(20px,2.2vw,34px) auto 0;max-width:min(560px,86vw);font-size:clamp(16px,1.6vw,21px);text-wrap:balance}
 @media (max-width:1023px){.shot.s2,.shot.s5{display:none}}
 @media (max-width:639px){
   /* 폰에서는 글자가 화면을 거의 채우므로 위아래 귀퉁이 두 장만 남긴다 */
