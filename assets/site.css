@@ -162,50 +162,53 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .pin .giant + .giant{margin-top:.22em}
 .pin .w{opacity:.13;transition:opacity .45s}
 .pin .w.on{opacity:1}
-.crew{height:210svh}   /* 크루 핀 — 이미지 없이 글자만이라 개척선(240)보다 조금 짧게 붙잡는다 */
+.crew{height:210svh}   /* 크루 핀 — 사진이 지나가는 구간. 개척선(240)보다 조금 짧게 붙잡는다 */
 
-/* 크루 얼굴 카드(2026-09-20) — 레퍼런스 jobs.netflix.com "Dream team": 거대 글자가 한가운데, 진짜 사람 사진이 귀퉁이에서
-   화면 밖으로 걸쳐 잘린 라운드 카드로 어둡게 깔린다. 처음 사진 타일(2026-09-18)이 실패한 건 배치가 아니라 내용(스톡 우주·손 조각)이었다 —
-   이번엔 블로그 크루 인터뷰의 대화 중 얼굴이라 같은 배치가 살아난다. 카드는 <a>(인터뷰 링크)이고 호버/포커스에 캡션(글 제목 = 직군+한 일)이
-   뜬다. 터치 기기는 캡션을 늘 보인다. 움직임은 핀 진행도 --p만(JS 없음). 폭별로 2(폰)/3/5/6/7장. */
-.crew .wrap > *{position:relative;z-index:2;pointer-events:auto}
-.crew .wrap{pointer-events:none}   /* 글자 상자(투명)가 좌우 가장자리 카드 위를 덮어 호버·클릭을 가로채지 않게 — 글자 자체는 auto */
+/* 크루 얼굴 카드 — 레퍼런스 jobs.netflix.com "Dream team"(2026-09-20 사용자 "넷플릭스처럼, 지금 건 부자연스러워").
+   넷플릭스 실측: 카드는 귀퉁이에 박아 둔 장식이 아니라 sticky 화면 한가운데(소실점)에서 태어나 스크롤에 맞춰 커지며
+   바깥으로 흘러 화면 밖으로 빠지고, 뒤에서 새 카드가 다시 태어난다(perspective 200px + 10장 순환, 깊이 간격 1.21배).
+   그림자 없음 · 필터 없음 — 어둡게 만드는 건 오직 opacity(멀수록 0.03, 가까울수록 0.62)다. 붙박이 카드가 "부자연스럽다"의 정체였다.
+   여기서는 그 구조만 가져와 별이 흐르는 우리 우주에 얹었다 — 좌표·크기·불투명도는 home.js flyShots()가 핀 진행도로 계산한다.
+   카드는 <a>(인터뷰 링크)이고 가까이 온 카드에만 캡션·클릭이 살아난다. 움직임이 스크롤에 묶여 있어 손을 멈추면 카드도 멈춘다 — 그래서 호버가 된다.
+   ★ 빼야 할 사람이 있으면 index.html에서 그 <a> 한 줄만 지운다. 장 수가 줄면 자리(ANCH)도 앞에서부터 쓰인다. */
+/* 이 구간에서 누를 수 있는 건 카드뿐이다 — 투명한 글자 상자(<p>)는 화면 폭을 다 쓰므로 auto로 두면
+   가운데를 지나가는 카드의 호버·클릭을 통째로 가로챈다(실측: 헤드라인이 카드 절반을 먹었다) */
+.crew .wrap,.crew .wrap > *{pointer-events:none}
+.crew .wrap > *{position:relative;z-index:2}
+/* 아래에서 올라오는 잔광 — 넷플릭스가 이 구간을 붉은 빛으로 통째로 감싸 사진을 배경에 녹이는 자리다(실측: 카드 위아래를 덮는 overlay 이미지).
+   우리 것은 인트로의 수평선·승선의 뱃불과 같은 오렌지 — 새 모티프가 아니라 같은 광원이 여기까지 따라온 것이다.
+   이 빛이 있어야 멀리 있는 옅은 카드가 '어두운 실루엣'으로 읽힌다(검정 위에서는 그냥 안 보인다).
+   섹션 경계선 금지 규칙: 위아래는 mask로 0까지 빼서 sticky 상자의 모서리가 선으로 드러나지 않게 한다. */
+.crew .pin-in::before{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
+  background:radial-gradient(112% 66% at 50% 92%,rgba(255,126,44,.26),rgba(212,80,22,.085) 34%,rgba(96,36,10,.035) 56%,transparent 74%);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);
+  mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent)}
 .shots{position:absolute;inset:0;z-index:-1;pointer-events:none}
-.shot{position:absolute;display:block;border-radius:14px;overflow:hidden;line-height:0;pointer-events:auto;color:#fff;
-  box-shadow:0 26px 70px rgba(0,0,0,.6);
-  opacity:calc(.04 + var(--p,0) * .96);
-  transform:translate3d(0,calc((1 - var(--p,0)) * var(--dy,70px)),0) scale(calc(1.07 - var(--p,0) * .07));
-  will-change:transform,opacity}
-.shot img{width:100%;height:100%;object-fit:cover;filter:brightness(.78) saturate(.9);transition:filter .35s,transform .6s}
-/* 카드 안쪽을 눌러 어둠과 이어 붙이고, 아래는 캡션이 앉을 만큼 더 어둡게 */
+/* 카드는 전부 화면 한가운데 겹쳐 두고(inset:0 + margin:auto) 움직임은 transform만 — 매 프레임 레이아웃을 건드리지 않는다 */
+.shot{position:absolute;inset:0;margin:auto;--w:calc(var(--wb,30vw) * var(--k,1));width:var(--w);aspect-ratio:var(--ar,3/2);
+  display:block;border-radius:calc(var(--w) * .095);overflow:hidden;line-height:0;color:#fff;
+  pointer-events:none;opacity:0;transform:scale(.1);backface-visibility:hidden;will-change:transform,opacity}
+.shot img{width:100%;height:100%;object-fit:cover;filter:saturate(.92);transition:filter .35s}
+/* 캡션이 앉을 자리만 살짝 눌러 둔다 — 카드 자체를 덧칠하지는 않는다(어둡게 하는 건 opacity 몫) */
 .shot::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(11,11,12,.26),rgba(11,11,12,0) 38%,rgba(11,11,12,.64)),
-             radial-gradient(120% 120% at 50% 50%,transparent 62%,rgba(11,11,12,.36))}
-.shot span{position:absolute;left:14px;right:14px;bottom:12px;z-index:1;font-size:12px;line-height:1.4;font-weight:600;letter-spacing:-.01em;
-  opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+  background:linear-gradient(180deg,rgba(11,11,12,0) 54%,rgba(11,11,12,.62))}
+/* 캡션은 카드와 같이 확대되면 안 된다 — 카드에 걸린 scale(--s)을 그대로 되돌려 실제 크기를 고정한다(폭도 --s배로 잡아야 시각 폭이 카드와 같아진다) */
+.shot span{position:absolute;left:0;bottom:0;z-index:1;width:calc(100% * var(--s,1));padding:0 13px 11px;
+  font-size:12px;line-height:1.4;font-weight:600;letter-spacing:-.01em;text-shadow:0 1px 8px rgba(0,0,0,.75);
+  transform-origin:0 100%;transform:scale(calc(1 / var(--s,1)));opacity:0;transition:opacity .3s}
 .shot span b{display:block;margin-top:3px;font-size:11px;font-weight:500;color:var(--acc)}
-.shot:hover img,.shot:focus-visible img{filter:brightness(.96) saturate(1);transform:scale(1.03)}
-.shot:hover span,.shot:focus-visible span{opacity:1;transform:none}
+.shot:hover img,.shot:focus-visible img{filter:brightness(1.32) saturate(1.05)}
+.shot:hover span,.shot:focus-visible span{opacity:1}
 .shot:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
-@media (hover:none){.shot span{opacity:1;transform:none}}
-/* 자리 — 글자가 가운데를 넓게 쓰므로 네 귀퉁이 + 좌우 가장자리 중간 + (넓은 화면) 위 띠. top은 내비 아래부터 */
-.shot.s1{top:calc(var(--nav) + 12px);left:-8%;width:clamp(240px,25vw,360px);aspect-ratio:3/2;--dy:86px}   /* 1440px에서 헤드라인 첫 글자와 7,400px² 겹쳐 폭·비율을 줄였다 */
-.shot.s2{top:calc(var(--nav) + 40px);right:-6%;width:clamp(150px,16vw,250px);aspect-ratio:1/1;--dy:54px}
-.shot.s3{bottom:8%;left:-7%;width:clamp(180px,21vw,336px);aspect-ratio:5/4;--dy:112px}
-.shot.s4{bottom:4%;right:-4%;width:clamp(210px,25vw,394px);aspect-ratio:7/4;--dy:70px}
-.shot.s5{top:44%;right:-2%;width:clamp(130px,13vw,208px);aspect-ratio:1/1;--dy:132px}
-.shot.s6{top:40%;left:-3%;width:clamp(120px,11vw,176px);aspect-ratio:3/4;--dy:96px;display:none}
-.shot.s7{top:calc(var(--nav) + 10px);left:30%;width:clamp(180px,14vw,240px);aspect-ratio:16/9;--dy:60px;display:none}
-@media (min-width:1280px){.shot.s6{display:block}}
-@media (min-width:1600px){.shot.s7{display:block}}
-@media (max-width:1023px){.shot.s2,.shot.s5{display:none}}
-@media (max-width:639px){
-  .shot.s3{display:none}
-  .shot.s1{top:calc(var(--nav) + 10px);left:-10%;width:66vw}
-  .shot.s4{bottom:5%;right:-10%;width:60vw}
-}
-@media (prefers-reduced-motion:reduce){.shot{transform:none;opacity:.9}}
-/* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 가장자리를 스친다.
+@media (hover:none){.shot.near span{opacity:1}}   /* 터치 기기 — 가까이 온 카드만 캡션을 보여준다 */
+/* 비율은 크롭 그대로(assets/img/crew/0~6.jpg)지만 폭 계수 --k로 넓이(면적)를 맞춰 둔다 —
+   그래야 화면에서 보이는 크기 차이가 '비율이 달라서'가 아니라 '멀고 가까워서'로만 읽힌다(넷플릭스는 아예 전부 16:9 한 크기).
+   폭은 브레이크포인트 기준값 --wb 하나만 바꾸면 일곱 장이 같이 움직인다 */
+.shot.s1{--ar:4/3;--k:1}    .shot.s2{--ar:1/1;--k:.87}  .shot.s3{--ar:5/4;--k:.97}  .shot.s4{--ar:7/4;--k:1.15}
+.shot.s5{--ar:1/1;--k:.87}  .shot.s6{--ar:3/4;--k:.75}  .shot.s7{--ar:16/9;--k:1.16}
+@media (max-width:1023px){.shot{--wb:42vw}}
+@media (max-width:639px){.shot{--wb:58vw}}
+/* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 그 뒤를 지나간다.
    눈썹(--eb)은 홈 공통값이라 건드리지 않는다(구간마다 비율이 다른 건 의도된 것 — CLAUDE.md 눈썹 규칙) */
 .crew .giant{font-size:clamp(38px,8.2vw,124px)}
 /* 헤드라인 아래 서브 카피 — 레퍼런스(jobs.netflix.com "Dream team")처럼 두 줄쯤에서 접히도록 폭을 묶는다.

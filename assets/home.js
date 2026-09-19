@@ -66,6 +66,34 @@
     tick(); setInterval(tick, 1000);
   }
 
+  /* ---------- 크루 카드 항행(2026-09-20) — 화면 한가운데에서 태어나 커지며 바깥으로 흘러 나간다 ----------
+     레퍼런스 jobs.netflix.com "Dream team"을 실측해 옮긴 구조. 넷플릭스는 sticky 화면에 perspective 200px를 걸고
+     카드 10장을 깊이 1.21배 간격으로 세워, 스크롤에 맞춰 z를 당기며 화면 밖으로 흘려보내고 뒤에서 다시 태어나게 한다.
+     같은 그림을 CSS 3D 없이 2D로 재현한다 — 자리(ANCH)는 화면 중심에서 카드가 빠져나갈 방향이고,
+     진행도 u가 0→1로 돌 때 위치는 P0→P1배, 크기는 S0→S1배로 지수 증가한다(= 등속으로 다가오는 느낌).
+     ★ 위치가 크기보다 빨리 커져야(P1 ≫ S1) 카드가 너무 커지기 전에 화면 밖으로 빠진다 — 넷플릭스도 같은 비율이다.
+     움직임은 시간이 아니라 스크롤에 묶여 있다. 손을 멈추면 카드도 멈추므로 호버·클릭이 가능하다. */
+  var ANCH = [[-44, 40], [48, -44], [-8, 56], [-56, -12], [50, 34], [12, -52], [54, 14]];
+  var P0 = .085, P1 = 1.85, S0 = .085, S1 = .95, LOOPS = 1.4;
+  var shots = Array.prototype.slice.call(document.querySelectorAll('.shots .shot'));
+  function flyShots(p) {
+    var n = shots.length; if (!n) return;
+    var w = window.innerWidth, h = window.innerHeight;
+    for (var i = 0; i < n; i++) {
+      var u = (p * LOOPS + i / n) % 1;
+      var pf = P0 * Math.pow(P1 / P0, u), sf = S0 * Math.pow(S1 / S0, u);
+      var a = ANCH[i % ANCH.length], el = shots[i];
+      el.style.transform = 'translate3d(' + (a[0] * w / 100 * pf).toFixed(1) + 'px,' + (a[1] * h / 100 * pf).toFixed(1) + 'px,0) scale(' + sf.toFixed(4) + ')';
+      el.style.setProperty('--s', sf.toFixed(4));
+      // 멀수록 옅게. 끝자락 5%는 혹시 아직 화면에 걸쳐 있는 카드가 되살아날 때 튀지 않게 하는 보험이다
+      el.style.opacity = (Math.pow(u, .72) * Math.min(1, (1 - u) / .05) * .72).toFixed(3);
+      el.style.zIndex = Math.round(u * 100);
+      el.style.pointerEvents = u > .45 ? 'auto' : 'none';
+      el.classList.toggle('near', u > .6);
+    }
+  }
+  if (reduced) flyShots(.42);   // 모션 축소 — 한 장면으로 세워 두고 더는 움직이지 않는다
+
   /* ---------- 스크롤 핀: 진행도로 단어를 켜고, 배를 띄운다 ---------- */
   var pins = Array.prototype.slice.call(document.querySelectorAll('.pin'));
   function progress(sec) {
@@ -79,6 +107,7 @@
       var p = progress(sec), ship = sec.classList.contains('ship');
       // 진행도를 CSS로 넘기는 건 그림이 있는 핀뿐 — 개척선의 배 이미지(크루 핀의 별자리는 JS가 progress()를 직접 읽는다)
       if (ship || sec.classList.contains('crew')) sec.style.setProperty('--p', p.toFixed(3));
+      if (sec.classList.contains('crew') && !reduced) flyShots(p);   // 크루 카드는 진행도를 그대로 항행 좌표로 쓴다
       // 크루 행렬은 승선 구간이 화면을 붙잡고 조금 지난 뒤에 — 화면이 멈춰 있는 동안 벌어져야 시선이 모인다
       // 핀이 꺼진 화면(짧은 세로)에서는 progress()가 항상 1이라 섹션이 눈에 들어왔는지도 함께 본다
       if (sec.classList.contains('final') && !crewStarted && p > .12 && sec.getBoundingClientRect().top < vh * .5) {
