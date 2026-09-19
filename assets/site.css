@@ -189,15 +189,9 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .shot.s3{bottom:8%;left:-7%;width:clamp(180px,21vw,336px);aspect-ratio:5/4;--dy:112px}
 .shot.s4{bottom:4%;right:-4%;width:clamp(210px,25vw,394px);aspect-ratio:7/4;--dy:70px}
 .shot.s5{top:44%;right:-2%;width:clamp(120px,13vw,208px);aspect-ratio:1/1;--dy:132px}
-/* 넷플릭스 "We call it the / Dream team"의 2단 위계(2026-09-19 사용자 "그 구간 벤치마킹해서 개선"):
-   작은 줄이 거대한 줄을 받쳐 주고, 거대한 줄이 화면 폭을 꽉 채운다. 두 줄은 바짝 붙는다.
-   레퍼런스 실측 비율은 작은 줄 ≈ 거대 줄의 31%인데, 우리는 그 위에 눈썹(--eb, 홈 공통값)이 하나 더 있어
-   눈썹 < 작은 줄 < 거대 줄이 구분되도록 48%로 뒀다. 눈썹(--eb)은 홈 공통값이라 건드리지 않는다. */
-/* 이 구간만 본문 기둥(--max 1200)을 푼다 — 레퍼런스는 헤드라인이 화면 폭을 꽉 채우는데,
-   1200px에 묶여 있으면 넓은 화면일수록 비율이 떨어진다(실측 1440px 62% · 2000px 47%). */
-.crew .wrap{max-width:min(1780px,92vw)}
-.crew .crew-sm{font-size:clamp(20px,4.8vw,96px);font-weight:800;letter-spacing:-.035em;line-height:1.02;margin:0;color:var(--fg)}
-.crew .giant{font-size:clamp(40px,10vw,200px);margin-top:.02em}
+/* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 가장자리를 스친다.
+   눈썹(--eb)은 홈 공통값이라 건드리지 않는다(구간마다 비율이 다른 건 의도된 것 — CLAUDE.md 눈썹 규칙) */
+.crew .giant{font-size:clamp(38px,8.2vw,124px)}
 @media (max-width:1023px){.shot.s2,.shot.s5{display:none}}
 @media (max-width:639px){
   /* 폰에서는 글자가 화면을 거의 채우므로 위아래 귀퉁이 두 장만 남긴다 */
