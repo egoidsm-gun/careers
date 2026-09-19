@@ -180,17 +180,10 @@
       var yk = Math.max(.5, 1.06 - .5 * u * u);                              // 가운데 1.06(키일 아래) → 양끝 .5(옆면 중간)
       return [x, deckY + hullH * yk];
     }
-    /* 출발은 도착 방향에 맞춰 넓게 — 왼쪽 사람은 왼쪽에서, 오른쪽은 오른쪽에서, 가운데는 아래에서.
-       ★ 출발점은 반드시 캔버스 안이어야 한다(2026-09-19): 그 자리에 크루 구간에서 따라온 별이 떠 있고,
-       빛은 그 별이 꺼지는 순간 거기서 출발한다. 예전엔 화면 밖 150~450px에서 출발해 별을 놓을 자리가 없었다. */
-    function start(p) {
-      var f = .075 + p.slot * .755, base = f < .3 ? Math.PI : f > .6 ? 0 : Math.PI * 1.5, ang = base + p.arc * 4.5;
-      var rad = 150 + Math.abs(p.arc) * 1300 + p.sy * 90, c = Math.cos(ang), sn = -Math.sin(ang);
-      var tgt = under(p), pad = 26;                                         // 캔버스 경계까지 갈 수 있는 거리로 눌러 별이 화면 안에 남게
-      var lim = Math.min(c > 1e-6 ? (W - pad - tgt[0]) / c : c < -1e-6 ? (pad - tgt[0]) / c : Infinity,
-                         sn > 1e-6 ? (H - pad - tgt[1]) / sn : sn < -1e-6 ? (pad - tgt[1]) / sn : Infinity);
-      rad = Math.max(40, Math.min(rad, lim * (.5 + (p.ph / 6.283) * .45)));   // 경계에 딱 붙이면 별이 캔버스 좌우 끝에 일렬로 선다 — 각자 다른 깊이로 흩는다
-      return [tgt[0] + c * rad, Math.max(tgt[1] + sn * rad, deckY + 8)];    // 갑판 위에서 출발하지 않는다
+    function start(p) {                                                    // 출발은 도착 방향에 맞춰 넓게 — 왼쪽 사람은 왼쪽에서, 오른쪽은 오른쪽에서, 가운데는 아래에서
+      var f = .075 + p.slot * .755, base = f < .3 ? Math.PI : f > .6 ? 0 : Math.PI * 1.5, ang = base + p.arc * 4.5, rad = 150 + Math.abs(p.arc) * 1300 + p.sy * 90;
+      var tgt = under(p), sx = tgt[0] + Math.cos(ang) * rad, sy = tgt[1] - Math.sin(ang) * rad;
+      return [sx, Math.max(sy, deckY + 8)];                                 // 갑판 위에서 출발하지 않는다
     }
     function at(p, u) {                                                    // 넓게서 배로 모여드는 호 — 선체 위로는 올라가지 않는다
       var st = start(p), tg = under(p), sx = st[0], sy = st[1], tx = tg[0], ty = tg[1];
@@ -345,29 +338,6 @@
       ctx.restore(); ctx.restore();
     }
     var t0 = null, prevT = 0, litSet = false;                            // t0 = 행렬이 시작된 시각. 그 전에는 t=0으로 고정해 선체·프로펠러만 정지 상태로 그린다
-    /* 출발 자리의 별(2026-09-19 사용자 "크루 구간의 별들이 승선 구간의 별들이라는 걸 유저가 인지 못한다") —
-       크루 구간 별자리(constellation)와 같은 시각 언어(코어+헤일로, 밝기 등급, 미세한 반짝임)로 그려서
-       '그 별들이 여기까지 따라왔다'가 읽히게 한다. 행렬 전에는 열넷이 다 떠 있고, 자기 빛이 출발하는 순간
-       잠깐 세게 빛났다가 꺼진다 — 별 하나가 빛 하나가 되어 배로 내려간다. 다 떠나면 하늘은 빈다. */
-    var skyT0 = 0;
-    function sky(p, t, now) {
-      if (!skyT0) skyT0 = now;
-      var age = t - p.d, a;                                                 // age<0 = 아직 대기
-      if (age < -80) a = Math.min(1, (now - skyT0) / 900);                  // 배가 보이는 순간부터 천천히 켜진다
-      else if (age < 220) { var u = (age + 80) / 300; a = 1 - u * u; }      // 떠나며 사그라든다
-      else return;
-      var st = start(p), x = st[0], y = st[1];
-      var burst = age > -80 && age < 120 ? Math.pow(1 - Math.abs(age) / 120, 2) : 0;   // 떠나는 순간의 심지
-      var mag = p.cap ? 2 : p.w > 2.2 ? 1 : 0;                              // 굵은 빛일수록 밝은 별, 캡틴이 가장 밝다
-      var tw = .9 + .1 * Math.sin(now / (900 + p.sy * 700) + p.ph);
-      var core = [1.2, 1.7, 2.4][mag] * (1 + burst * 1.1), halo = [8, 12, 17][mag] * (1 + burst * .8), al = a * tw * [.62, .8, 1][mag];
-      var g = ctx.createRadialGradient(x, y, 0, x, y, halo);
-      g.addColorStop(0, 'rgba(255,176,110,' + (.5 * al).toFixed(3) + ')');
-      g.addColorStop(.4, 'rgba(237,109,32,' + (.16 * al).toFixed(3) + ')');
-      g.addColorStop(1, 'rgba(237,109,32,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, halo, 0, 6.283); ctx.fill();
-      ctx.fillStyle = 'rgba(255,245,232,' + al.toFixed(3) + ')'; ctx.beginPath(); ctx.arc(x, y, core, 0, 6.283); ctx.fill();
-    }
     /* 날아오는 빛 한 줄기 — 크루가 될 빛(P)과 스며들기만 하는 빛(S)이 똑같이 이 함수로 그려진다 */
     function flyer(p, t) {
       var u = (t - p.d) / p.dur;
@@ -426,7 +396,6 @@
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, 6.283); ctx.fill(); ctx.restore();
       }
       ctx.lineCap = 'round';
-      for (k = 0; k < N; k++) sky(P[k], t, now);                           // 먼저 하늘의 별 — 빛은 그 자리에서 떠난다
       for (k = 0; k < N; k++) flyer(P[k], t);                              // 크루가 될 빛 14
       for (k = 0; k < NS; k++) flyer(S[k], t);                             // 스며들기만 하는 빛 16 — 같은 굵기·속도·밝기
       // ── 앞 캔버스: 뱃머리 등 → 프로펠러 → 갑판 크루 ──
