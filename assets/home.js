@@ -73,7 +73,7 @@
     if (total <= 0) return 1;
     return Math.max(0, Math.min(1, -r.top / total));
   }
-  var crewStarted = false;
+  var crewStarted = false, startBoarding = null;
   function updatePins() {
     pins.forEach(function (sec) {
       var p = progress(sec), ship = sec.classList.contains('ship');
@@ -83,7 +83,7 @@
       // 핀이 꺼진 화면(짧은 세로)에서는 progress()가 항상 1이라 섹션이 눈에 들어왔는지도 함께 본다
       if (sec.classList.contains('final') && !crewStarted && p > .12 && sec.getBoundingClientRect().top < vh * .5) {
         crewStarted = true;
-        if (set2 && !reduced && !editing) crewBoarding(sec.querySelector('.btns'), sec);
+        if (startBoarding) startBoarding();                                // 캔버스는 이미 떠 있다 — 여기서는 빛의 행렬만 출발시킨다
       }
       var all = [];
       sec.querySelectorAll('.words').forEach(function (g) { (g.__w || []).forEach(function (w) { all.push(w); }); });
@@ -333,7 +333,7 @@
       ctx.beginPath(); ctx.ellipse(1.9, .4, 1.0, .7, 0, 0, 6.283); ctx.fill();                                                // 주둥이 — 선장 쪽을 본다
       ctx.restore(); ctx.restore();
     }
-    var t0 = performance.now(), prevT = 0, litSet = false;
+    var t0 = null, prevT = 0, litSet = false;                            // t0 = 행렬이 시작된 시각. 그 전에는 t=0으로 고정해 선체·프로펠러만 정지 상태로 그린다
     /* 날아오는 빛 한 줄기 — 크루가 될 빛(P)과 스며들기만 하는 빛(S)이 똑같이 이 함수로 그려진다 */
     function flyer(p, t) {
       var u = (t - p.d) / p.dur;
@@ -359,7 +359,7 @@
       ctx.fillStyle = 'rgba(255,226,196,' + (.95 * al).toFixed(3) + ')'; ctx.fill();
     }
     function frame(now) {
-      var t = now - t0, dt = Math.min(64, t - prevT); prevT = t; t_ = t;
+      var t = t0 == null ? 0 : now - t0, dt = Math.min(64, t - prevT); prevT = t; t_ = t;
       var vr = fin.getBoundingClientRect();
       if (vr.bottom < 0 || vr.top > innerHeight) { requestAnimationFrame(frame); return; }   // 화면 밖이면 그리지 않는다
       var lit = 0, k;
@@ -424,12 +424,18 @@
       requestAnimationFrame(frame);       // 캔버스는 지우지 않는다 — 크루가 갑판에 남아 배와 함께 흔들린다
     }
     requestAnimationFrame(frame);
+    return function () { if (t0 == null) { t0 = performance.now(); prevT = 0; } };   // 빛이 몰려들기 시작 — 핀이 걸린 뒤 updatePins가 부른다
   }
 
   var fin = document.querySelector('.final');
   if (fin) {
-    // 글자 등장·별 가속만 여기서. 크루 행렬은 핀이 걸린 뒤 updatePins에서 시작한다
-    var board = function () { fin.classList.add('in'); boost = Math.max(boost, 2.2); };
+    /* 글자 등장·별 가속, 그리고 배에 붙은 것들(선체 등·프로펠러)을 여기서 띄운다 — 프로펠러는 배의 일부이므로
+       배와 동시에 보여야 한다(2026-09-19 사용자 "프로펠러만 뒤늦게 나온다"). 캔버스를 여기서 만들어 두고,
+       빛이 몰려드는 행렬만 핀이 걸린 뒤 updatePins에서 시작한다(startBoarding). */
+    var board = function () {
+      fin.classList.add('in'); boost = Math.max(boost, 2.2);
+      if (set2 && !reduced && !editing && !startBoarding) startBoarding = crewBoarding(fin.querySelector('.btns'), fin);
+    };
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (es) {
         es.forEach(function (e) { if (e.isIntersecting) { board(); io.disconnect(); } });
