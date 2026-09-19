@@ -101,6 +101,94 @@
   /* 승선 2안(?set=2): 크루가 빛이 되어 버튼 아래에서 줄지어 올라와 승선구로 들어간다. 한 명씩 도착할수록 배가 밝아지고, 행렬이 끝나면 잔광만 남는다. */
   var set2 = !/[?&]set=1/.test(location.search);   // 2번(크루 승선)이 기본. `?set=1`이면 1번(빛의 귀환)으로 되돌려 본다
   if (set2) html.classList.add('set2');
+  /* 크루 실루엣 — 승선 갑판(crewBoarding)과 크루 구간(crewLine)이 같은 사람을 그린다.
+     캔버스는 `pctx`로 주고받는다: 그리기 직전에 pctx = 쓸 ctx. */
+  var pctx = null;
+  function person(x, y, h, a, tilt, p, tb) {
+    var ctx = pctx;
+    var cap = !!(p && p.cap), w = h * (p ? p.wf : .36), r = h * .15, ny = -h + r * 2 + h * .05, hy = -h * .44;   // 어깨 y, 골반 y
+    var pose = p ? p.pose : 0, tw = pose === 2 ? w * .56 : w * .5, aw = Math.max(.9, w * .24), ax = tw * .9, ay = ny + w * .35;
+    var f = p && p.face ? p.face : 1;                                                       // 몸 방향(+1 뱃머리 쪽, -1 뒤)
+    ctx.save(); ctx.translate(x, y); if (tilt) ctx.rotate(tilt); if (f < 0) ctx.scale(-1, 1);
+    ctx.shadowColor = cap ? 'rgba(255,214,170,' + (.9 * a).toFixed(3) + ')' : 'rgba(255,190,130,' + (.55 * a).toFixed(3) + ')';   // 림 라이트 — 캡틴은 더 세게
+    ctx.shadowBlur = cap ? 5 : 2.5;
+    var g = ctx.createLinearGradient(0, -h, 0, 0);
+    if (cap) { g.addColorStop(0, 'rgba(255,250,244,' + a.toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,226,196,' + a.toFixed(3) + ')'); }   // 캡틴은 한 톤 더 하얗다
+    else { g.addColorStop(0, 'rgba(255,238,218,' + a.toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,208,170,' + (a * .92).toFixed(3) + ')'); }
+    ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.arc(0, -h + r, r, 0, 6.283); ctx.fill();                          // 머리
+    var hair = p ? p.hair : 0;
+    if (hair === 1) { ctx.beginPath(); ctx.moveTo(-r * 1.05, -h + r * .8); ctx.lineTo(-r * .95, ny + w * .25); ctx.lineTo(r * .95, ny + w * .25); ctx.lineTo(r * 1.05, -h + r * .8); ctx.closePath(); ctx.fill(); }   // 긴 머리 — 어깨까지
+    else if (hair === 2) { ctx.beginPath(); ctx.arc(0, -h - r * .55, r * .5, 0, 6.283); ctx.fill(); }                       // 올린 머리
+    ctx.beginPath();                                                                        // 몸통 — 둥근 어깨, 허리가 살짝 들어가 골반으로
+    ctx.moveTo(-tw, ny + w * .3); ctx.quadraticCurveTo(-tw, ny, -tw * .55, ny); ctx.lineTo(tw * .55, ny); ctx.quadraticCurveTo(tw, ny, tw, ny + w * .3);
+    ctx.quadraticCurveTo(tw * .78, hy * .75, tw * .72, hy); ctx.lineTo(-tw * .72, hy); ctx.quadraticCurveTo(-tw * .78, hy * .75, -tw, ny + w * .3); ctx.fill();
+    ctx.lineWidth = Math.max(1, w * .3);                                                    // 두 다리 — 자세마다 벌림이 다르다
+    var sp = pose === 3 || pose === 5 ? .32 : pose === 2 ? .18 : .26;
+    ctx.beginPath(); ctx.moveTo(-w * .2, hy); ctx.lineTo(-w * sp, 0); ctx.moveTo(w * .2, hy); ctx.lineTo(w * sp, 0); ctx.stroke();
+    ctx.lineWidth = aw;
+    var tp = p ? p.tempo : 1;
+    if (cap) {                                                                              // 캡틴 — 제복 모자(밝은 챙이 앞으로), 팔은 정상 자세
+      ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();   // 양팔 내림 — 가리키는 팔은 사용자 지시로 뺐다
+      ctx.fillStyle = 'rgba(255,236,214,' + a.toFixed(3) + ')';
+      ctx.fillRect(-r * 1.0, -h - r * .35, r * 2.0, r * .95);                              // 모자 몸통
+      ctx.fillStyle = 'rgba(255,176,112,' + a.toFixed(3) + ')';
+      ctx.fillRect(-r * .55, -h + r * .5, r * 2.25, r * .34);                              // 챙 — 앞으로 길게
+      ctx.fillRect(-r * 1.0, -h + r * .3, r * 2.0, r * .22);                               // 모자 띠
+    } else if (pose === 1) {                                                                // 손 흔들기 — 탄 뒤 400ms부터, 각자 리듬으로
+      var wv = tb > 400 ? Math.sin(tb / (230 / tp) + p.ph) * .38 : -.6;
+      ctx.beginPath(); ctx.moveTo(-ax, ay + w * .05); ctx.lineTo(-tw * 1.15, hy * .9);
+      ctx.moveTo(ax, ay); var ex = ax + Math.cos(-1.0 + wv) * h * .34, ey = ay + Math.sin(-1.0 + wv) * h * .34;
+      ctx.lineTo(ax + (ex - ax) * .5, ay + (ey - ay) * .5 + h * .02); ctx.lineTo(ex, ey); ctx.stroke();
+    } else if (pose === 3) {                                                                // 팔짱
+      ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(tw * .55, ny + w * .95); ctx.moveTo(ax, ay); ctx.lineTo(-tw * .55, ny + w * 1.05); ctx.stroke();
+    } else if (pose === 4) {                                                                // 한 손 들어 인사 — 손을 든 채 살짝 흔든다
+      var sw = tb > 400 ? Math.sin(tb / (420 / tp) + p.ph) * .12 : 0;
+      ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9);
+      ctx.moveTo(ax, ay); ctx.lineTo(ax + h * .1 + sw * h, ay - h * .3); ctx.stroke();
+      ctx.beginPath(); ctx.arc(ax + h * .1 + sw * h, ay - h * .3 - aw * .3, aw * .7, 0, 6.283); ctx.fill();
+    } else if (pose === 5) {                                                                // 뒷짐 — 팔이 몸 뒤로 사라져 손만 뒤에서 보인다
+      ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * .55, hy * .95); ctx.moveTo(ax, ay); ctx.lineTo(tw * .5, hy * .95); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, hy * .98, aw * .8, 0, 6.283); ctx.fill();
+    } else if (pose !== 2) {                                                                // 팔 내림
+      ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();
+    }
+    var extra = p ? p.extra : 0, warm = 'rgba(255,176,112,' + a.toFixed(3) + ')';
+    if (extra === 2) {                                                                // 목말 탄 아이 — 어깨 위에 작은 아이, 두 손을 번쩍
+      var ch = h * .42, cr = ch * .16, cy0 = ny + w * .05;                                    // 아이 발 = 어깨
+      ctx.beginPath(); ctx.arc(0, cy0 - ch + cr, cr, 0, 6.283); ctx.fill();                                              // 머리
+      ctx.beginPath(); ctx.moveTo(-ch * .2, cy0 - ch + cr * 2.2); ctx.lineTo(ch * .2, cy0 - ch + cr * 2.2); ctx.lineTo(ch * .16, cy0 - ch * .32); ctx.lineTo(-ch * .16, cy0 - ch * .32); ctx.closePath(); ctx.fill();   // 몸
+      ctx.lineWidth = Math.max(.8, aw * .6);
+      ctx.beginPath(); ctx.moveTo(-ch * .16, cy0 - ch * .32); ctx.lineTo(-ch * .3, cy0); ctx.moveTo(ch * .16, cy0 - ch * .32); ctx.lineTo(ch * .3, cy0); ctx.stroke();   // 다리 — 어깨 양옆으로
+      var up = Math.sin(tb / 300 + (p ? p.ph : 0)) * ch * .06;
+      ctx.beginPath(); ctx.moveTo(-ch * .2, cy0 - ch + cr * 2.4); ctx.lineTo(-ch * .42, cy0 - ch * 1.25 - up); ctx.moveTo(ch * .2, cy0 - ch + cr * 2.4); ctx.lineTo(ch * .42, cy0 - ch * 1.25 + up); ctx.stroke();   // 두 손 번쩍
+    } else if (extra === 3) {                                                                // 휘날리는 스카프 — 목에서 뒤(선미 쪽)로 물결치며 흐른다
+      ctx.strokeStyle = warm; ctx.lineWidth = Math.max(.9, aw * .95); ctx.beginPath(); ctx.moveTo(-r * .3, ny - h * .02);
+      var kq, seg = h * .04;   // 뒷사람과의 평균 간격은 9.5px이지만 5퍼센타일이 6px대라(QA) .12는 뒷사람 머리를 가로지르는 프레임이 절반 넘게 나왔다 — 짧게
+      for (kq = 1; kq <= 5; kq++) ctx.lineTo(-r * .3 - kq * seg, ny - h * .02 - kq * h * .025 + Math.sin(tb / 170 + kq * .9 + (p ? p.ph : 0)) * h * .045 * Math.min(1, kq / 2));
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  /* 앉은 강아지 — 이미 translate/rotate 된 좌표계에 그린다(발밑이 원점). 갑판(drawDog)과 크루 줄에서 함께 쓴다.
+     꼬리는 뒤로 45° 뻗어 끝이 위아래로 살랑(사용자 "너무 솟았다, 45도로 위아래로"), 고개는 가끔 든다. */
+  function dogShape(a, t) {
+    var ctx = pctx;
+    var wag = Math.sin(t / 150) * 1.4, tiltH = Math.sin(t / 1100) * .07;
+    ctx.shadowColor = 'rgba(255,190,130,' + (.5 * a).toFixed(3) + ')'; ctx.shadowBlur = 2;
+    var g = ctx.createLinearGradient(0, -8, 0, 0); g.addColorStop(0, 'rgba(255,236,214,' + (.95 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,206,166,' + (.95 * a).toFixed(3) + ')');
+    ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineWidth = 1.1;
+    ctx.beginPath(); ctx.moveTo(-3.4, -2.4); ctx.quadraticCurveTo(-5.4, -4.2 + wag * .45, -6.6 + Math.abs(wag) * .25, -5.4 + wag); ctx.stroke();   // 꼬리 — 뒤로 45° 뻗어 끝이 위아래로 살랑(사용자 "너무 솟았다, 45도로 위아래로")
+    ctx.beginPath(); ctx.ellipse(-1.4, -2.5, 2.7, 2.4, 0, 0, 6.283); ctx.fill();                                            // 엉덩이(앉은 자세)
+    ctx.save(); ctx.translate(.9, -3.8); ctx.rotate(-.45); ctx.beginPath(); ctx.ellipse(0, 0, 1.8, 3.1, 0, 0, 6.283); ctx.fill(); ctx.restore();   // 세운 몸통
+    ctx.beginPath(); ctx.moveTo(1.7, -3.2); ctx.lineTo(1.7, 0); ctx.moveTo(2.7, -3.2); ctx.lineTo(2.7, 0); ctx.stroke();  // 앞다리
+    ctx.save(); ctx.translate(2.5, -6.7); ctx.rotate(tiltH);
+    ctx.beginPath(); ctx.arc(0, 0, 1.9, 0, 6.283); ctx.fill();                                                              // 머리
+    ctx.beginPath(); ctx.moveTo(-1.2, -1.3); ctx.lineTo(-1.6, -3.3); ctx.lineTo(.1, -1.9); ctx.fill();                      // 귀
+    ctx.beginPath(); ctx.ellipse(1.9, .4, 1.0, .7, 0, 0, 6.283); ctx.fill();                                                // 주둥이 — 선장 쪽을 본다
+    ctx.restore();
+  }
+
   function crewBoarding(host, fin) {
     /* 캔버스 두 장(같은 좌표계, .btns 중앙에 겹침) — 뒤(z -1): 날아오는 빛·잔광 / 앞(z 1): 뱃머리 등·프로펠러·갑판 크루.
        사용자 "빛줄기는 배 뒤가 아니라 앞으로" — 앞에 그릴 것과 뒤에 그릴 것을 층으로 나눈다. 클릭은 둘 다 통과한다. */
@@ -201,71 +289,6 @@
     /* 갑판의 크루(2026-09-18 사용자 "탑승한 사람들 퀄리티 좀 높여봐") — 핀 같던 머리+사다리꼴을 사람 실루엣으로:
        머리·목·둥근 어깨·허리가 들어간 몸통·두 다리·팔. 자세 셋(팔 내림 / 손 흔들기(움직임) / 주머니에 손), 키·체형 각자 다름,
        위가 밝고 아래가 어두운 톤 + 부드러운 림 라이트. 발(0,0) 기준으로 그린다. */
-    function person(x, y, h, a, tilt, p, tb) {
-      var cap = !!(p && p.cap), w = h * (p ? p.wf : .36), r = h * .15, ny = -h + r * 2 + h * .05, hy = -h * .44;   // 어깨 y, 골반 y
-      var pose = p ? p.pose : 0, tw = pose === 2 ? w * .56 : w * .5, aw = Math.max(.9, w * .24), ax = tw * .9, ay = ny + w * .35;
-      var f = p && p.face ? p.face : 1;                                                       // 몸 방향(+1 뱃머리 쪽, -1 뒤)
-      ctx.save(); ctx.translate(x, y); if (tilt) ctx.rotate(tilt); if (f < 0) ctx.scale(-1, 1);
-      ctx.shadowColor = cap ? 'rgba(255,214,170,' + (.9 * a).toFixed(3) + ')' : 'rgba(255,190,130,' + (.55 * a).toFixed(3) + ')';   // 림 라이트 — 캡틴은 더 세게
-      ctx.shadowBlur = cap ? 5 : 2.5;
-      var g = ctx.createLinearGradient(0, -h, 0, 0);
-      if (cap) { g.addColorStop(0, 'rgba(255,250,244,' + a.toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,226,196,' + a.toFixed(3) + ')'); }   // 캡틴은 한 톤 더 하얗다
-      else { g.addColorStop(0, 'rgba(255,238,218,' + a.toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,208,170,' + (a * .92).toFixed(3) + ')'); }
-      ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      ctx.beginPath(); ctx.arc(0, -h + r, r, 0, 6.283); ctx.fill();                          // 머리
-      var hair = p ? p.hair : 0;
-      if (hair === 1) { ctx.beginPath(); ctx.moveTo(-r * 1.05, -h + r * .8); ctx.lineTo(-r * .95, ny + w * .25); ctx.lineTo(r * .95, ny + w * .25); ctx.lineTo(r * 1.05, -h + r * .8); ctx.closePath(); ctx.fill(); }   // 긴 머리 — 어깨까지
-      else if (hair === 2) { ctx.beginPath(); ctx.arc(0, -h - r * .55, r * .5, 0, 6.283); ctx.fill(); }                       // 올린 머리
-      ctx.beginPath();                                                                        // 몸통 — 둥근 어깨, 허리가 살짝 들어가 골반으로
-      ctx.moveTo(-tw, ny + w * .3); ctx.quadraticCurveTo(-tw, ny, -tw * .55, ny); ctx.lineTo(tw * .55, ny); ctx.quadraticCurveTo(tw, ny, tw, ny + w * .3);
-      ctx.quadraticCurveTo(tw * .78, hy * .75, tw * .72, hy); ctx.lineTo(-tw * .72, hy); ctx.quadraticCurveTo(-tw * .78, hy * .75, -tw, ny + w * .3); ctx.fill();
-      ctx.lineWidth = Math.max(1, w * .3);                                                    // 두 다리 — 자세마다 벌림이 다르다
-      var sp = pose === 3 || pose === 5 ? .32 : pose === 2 ? .18 : .26;
-      ctx.beginPath(); ctx.moveTo(-w * .2, hy); ctx.lineTo(-w * sp, 0); ctx.moveTo(w * .2, hy); ctx.lineTo(w * sp, 0); ctx.stroke();
-      ctx.lineWidth = aw;
-      var tp = p ? p.tempo : 1;
-      if (cap) {                                                                              // 캡틴 — 제복 모자(밝은 챙이 앞으로), 팔은 정상 자세
-        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();   // 양팔 내림 — 가리키는 팔은 사용자 지시로 뺐다
-        ctx.fillStyle = 'rgba(255,236,214,' + a.toFixed(3) + ')';
-        ctx.fillRect(-r * 1.0, -h - r * .35, r * 2.0, r * .95);                              // 모자 몸통
-        ctx.fillStyle = 'rgba(255,176,112,' + a.toFixed(3) + ')';
-        ctx.fillRect(-r * .55, -h + r * .5, r * 2.25, r * .34);                              // 챙 — 앞으로 길게
-        ctx.fillRect(-r * 1.0, -h + r * .3, r * 2.0, r * .22);                               // 모자 띠
-      } else if (pose === 1) {                                                                // 손 흔들기 — 탄 뒤 400ms부터, 각자 리듬으로
-        var wv = tb > 400 ? Math.sin(tb / (230 / tp) + p.ph) * .38 : -.6;
-        ctx.beginPath(); ctx.moveTo(-ax, ay + w * .05); ctx.lineTo(-tw * 1.15, hy * .9);
-        ctx.moveTo(ax, ay); var ex = ax + Math.cos(-1.0 + wv) * h * .34, ey = ay + Math.sin(-1.0 + wv) * h * .34;
-        ctx.lineTo(ax + (ex - ax) * .5, ay + (ey - ay) * .5 + h * .02); ctx.lineTo(ex, ey); ctx.stroke();
-      } else if (pose === 3) {                                                                // 팔짱
-        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(tw * .55, ny + w * .95); ctx.moveTo(ax, ay); ctx.lineTo(-tw * .55, ny + w * 1.05); ctx.stroke();
-      } else if (pose === 4) {                                                                // 한 손 들어 인사 — 손을 든 채 살짝 흔든다
-        var sw = tb > 400 ? Math.sin(tb / (420 / tp) + p.ph) * .12 : 0;
-        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9);
-        ctx.moveTo(ax, ay); ctx.lineTo(ax + h * .1 + sw * h, ay - h * .3); ctx.stroke();
-        ctx.beginPath(); ctx.arc(ax + h * .1 + sw * h, ay - h * .3 - aw * .3, aw * .7, 0, 6.283); ctx.fill();
-      } else if (pose === 5) {                                                                // 뒷짐 — 팔이 몸 뒤로 사라져 손만 뒤에서 보인다
-        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * .55, hy * .95); ctx.moveTo(ax, ay); ctx.lineTo(tw * .5, hy * .95); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, hy * .98, aw * .8, 0, 6.283); ctx.fill();
-      } else if (pose !== 2) {                                                                // 팔 내림
-        ctx.beginPath(); ctx.moveTo(-ax, ay); ctx.lineTo(-tw * 1.15, hy * .9); ctx.moveTo(ax, ay); ctx.lineTo(tw * 1.15, hy * .9); ctx.stroke();
-      }
-      var extra = p ? p.extra : 0, warm = 'rgba(255,176,112,' + a.toFixed(3) + ')';
-      if (extra === 2) {                                                                // 목말 탄 아이 — 어깨 위에 작은 아이, 두 손을 번쩍
-        var ch = h * .42, cr = ch * .16, cy0 = ny + w * .05;                                    // 아이 발 = 어깨
-        ctx.beginPath(); ctx.arc(0, cy0 - ch + cr, cr, 0, 6.283); ctx.fill();                                              // 머리
-        ctx.beginPath(); ctx.moveTo(-ch * .2, cy0 - ch + cr * 2.2); ctx.lineTo(ch * .2, cy0 - ch + cr * 2.2); ctx.lineTo(ch * .16, cy0 - ch * .32); ctx.lineTo(-ch * .16, cy0 - ch * .32); ctx.closePath(); ctx.fill();   // 몸
-        ctx.lineWidth = Math.max(.8, aw * .6);
-        ctx.beginPath(); ctx.moveTo(-ch * .16, cy0 - ch * .32); ctx.lineTo(-ch * .3, cy0); ctx.moveTo(ch * .16, cy0 - ch * .32); ctx.lineTo(ch * .3, cy0); ctx.stroke();   // 다리 — 어깨 양옆으로
-        var up = Math.sin(tb / 300 + (p ? p.ph : 0)) * ch * .06;
-        ctx.beginPath(); ctx.moveTo(-ch * .2, cy0 - ch + cr * 2.4); ctx.lineTo(-ch * .42, cy0 - ch * 1.25 - up); ctx.moveTo(ch * .2, cy0 - ch + cr * 2.4); ctx.lineTo(ch * .42, cy0 - ch * 1.25 + up); ctx.stroke();   // 두 손 번쩍
-      } else if (extra === 3) {                                                                // 휘날리는 스카프 — 목에서 뒤(선미 쪽)로 물결치며 흐른다
-        ctx.strokeStyle = warm; ctx.lineWidth = Math.max(.9, aw * .95); ctx.beginPath(); ctx.moveTo(-r * .3, ny - h * .02);
-        var kq, seg = h * .04;   // 뒷사람과의 평균 간격은 9.5px이지만 5퍼센타일이 6px대라(QA) .12는 뒷사람 머리를 가로지르는 프레임이 절반 넘게 나왔다 — 짧게
-        for (kq = 1; kq <= 5; kq++) ctx.lineTo(-r * .3 - kq * seg, ny - h * .02 - kq * h * .025 + Math.sin(tb / 170 + kq * .9 + (p ? p.ph : 0)) * h * .045 * Math.min(1, kq / 2));
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
     /* 프로펠러 — 선미(왼쪽) 한가운데. 처음엔 멈춰 있다가 전원 탑승하면 빠르게 돈다(사용자 "굴뚝 연기보다 프로펠러", "뒤 중앙에, 조금 더 크게").
        옆에서 본 원판이라 세운 타원으로 그린다(rx = ry의 36%). 빨라지면 날개 대신 잔상 원판과 흐린 날개로 — 그래야 돈다고 읽힌다. */
     var ang = 0, t_ = 0;
@@ -322,20 +345,8 @@
     function drawDog(t) {
       var age = t - dogBorn; if (age < 0) return;
       var a = Math.min(1, age / 300), rise = (1 - a) * 4, pos = tf(shipL + deckW * DOGX, deckY);
-      var wag = Math.sin(t / 150) * 1.4, tiltH = Math.sin(t / 1100) * .07;                     // 꼬리는 늘, 고개는 가끔
       ctx.save(); ctx.translate(pos[0], pos[1] - rise); ctx.rotate(sh.a);
-      ctx.shadowColor = 'rgba(255,190,130,' + (.5 * a).toFixed(3) + ')'; ctx.shadowBlur = 2;
-      var g = ctx.createLinearGradient(0, -8, 0, 0); g.addColorStop(0, 'rgba(255,236,214,' + (.95 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,206,166,' + (.95 * a).toFixed(3) + ')');
-      ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineWidth = 1.1;
-      ctx.beginPath(); ctx.moveTo(-3.4, -2.4); ctx.quadraticCurveTo(-5.4, -4.2 + wag * .45, -6.6 + Math.abs(wag) * .25, -5.4 + wag); ctx.stroke();   // 꼬리 — 뒤로 45° 뻗어 끝이 위아래로 살랑(사용자 "너무 솟았다, 45도로 위아래로")
-      ctx.beginPath(); ctx.ellipse(-1.4, -2.5, 2.7, 2.4, 0, 0, 6.283); ctx.fill();                                            // 엉덩이(앉은 자세)
-      ctx.save(); ctx.translate(.9, -3.8); ctx.rotate(-.45); ctx.beginPath(); ctx.ellipse(0, 0, 1.8, 3.1, 0, 0, 6.283); ctx.fill(); ctx.restore();   // 세운 몸통
-      ctx.beginPath(); ctx.moveTo(1.7, -3.2); ctx.lineTo(1.7, 0); ctx.moveTo(2.7, -3.2); ctx.lineTo(2.7, 0); ctx.stroke();  // 앞다리
-      ctx.save(); ctx.translate(2.5, -6.7); ctx.rotate(tiltH);
-      ctx.beginPath(); ctx.arc(0, 0, 1.9, 0, 6.283); ctx.fill();                                                              // 머리
-      ctx.beginPath(); ctx.moveTo(-1.2, -1.3); ctx.lineTo(-1.6, -3.3); ctx.lineTo(.1, -1.9); ctx.fill();                      // 귀
-      ctx.beginPath(); ctx.ellipse(1.9, .4, 1.0, .7, 0, 0, 6.283); ctx.fill();                                                // 주둥이 — 선장 쪽을 본다
-      ctx.restore(); ctx.restore();
+      pctx = ctx; dogShape(a, t); ctx.restore();
     }
     var t0 = null, prevT = 0, litSet = false;                            // t0 = 행렬이 시작된 시각. 그 전에는 t=0으로 고정해 선체·프로펠러만 정지 상태로 그린다
     /* 날아오는 빛 한 줄기 — 크루가 될 빛(P)과 스며들기만 하는 빛(S)이 똑같이 이 함수로 그려진다 */
@@ -399,7 +410,7 @@
       for (k = 0; k < N; k++) flyer(P[k], t);                              // 크루가 될 빛 14
       for (k = 0; k < NS; k++) flyer(S[k], t);                             // 스며들기만 하는 빛 16 — 같은 굵기·속도·밝기
       // ── 앞 캔버스: 뱃머리 등 → 프로펠러 → 갑판 크루 ──
-      ctx = ctxF; ctx.clearRect(0, 0, W, H);
+      ctx = ctxF; pctx = ctx; ctx.clearRect(0, 0, W, H);
       housing();
       if (t >= HORN) {                                                   // 뱃머리 등이 켜진다 — 켜지는 순간 세고, 그 뒤엔 은은하게 숨 쉰다
         var bk = Math.min(1, (t - HORN) / 900), be = 1 - Math.pow(1 - bk, 3);
@@ -619,6 +630,79 @@
     requestAnimationFrame(draw);
     window.addEventListener('scroll', function () { if (!running && !still && !document.hidden && window.scrollY < innerHeight) { running = true; requestAnimationFrame(draw); } }, { passive: true });
     document.addEventListener('visibilitychange', function () { running = !document.hidden && !still; if (running) requestAnimationFrame(draw); });
+  })();
+
+  /* ---------- 크루 줄(2026-09-19) — "최고의 동료"를 사람으로 보여준다 ----------
+     사진 타일도 별자리도 되돌린 뒤 남은 답: 우리에겐 이미 사람을 그리는 자산이 있다(승선 갑판의 크루).
+     글자 아래 어둠에 크루 14명 + 강아지가 어깨를 나란히 하고 서고, 핀 진행도에 따라 왼쪽부터 빛으로 솟아오른다.
+     갑판의 그들과 같은 실루엣이라 다음 구간에서 "저 사람들이 배에 오른다"가 설명 없이 읽힌다.
+     자리가 모자라면(짧은 화면) 아예 그리지 않는다. */
+  (function crewLine() {
+    var sec = document.querySelector('.pin.crew'), host = sec && sec.querySelector('.pin-in'); if (!host) return;
+    var cv = document.createElement('canvas'); cv.className = 'crewline'; cv.setAttribute('aria-hidden', 'true');
+    host.insertBefore(cv, host.firstChild);
+    var ctx = cv.getContext('2d'), W = 0, H = 0, N = 14, P = [], ok = false, still = reduced || editing, baseY = 0, hh = 0, gap = 0, x0 = 0;
+    function rng(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+    var r = rng(20260920);
+    for (var i = 0; i < N; i++) {                                          // 갑판의 크루와 같은 규칙 — 캡틴은 오른쪽 끝(갑판에서도 뱃머리 맨 앞), 키·체격 편차는 작게
+      // 체격은 갑판(키 13px)보다 날씬하게 — 같은 비율을 70px로 키우면 몸통이 넓어 인형처럼 보인다
+      P.push({ cap: i === N - 1, wf: i === N - 1 ? .32 : .25 + r() * .05, hs: i === N - 1 ? 1.24 : .9 + r() * .18,
+               hair: 0, pose: 0, extra: 0, face: r() < .3 ? -1 : 1, tempo: .7 + r() * .6, ph: r() * 6.283,
+               // 줄이 자로 잰 듯 고르면 무리가 아니라 아이콘 나열로 보인다 — 자리마다 좌우로 흔들고 앞뒤(키)로도 살짝 어긋나게
+               dx: (r() - .5) * .34, dy: (r() - .5) * .10 });
+    }
+    // 개성은 겹치지 않게 한 명씩(갑판과 같은 규칙): 자세 5 · 머리 2 · 매력 2
+    // 큰 실루엣에서는 손 흔들기(1)·한 손 인사(4)가 과해 보인다 — 주머니 손·팔짱·뒷짐과 머리·매력만
+    var traits = [[2, 0, 0], [3, 0, 0], [5, 0, 0], [0, 1, 0], [0, 2, 0], [0, 0, 2], [0, 0, 3]], slots = [0, 2, 3, 5, 7, 9, 11];
+    for (i = traits.length - 1; i > 0; i--) { var j = Math.floor(r() * (i + 1)), tmp = traits[i]; traits[i] = traits[j]; traits[j] = tmp; }
+    for (i = 0; i < traits.length; i++) { var q = P[slots[i]]; q.pose = traits[i][0]; q.hair = traits[i][1]; q.extra = traits[i][2]; if (q.extra) q.face = 1; }
+    function layout() {
+      var dpr = Math.min(devicePixelRatio || 1, 2), hr = host.getBoundingClientRect();
+      W = Math.round(hr.width); H = Math.round(hr.height);
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ok = false;
+      var els = sec.querySelectorAll('.wrap > *'), bot = 0;                 // 글자 상자 아래 = 줄이 설 자리
+      for (i = 0; i < els.length; i++) {
+        if (!els[i].textContent.trim()) continue;
+        var rg = document.createRange(); rg.selectNodeContents(els[i]); var rr = rg.getBoundingClientRect();
+        if (rr.height) bot = Math.max(bot, rr.bottom - hr.top);
+      }
+      if (!bot) { cv.setAttribute('data-dbg','no-text'); return; }
+      var room = H - bot, side = Math.max(14, W * .035);                    // 글자 아래 남은 높이
+      hh = Math.max(26, Math.min(104, (W - side * 2) / (N + 1) * 1.5, room * .46));   // 키 — 폭과 남은 높이 둘 다에 맞춘다
+      if (room < hh * 1.5 || W < 260) { cv.setAttribute('data-dbg','no-room room='+Math.round(room)+' hh='+Math.round(hh)+' W='+W); return; }   // 자리가 없으면 그리지 않는다
+      baseY = bot + Math.max(hh * .55, (room - hh) * .42) + hh;             // 발끝 — 글자와 최소 간격을 지키고, 바닥에도 여백을 남긴다
+      if (baseY > H - hh * .22) baseY = H - hh * .22;                       // 바닥을 넘지 않게
+      gap = (W - side * 2) / (N + .4); x0 = side + gap * .45;               // 강아지 몫을 오른쪽 끝에
+      ok = true;
+      cv.setAttribute('data-dbg', JSON.stringify({hh:Math.round(hh),baseY:Math.round(baseY),room:Math.round(room),bot:Math.round(bot),gap:Math.round(gap)}));
+    }
+    var rl = null; function schedule() { clearTimeout(rl); rl = setTimeout(layout, 120); }
+    layout(); window.addEventListener('resize', schedule);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+    function frame(now) {
+      requestAnimationFrame(frame);
+      if (!ok) return;
+      var vr = sec.getBoundingClientRect();
+      if (vr.bottom < 0 || vr.top > innerHeight) return;
+      var p = still ? 1 : progress(sec), q = Math.max(0, Math.min(1, (p - .16) / .62));   // 글자가 차오르는 동안 이어서
+      ctx.clearRect(0, 0, W, H);
+      for (var k = 0; k < N; k++) {
+        var pr = P[k], u = Math.max(0, Math.min(1, q * (N + 1) - k));       // 왼쪽부터 하나씩
+        if (u <= 0) continue;
+        var e = 1 - Math.pow(1 - u, 3), a = e, rise = (1 - e) * hh * .22;   // 빛으로 솟아오른다
+        var h = hh * pr.hs * (1 + pr.dy), sway = still ? 0 : Math.sin(now / (1400 / pr.tempo) + pr.ph) * .012;
+        pctx = ctx; person(x0 + gap * (k + pr.dx), baseY - rise + hh * pr.dy * .5, h, .82 * a, sway, pr, still ? 4000 : u * 1400);
+      }
+      var du = Math.max(0, Math.min(1, q * (N + 1) - N));                   // 강아지는 맨 끝, 마지막에
+      if (du > 0) {
+        var da = 1 - Math.pow(1 - du, 3), s = hh / 15;                      // 갑판(키 13px) 기준 비율로 키운다 — 사람 옆에서 너무 커지지 않게
+        ctx.save(); ctx.translate(x0 + gap * (N - 1.05), baseY - (1 - da) * hh * .18); ctx.scale(s, s);
+        pctx = ctx; dogShape(.85 * da, still ? 4000 : now);
+        ctx.restore();
+      }
+    }
+    requestAnimationFrame(frame);
   })();
 
   /* 주의: 아래 별 캔버스 코드는 ?stars=0·모션 축소·편집 모드에서 바깥 IIFE를 통째로 return한다 — 그 뒤에 두는 코드는 그 경우 실행되지 않는다. 새 모듈은 이 위에 둘 것 */
