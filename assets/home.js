@@ -73,8 +73,8 @@
      진행도 u가 0→1로 돌 때 위치는 P0→P1배, 크기는 S0→S1배로 지수 증가한다(= 등속으로 다가오는 느낌).
      ★ 위치가 크기보다 빨리 커져야(P1 ≫ S1) 카드가 너무 커지기 전에 화면 밖으로 빠진다 — 넷플릭스도 같은 비율이다.
      움직임은 시간이 아니라 스크롤에 묶여 있다. 손을 멈추면 카드도 멈추므로 호버·클릭이 가능하다. */
-  var ANCH = [[-44, 40], [48, -44], [-8, 56], [-56, -12], [50, 34], [12, -52], [54, 14]];
-  var P0 = .085, P1 = 1.85, S0 = .085, S1 = .95, LOOPS = 1.4;
+  var ANCH = [[-46, 30], [44, -44], [-12, 54], [-54, -20], [52, 26], [16, -52], [56, 2]];
+  var P0 = .14, P1 = 1.9, S0 = .14, S1 = .95, LOOPS = 1.4;
   var shots = Array.prototype.slice.call(document.querySelectorAll('.shots .shot'));
   function flyShots(p) {
     var n = shots.length; if (!n) return;
@@ -86,7 +86,7 @@
       el.style.transform = 'translate3d(' + (a[0] * w / 100 * pf).toFixed(1) + 'px,' + (a[1] * h / 100 * pf).toFixed(1) + 'px,0) scale(' + sf.toFixed(4) + ')';
       el.style.setProperty('--s', sf.toFixed(4));
       // 멀수록 옅게. 끝자락 5%는 혹시 아직 화면에 걸쳐 있는 카드가 되살아날 때 튀지 않게 하는 보험이다
-      el.style.opacity = (Math.pow(u, .72) * Math.min(1, (1 - u) / .05) * .72).toFixed(3);
+      el.style.opacity = (Math.pow(u, .6) * Math.min(1, (1 - u) / .05) * .72).toFixed(3);
       el.style.zIndex = Math.round(u * 100);
       el.style.pointerEvents = u > .45 ? 'auto' : 'none';
       el.classList.toggle('near', u > .6);
