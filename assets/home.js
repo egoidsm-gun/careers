@@ -74,66 +74,38 @@
      좌표 (ax, ay)는 '여백 정규화': 0~1이 글자 상자 안, -1~0은 왼쪽/위 여백(-1 = 화면 가장자리), 1~2는 오른쪽/아래 여백(2 = 가장자리).
      그래서 어느 화면에서도 별이 내비에 붙거나 잘리지 않고 글자 둘레의 하늘을 비율대로 채운다(v3 첫 판은 상자 배율이라 1440에서 위쪽 별이 내비에 눌렸다).
      거리를 일부러 불규칙하게(여백의 30%~95%) 두어 둥근 다각형이 아니라 별자리로 읽히게 한다. 폭이 좁아 양옆 여백이 90px 미만이면(NARROW) 위·아래 두 줄로 나뉘고 7→8 선은 끊는다.
-     별 15 = 크루 14 + 강아지 1(승선 구간과 같은 수). 7개 별엔 블로그 크루 인터뷰(호버 말풍선, 평소엔 안 보임). */
-  var SKY_WIDE = [ // [ax, ay, 반지름, 인터뷰 번호] — 왼쪽 아래에서 시작해 왼쪽→위→오른쪽→아래로 도는 열린 사슬
-    [-.45, 1.25, 1.6, -1], [-.85,  .62, 2.2, 0], [-.40,  .18, 1.5, -1],
-    [ .05, -.55, 1.9,  1], [ .26, -.35, 1.5, -1], [ .48, -.62, 2.3, 2], [ .71, -.92, 3.6, -1], [ .93, -.45, 1.8, 3],
-    [1.35,  .10, 2.1, -1], [1.80,  .55, 1.6, 4], [1.30, 1.15, 1.5, -1],
-    [ .86, 1.55, 2.0,  5], [ .60, 1.90, 1.4, -1], [ .36, 1.40, 1.9, 6],
-    [ .20, 1.75, 1.2, -1]
+     별 15 = 크루 14 + 강아지 1(승선 구간과 같은 수). 별은 순수한 기호 — 인터뷰 링크·말풍선은 사용자 지시로 뺐다("그냥 별만으로 충분해"). 다시 넣지 말 것. */
+  var SKY_WIDE = [ // [ax, ay, 반지름] — 왼쪽 아래에서 시작해 왼쪽→위→오른쪽→아래로 도는 열린 사슬
+    [-.45, 1.25, 1.6], [-.85, .62, 2.2], [-.40, .18, 1.5],
+    [.05, -.55, 1.9], [.26, -.35, 1.5], [.48, -.62, 2.3], [.71, -.92, 3.6], [.93, -.45, 1.8],
+    [1.35, .10, 2.1], [1.80, .55, 1.6], [1.30, 1.15, 1.5],
+    [.86, 1.55, 2.0], [.60, 1.90, 1.4], [.36, 1.40, 1.9],
+    [.20, 1.75, 1.2]
   ];
   var SKY_NARROW = [ // 위 한 줄(0~7) + 아래 한 줄(8~14), 7→8은 잇지 않는다
-    [ .04, -.30, 1.6, -1], [ .15, -.72, 2.2, 0], [ .30, -.45, 1.5, -1], [ .42, -.85, 1.9, 1], [ .55, -.40, 1.5, -1], [ .68, -.68, 2.3, 2], [ .80, -.95, 3.6, -1], [ .95, -.55, 1.8, 3],
-    [ .97, 1.35, 2.1, -1], [ .83, 1.75, 1.6, 4], [ .66, 1.30, 1.5, -1], [ .50, 1.65, 2.0, 5], [ .33, 1.28, 1.4, -1], [ .16, 1.60, 1.9, 6],
-    [ .03, 1.85, 1.2, -1]
+    [.04, -.30, 1.6], [.15, -.72, 2.2], [.30, -.45, 1.5], [.42, -.85, 1.9], [.55, -.40, 1.5], [.68, -.68, 2.3], [.80, -.95, 3.6], [.95, -.55, 1.8],
+    [.97, 1.35, 2.1], [.83, 1.75, 1.6], [.66, 1.30, 1.5], [.50, 1.65, 2.0], [.33, 1.28, 1.4], [.16, 1.60, 1.9],
+    [.03, 1.85, 1.2]
   ];
   var SKY_CAP = 6, SKY_DOG = 14;
   var SKY_ORDER = [6, 5, 7, 4, 8, 3, 9, 2, 10, 1, 11, 0, 12, 13, 14];   // 캡틴에서 양쪽으로
-  var INTERVIEWS = [
-    ['브랜드의 디지털 프레임을 짜는 개발자', 'https://egoidsmblog.com/브랜드의-디지털-프레임을-짜는-개발자-58768'],
-    ['유쾌함 하나로 시장을 뒤흔든 MD', 'https://egoidsmblog.com/유쾌함-하나로-시장을-뒤흔든-md-53164'],
-    ['브랜드를 입힌 인형, 미뇽맨션의 매출을 만든 디자이너', 'https://egoidsmblog.com/브랜드를-입힌-인형-미뇽맨션의-매출을-만든-디자이너-52365'],
-    ['스타트업, 그 속에서 성공하기 위한 우리들만의 채용방식', 'https://egoidsmblog.com/스타트업-채용-중요한-이유-40490'],
-    ['에고이즘의 특별한 조직문화', 'https://egoidsmblog.com/에고이즘의-특별한-조직문화-40466'],
-    ['끊임없는 성장의 비결', 'https://egoidsmblog.com/끊임없는-성장의-비결-40264'],
-    ['1년 간 3명에서 37억!? 압도적인 효율을 만드는 법', 'https://egoidsmblog.com/1년-간-3명에서-37억-압도적인-효율을-만드는-법-40128']
-  ];
   var skyEl = document.querySelector('.crew .sky'), skyStars = [], skyLines = [], skyRank = [], skyLineRank = [], skyLaidOut = false;
   (function buildSky() {
     if (!skyEl) return;
     var NS = 'http://www.w3.org/2000/svg';
     function el(n, a, parent) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); parent.appendChild(e); return e; }
     var gl = el('g', { 'class': 'lns' }, skyEl), gs = el('g', { 'class': 'sts' }, skyEl);
-    var pinIn = skyEl.parentNode, tip = document.createElement('div');
-    tip.className = 'skytip'; tip.setAttribute('aria-hidden', 'true'); pinIn.appendChild(tip);
-    function showTip(g, iv) {
-      tip.textContent = iv[0]; var b = document.createElement('b'); b.textContent = '인터뷰 읽기 ↗'; tip.appendChild(b);
-      var r = g.getBoundingClientRect(), pr = pinIn.getBoundingClientRect();
-      tip.style.left = (r.left + r.width / 2 - pr.left) + 'px'; tip.style.top = (r.top - pr.top) + 'px';
-      tip.classList.add('show');
-    }
-    function hideTip() { tip.classList.remove('show'); }
     SKY_ORDER.forEach(function (idx, k) { skyRank[idx] = k; });
     for (var i = 0; i < SKY_WIDE.length - 1; i++) {      // 선 i는 별 i와 i+1을 잇고, 둘 중 늦게 켜지는 쪽에 맞춰 켜진다
       skyLines.push(el('line', { 'class': 'ln' + (i + 1 === SKY_DOG ? ' dog' : ''), pathLength: 1 }, gl));
       skyLineRank.push(Math.max(skyRank[i], skyRank[i + 1]));
     }
     SKY_WIDE.forEach(function (s, i) {
-      var iv = s[3] >= 0 ? INTERVIEWS[s[3]] : null, host = gs;
-      if (iv) host = el('a', { 'class': 'lk', href: iv[1], target: '_blank', rel: 'noopener', 'aria-label': iv[0] + ' — 크루 인터뷰' }, gs);
-      // 자리(translate)는 바깥 g, 호버 확대(scale)는 안쪽 .st — 한 요소에 두면 CSS transform이 속성 transform을 덮어 별이 원점으로 튄다
-      var pos = el('g', {}, host);
+      var pos = el('g', {}, gs);   // 자리(translate)는 바깥 g, 켜짐(opacity)은 안쪽 .st
       var g = el('g', { 'class': 'st' + (i === SKY_CAP ? ' cap' : i === SKY_DOG ? ' dog' : '') }, pos);
       el('circle', { 'class': 'halo', r: (i === SKY_CAP ? 14 : s[2] * 3.2).toFixed(1) }, g);
       if (i === SKY_CAP) el('circle', { 'class': 'halo2', r: 7 }, g);
       el('circle', { 'class': 'core', r: s[2] }, g);
-      if (iv) {
-        el('circle', { 'class': 'hit', r: 14 }, g);
-        host.addEventListener('mouseenter', function () { showTip(g, iv); });
-        host.addEventListener('mouseleave', hideTip);
-        host.addEventListener('focus', function () { showTip(g, iv); });
-        host.addEventListener('blur', hideTip);
-      }
       skyStars.push({ pos: pos, st: g });
     });
   })();

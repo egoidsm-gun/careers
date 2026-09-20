@@ -167,30 +167,19 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .crew .wrap > *{position:relative;z-index:2}
 /* 크루 별자리 v3(2026-09-20) — 글자를 둘러싸는 열린 사슬. .pin-in 전체를 덮는 SVG(z 1)이고 글자(.wrap > *, z 2)가 그 위에 뜬다.
    별·선은 home.js SKY_WIDE/NARROW가 글자 상자 기준으로 자리를 잡고 .on으로 하나씩 켠다. 선은 pathLength=1 + dashoffset으로 '그려지고', 별은 스며든다. */
-.crew .sky{position:absolute;inset:0;width:100%;height:100%;z-index:1;overflow:visible;pointer-events:none}
-.crew .sky a{pointer-events:auto;cursor:pointer;outline:none}
+.crew .sky{position:absolute;inset:0;width:100%;height:100%;z-index:1;overflow:visible;pointer-events:none}   /* 누를 것이 없다 — 별은 기호일 뿐 */
 .sky .ln{stroke:rgba(255,236,220,.26);stroke-width:1;fill:none;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .6s ease-out}
 .sky .ln.on{stroke-dashoffset:0}
 .sky .ln.dog{stroke-dasharray:.05 .06;stroke-dashoffset:0;opacity:0;transition:opacity .6s}   /* 강아지 줄은 점선 — 그려지는 대신 스며든다 */
 .sky .ln.dog.on{opacity:1}
-.sky .st{opacity:0;transition:opacity .5s,transform .25s;transform-box:fill-box;transform-origin:center}
+.sky .st{opacity:0;transition:opacity .5s}
 .sky .st.on{opacity:1}
 .sky .core{fill:#fff}
 .sky .halo{fill:#fff;opacity:.11}
 .sky .halo2{fill:#fff;opacity:.28}
 .sky .cap .halo{fill:var(--acc);opacity:.22;animation:skybeat 4.8s ease-in-out infinite alternate}   /* 캡틴만 등대처럼 아주 느리게 숨 쉰다 */
 .sky .dog .core{fill:#ffd9bd}
-.sky .hit{fill:none;pointer-events:all}
-.sky a:hover .st,.sky a:focus-visible .st{transform:scale(1.35)}
-.sky a:hover .halo,.sky a:focus-visible .halo{opacity:.3}
-.sky a:focus-visible .hit{stroke:var(--acc);stroke-width:1.2}
 @keyframes skybeat{to{opacity:.34}}
-/* 인터뷰 제목 말풍선 — 호버한 별 위에 하나만 뜬다(위치는 JS) */
-.skytip{position:absolute;z-index:3;left:0;top:0;transform:translate(-50%,calc(-100% - 14px));max-width:260px;padding:8px 11px;border-radius:8px;
-  background:rgba(18,18,20,.94);border:1px solid rgba(255,255,255,.08);color:#fff;font-size:12px;line-height:1.4;font-weight:600;letter-spacing:-.01em;text-align:center;
-  pointer-events:none;opacity:0;transition:opacity .2s}
-.skytip.show{opacity:1}
-.skytip b{display:block;margin-top:3px;font-size:11px;font-weight:500;color:var(--acc)}
 @media (prefers-reduced-motion:reduce){.sky .cap .halo{animation:none}}
 /* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 가장자리를 스친다.
    눈썹(--eb)은 홈 공통값이라 건드리지 않는다(구간마다 비율이 다른 건 의도된 것 — CLAUDE.md 눈썹 규칙) */
