@@ -66,6 +66,92 @@
     tick(); setInterval(tick, 1000);
   }
 
+  /* ---------- 크루 별자리(2026-09-20) — 헤드라인 위 하늘에 별 15개가 하나씩 켜지며 선으로 이어진다 ----------
+     사용자가 고른 안: "자유 형태(북두칠성처럼)". 배도 사람도 아닌 그냥 별자리 — 대신 '별자리로 읽히는 문법'을 지킨다:
+     한 덩어리(400×220 상자) · 짧은 선(40~50) · 닫힌 고리 하나 + 긴 사슬 + 갈래 둘 · 밝은 별 몇 개에 대부분은 옅게.
+     지난번(2026-09-19) 실패는 화면 전체에 흩고 최소 신장 트리로 이어 글자를 두른 울타리처럼 보인 것 — 그래서 글자 밖 한 자리에 작은 오브젝트로.
+     별 15 = 크루 14 + 강아지 1(승선 구간과 같은 수 — 두 장면의 연결은 이 숫자로만, 사용자 결정).
+     0번이 캡틴: 가장 밝고 가장 먼저 켜진다(승선 구간에서 캡틴이 제일 먼저 타는 것과 같은 순서). 14번이 강아지: 작고 살짝 떨어져 점선으로 뒤따른다.
+     7개 별엔 블로그 크루 인터뷰가 걸려 있다 — 호버하면 제목이 별 이름처럼 뜨고 누르면 이동. 평소엔 아무것도 안 보인다.
+     켜지는 순서 = 배열 순서(고리 → 사슬 → 갈래 → 강아지). 핀 진행도 .02~.60에 걸쳐 켜져서 단어(.06~.82)보다 먼저 완성된다. */
+  var SKY = [ // [x, y, 반지름, 이어지는 부모, 인터뷰 번호(없으면 -1)]
+    [318,  46, 3.4, -1, -1],   // 0 캡틴
+    [356,  68, 2.0,  0,  0],
+    [344, 112, 2.3,  1, -1],
+    [296, 120, 1.7,  2,  1],
+    [282,  80, 1.8,  3, -1],   // 4 — 0으로 닫는 선이 하나 더 그려진다(고리)
+    [246, 104, 2.2,  4,  2],
+    [204, 122, 1.6,  5, -1],
+    [166, 128, 2.4,  6,  3],
+    [122, 150, 1.5,  7, -1],
+    [ 80, 158, 1.9,  8,  4],
+    [ 38, 178, 1.4,  9, -1],
+    [178, 168, 1.5,  7,  5],   // 7에서 아래로 갈라지는 갈래
+    [212, 190, 1.3, 11, -1],
+    [ 62, 118, 1.6,  9,  6],   // 9에서 위로 뻗는 가지
+    [ 10, 204, 1.2, 10, -1]    // 14 강아지
+  ];
+  var INTERVIEWS = [
+    ['브랜드의 디지털 프레임을 짜는 개발자', 'https://egoidsmblog.com/브랜드의-디지털-프레임을-짜는-개발자-58768'],
+    ['유쾌함 하나로 시장을 뒤흔든 MD', 'https://egoidsmblog.com/유쾌함-하나로-시장을-뒤흔든-md-53164'],
+    ['브랜드를 입힌 인형, 미뇽맨션의 매출을 만든 디자이너', 'https://egoidsmblog.com/브랜드를-입힌-인형-미뇽맨션의-매출을-만든-디자이너-52365'],
+    ['스타트업, 그 속에서 성공하기 위한 우리들만의 채용방식', 'https://egoidsmblog.com/스타트업-채용-중요한-이유-40490'],
+    ['에고이즘의 특별한 조직문화', 'https://egoidsmblog.com/에고이즘의-특별한-조직문화-40466'],
+    ['끊임없는 성장의 비결', 'https://egoidsmblog.com/끊임없는-성장의-비결-40264'],
+    ['1년 간 3명에서 37억!? 압도적인 효율을 만드는 법', 'https://egoidsmblog.com/1년-간-3명에서-37억-압도적인-효율을-만드는-법-40128']
+  ];
+  var skyEl = document.querySelector('.crew .sky'), skyNodes = [];
+  (function buildSky() {
+    if (!skyEl) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    function el(n, a, parent) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); parent.appendChild(e); return e; }
+    var gl = el('g', { 'class': 'lns' }, skyEl), gs = el('g', { 'class': 'sts' }, skyEl);
+    // 인터뷰 제목 말풍선 — HTML로 하나만 두고 호버한 별 위로 옮긴다
+    var pinIn = skyEl.closest('.pin-in'), tip = document.createElement('div');
+    tip.className = 'skytip'; tip.setAttribute('aria-hidden', 'true'); pinIn.appendChild(tip);
+    function showTip(g, iv) {
+      tip.textContent = iv[0]; var b = document.createElement('b'); b.textContent = '인터뷰 읽기 ↗'; tip.appendChild(b);
+      var r = g.getBoundingClientRect(), pr = pinIn.getBoundingClientRect();
+      tip.style.left = (r.left + r.width / 2 - pr.left) + 'px'; tip.style.top = (r.top - pr.top) + 'px';
+      tip.classList.add('show');
+    }
+    function hideTip() { tip.classList.remove('show'); }
+    SKY.forEach(function (s, i) {
+      var node = { star: null, lines: [] };
+      if (s[3] >= 0) {
+        var pa = SKY[s[3]];
+        node.lines.push(el('line', { 'class': 'ln' + (i === 14 ? ' dog' : ''), x1: pa[0], y1: pa[1], x2: s[0], y2: s[1], pathLength: 1 }, gl));
+      }
+      if (i === 4) node.lines.push(el('line', { 'class': 'ln', x1: s[0], y1: s[1], x2: SKY[0][0], y2: SKY[0][1], pathLength: 1 }, gl));   // 고리를 닫는 선
+      var iv = s[4] >= 0 ? INTERVIEWS[s[4]] : null, host = gs;
+      if (iv) host = el('a', { 'class': 'lk', href: iv[1], target: '_blank', rel: 'noopener', 'aria-label': iv[0] + ' — 크루 인터뷰' }, gs);
+      // 자리(translate)는 바깥 g에, 호버 확대(scale)는 안쪽 g에 — 한 요소에 두면 CSS transform이 속성 transform을 덮어 별이 원점으로 튄다
+      var pos = el('g', { transform: 'translate(' + s[0] + ' ' + s[1] + ')' }, host);
+      var g = el('g', { 'class': 'st' + (i === 0 ? ' cap' : i === 14 ? ' dog' : '') }, pos);
+      el('circle', { 'class': 'halo', r: (i === 0 ? 13 : s[2] * 3.2).toFixed(1) }, g);
+      if (i === 0) el('circle', { 'class': 'halo2', r: 6.5 }, g);
+      el('circle', { 'class': 'core', r: s[2] }, g);
+      if (iv) {
+        el('circle', { 'class': 'hit', r: 13 }, g);
+        host.addEventListener('mouseenter', function () { showTip(g, iv); });
+        host.addEventListener('mouseleave', hideTip);
+        host.addEventListener('focus', function () { showTip(g, iv); });
+        host.addEventListener('blur', hideTip);
+      }
+      node.star = g; skyNodes.push(node);
+    });
+  })();
+  function skyUpdate(p) {
+    if (!skyNodes.length) return;
+    var q = Math.max(0, Math.min(1, (p - .02) / .58)), k = Math.round(q * skyNodes.length);
+    skyNodes.forEach(function (n, i) {
+      var on = i < k;
+      n.star.classList.toggle('on', on);
+      n.lines.forEach(function (l) { l.classList.toggle('on', on); });
+    });
+  }
+  if (reduced) skyUpdate(1);   // 모션 축소 — 완성된 별자리를 그대로 보여준다
+
   /* ---------- 스크롤 핀: 진행도로 단어를 켜고, 배를 띄운다 ---------- */
   var pins = Array.prototype.slice.call(document.querySelectorAll('.pin'));
   function progress(sec) {
@@ -79,6 +165,7 @@
       var p = progress(sec), ship = sec.classList.contains('ship');
       // 진행도를 CSS로 넘기는 건 그림이 있는 핀뿐 — 개척선의 배 이미지(크루 핀의 별자리는 JS가 progress()를 직접 읽는다)
       if (ship || sec.classList.contains('crew')) sec.style.setProperty('--p', p.toFixed(3));
+      if (sec.classList.contains('crew') && !reduced) skyUpdate(p);   // 별자리는 단어보다 먼저(.02~.60) 켜진다
       // 크루 행렬은 승선 구간이 화면을 붙잡고 조금 지난 뒤에 — 화면이 멈춰 있는 동안 벌어져야 시선이 모인다
       // 핀이 꺼진 화면(짧은 세로)에서는 progress()가 항상 1이라 섹션이 눈에 들어왔는지도 함께 본다
       if (sec.classList.contains('final') && !crewStarted && p > .12 && sec.getBoundingClientRect().top < vh * .5) {
