@@ -22,8 +22,11 @@ from html.parser import HTMLParser
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC, PAGES, DATA = ROOT / 'src', ROOT / 'src' / 'pages', ROOT / 'src' / 'data'
 OUT = ROOT / '_site'
-SITE = 'https://egoidsm.com/'   # 정식 도메인(2026-09-20 연결). OG·canonical 절대 URL에만 쓰인다 — 페이지 링크는 전부 {{root}} 상대경로라 베이스가 바뀌어도 그대로다
-DOMAIN = 'egoidsm.com'          # _site/CNAME 으로 나간다. Pages 설정(API cname)과 같아야 한다
+SITE = 'https://egoidsm-gun.github.io/careers/'   # OG·canonical 절대 URL에만 쓰인다(페이지 링크는 전부 {{root}} 상대경로)
+# 정식 도메인 연결은 2026-09-20에 준비만 하고 되돌렸다 — DNS가 Cloudflare에 있는데 계정을 못 찾아서다.
+# 다시 붙일 때: SITE를 https://egoidsm.com/ 로, 아래 DOMAIN·CNAME 줄의 주석을 풀고, layout.html의 noindex를 지운 뒤
+#   PUT /repos/egoidsm-gun/careers/pages -d '{"cname":"egoidsm.com"}'. ★ DNS를 먼저 바꿀 것 — 순서를 어기면 볼 수 있는 주소가 사라진다.
+# DOMAIN = 'egoidsm.com'   # _site/CNAME 으로 나간다. Pages 설정(API cname)과 같아야 한다
 # RECRUITING 버튼이 가는 곳 — 사이트 안 recruiting/ 이 아니라 ATS(나인하이어). 공고 카드·상세(assets/site.js POST)와 같은 호스트다.
 # ★ layout.html에는 반드시 {{ats}} 자리표시자로 둘 것 — URL을 직접 박으면 부모 <div class="nav-right">의 내용에 {{ 가 사라져
 #   scan_editable이 그 div를 '편집 가능한 잎'으로 잡아 버리고, 편집 지도가 RECRUITING 대신 <a> 태그 통째를 가리킨다(실측).
@@ -233,7 +236,7 @@ def main():
     shutil.copytree(ROOT / 'assets', OUT / 'assets')
     (OUT / 'assets' / 'edit').mkdir(exist_ok=True)
     (OUT / '.nojekyll').write_text('')
-    (OUT / 'CNAME').write_text(DOMAIN + '\n')   # 커스텀 도메인 — 아티팩트에 들어가야 배포 때마다 유지된다
+    # (OUT / 'CNAME').write_text(DOMAIN + '\n')   # 정식 도메인 붙일 때 되살릴 것
     built = []
     for f in sorted(PAGES.glob('*.html')):
         txt = f.read_text()
