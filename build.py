@@ -22,7 +22,8 @@ from html.parser import HTMLParser
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC, PAGES, DATA = ROOT / 'src', ROOT / 'src' / 'pages', ROOT / 'src' / 'data'
 OUT = ROOT / '_site'
-SITE = 'https://egoidsm-gun.github.io/careers/'  # 정식 도메인 연결 시 https://egoidsm.com/ 으로
+SITE = 'https://egoidsm.com/'   # 정식 도메인(2026-09-20 연결). OG·canonical 절대 URL에만 쓰인다 — 페이지 링크는 전부 {{root}} 상대경로라 베이스가 바뀌어도 그대로다
+DOMAIN = 'egoidsm.com'          # _site/CNAME 으로 나간다. Pages 설정(API cname)과 같아야 한다
 BLOG_RSS = 'https://egoidsmblog.com/rss'
 
 NAV_FILE = SRC / 'nav.json'   # 상단 알약·드롭다운 글자 — 편집 모드에서 고칠 수 있게 데이터 파일로 분리
@@ -228,6 +229,7 @@ def main():
     shutil.copytree(ROOT / 'assets', OUT / 'assets')
     (OUT / 'assets' / 'edit').mkdir(exist_ok=True)
     (OUT / '.nojekyll').write_text('')
+    (OUT / 'CNAME').write_text(DOMAIN + '\n')   # 커스텀 도메인 — 아티팩트에 들어가야 배포 때마다 유지된다
     built = []
     for f in sorted(PAGES.glob('*.html')):
         txt = f.read_text()
