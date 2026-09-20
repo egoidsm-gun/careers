@@ -384,9 +384,6 @@ a.row:hover .t{color:var(--acc)}
 .timeline ul{margin:0;padding-left:18px;color:var(--fg2);font-size:16px}
 .timeline li ul li{display:list-item;padding:2px 0;border:0;grid-template-columns:none}
 @media (max-width:560px){.timeline li{grid-template-columns:1fr;gap:6px}}
-.brandnav{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
-.brandnav a{border:1px solid var(--line2);border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600}
-.brandnav a:hover{border-color:var(--acc);color:var(--acc)}
 
 /* ---------- 콘텐츠 ---------- */
 .posts{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
