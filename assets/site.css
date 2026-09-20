@@ -38,18 +38,18 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 
 /* ---------- 상단 내비 (넷플릭스 잡스 바: 좌 로고 · 중앙 알약 탭 · 우 사각 버튼) ----------
    햄버거 메뉴 없음 — 알약은 모든 폭에서 보인다. 넓으면 정중앙, 중간 폭이면 한 줄 안에서 가운데, 좁으면 둘째 줄. */
-:root{--nav:96px;--pill:58px}
+:root{--nav:104px;--pill:60px}   /* 넷플릭스 잡스 실측(1440·1920 동일): 헤더 104 · 알약 60 · 버튼 56 · 로고 28 · 좌우 여백 32 (2026-09-20 사용자 "넷플릭스 크기·위치·비율로") */
 @media (max-width:1179px){:root{--nav:72px;--pill:44px}}
 @media (max-width:639px){:root{--pill:clamp(30px,9.6vw,42px);--nav:calc(var(--pill) + 26px)}}  /* 좁은 폭도 한 줄: 로고·알약·버튼이 폭에 비례해 같이 준다 */
 .nav{position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:100;transition:background .3s,border-color .3s;background:linear-gradient(180deg,rgba(0,0,0,.8),rgba(0,0,0,0));border-bottom:1px solid transparent}
 .nav.solid{background:rgba(11,11,12,.86);backdrop-filter:saturate(160%) blur(18px);-webkit-backdrop-filter:saturate(160%) blur(18px);border-bottom-color:var(--line)}
-.nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav)}   /* 바 배경은 전폭, 내용물은 본문과 같은 기둥(--max 1200 + 24px)에 맞춘다 — 로고 왼쪽이 히어로 글자 왼쪽과 한 줄(2026-09-17 사용자 "넓은 화면에서 간격·비율이 똥망") */
+.nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav);max-width:none;padding:0 32px}   /* 넷플릭스처럼 로고·버튼이 화면 가장자리 32px에 붙는다(2026-09-20 사용자 지시 — 2026-09-17의 '본문 기둥 정렬'을 뒤집음). 알약은 뷰포트 정중앙 */
 .brk{display:none}
 .logo{display:flex;align-items:center;flex:none}
-.logo img{height:32px;width:auto}
-.menu{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:0 40px;list-style:none;display:flex;align-items:center;gap:40px;height:var(--pill);border-radius:999px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.logo img{height:28px;width:auto}   /* 넷플릭스 로고 높이 28 */
+.menu{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:0 30px;list-style:none;display:flex;align-items:center;gap:20px;height:var(--pill);border-radius:999px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .menu li{position:relative;height:100%;display:flex;align-items:center}
-.menu li>a{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:.04em;color:#cfcfcf;line-height:1;display:flex;align-items:center;height:100%;white-space:nowrap;transition:color .15s}
+.menu li>a{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.04em;color:#cfcfcf;line-height:1;display:flex;align-items:center;height:100%;padding:0 6px;white-space:nowrap;transition:color .15s}   /* 넷플릭스 탭: 16px/700, 항목 여백 6, 간격 20, 알약 안쪽 30 */
 .menu li>a:hover,.menu li.on>a,.menu li.open>.dd-trigger{color:#fff}
 .dd{position:absolute;top:calc(100% + 10px);left:50%;transform:translate(-50%,8px);min-width:220px;background:#1c1c1e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:8px;opacity:0;visibility:hidden;transition:.18s;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .dd::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
@@ -57,14 +57,14 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 .dd a{display:block;padding:11px 14px;border-radius:10px;font-size:15px;font-weight:600;color:#e8e5de;white-space:nowrap}
 .dd a:hover{background:rgba(255,255,255,.07);color:var(--acc)}
 .nav-right{display:flex;align-items:center;gap:10px;flex:none}
-.nav-cta{height:var(--pill);padding:0 26px;border-radius:5px;background:var(--acc);color:#fff;font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:.05em;display:inline-flex;align-items:center;justify-content:center;line-height:1;transition:.15s;white-space:nowrap}
+.nav-cta{height:56px;padding:0 24px;border-radius:4px;background:var(--acc);color:#fff;font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:.05em;display:inline-flex;align-items:center;justify-content:center;line-height:1;transition:.15s;white-space:nowrap}
 .nav-cta:hover{background:var(--acc2)}
 @media (max-width:1179px){
-  .nav .wrap{padding:0 24px;gap:12px}   /* 본문 .wrap과 같은 24px — 좁은 폭에서만 어긋나 있었다(QA 지적 2026-09-17) */
+  .nav .wrap{max-width:var(--max);padding:0 24px;gap:12px}   /* ≤1179는 예전대로 본문 기둥(24px) */
   .menu{position:static;transform:none;margin:0 auto;padding:0 20px;gap:20px;max-width:100%}
-  .menu li>a{font-size:13px;letter-spacing:.03em}
+  .menu li>a{font-size:13px;font-weight:600;letter-spacing:.03em;padding:0}
   .logo img{height:22px}
-  .nav-cta{padding:0 14px;font-size:14px}
+  .nav-cta{height:var(--pill);padding:0 14px;font-size:14px;font-weight:600;border-radius:5px}
   .dd{position:fixed;left:16px;right:16px;top:calc(var(--nav) + 4px);transform:none;min-width:0}
   .menu li{position:static}
   .menu li:hover .dd,.menu li:focus-within .dd,.menu li.open .dd{transform:none}
