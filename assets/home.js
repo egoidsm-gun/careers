@@ -71,21 +71,23 @@
      v2(헤드라인 위 작은 한 덩어리)는 "이거 아냐"였다. 이번엔 별들이 글자 상자(눈썹~서브 카피의 글리프 합)를 둘러싼다 —
      단 닫힌 테두리가 아니라 **한쪽(왼쪽 아래)이 열린 사슬**: 왼쪽 아래에서 시작해 왼쪽을 타고 올라 위를 지나 오른쓴 쪽으로 내려와
      아래를 훑고 멈춘다. 캡틴(6번, 위쪽 가장 높은 별)이 가장 밝고 가장 먼저 켜져 양쪽으로 퍼지며 이어진다. 강아지(14번)는 열린 끝에서 점선으로 뒤따른다.
-     좌표 (ax, ay)는 '여백 정규화': 0~1이 글자 상자 안, -1~0은 왼쪽/위 여백(-1 = 화면 가장자리), 1~2는 오른쪽/아래 여백(2 = 가장자리).
-     그래서 어느 화면에서도 별이 내비에 붙거나 잘리지 않고 글자 둘레의 하늘을 비율대로 채운다(v3 첫 판은 상자 배율이라 1440에서 위쪽 별이 내비에 눌렸다).
-     거리를 일부러 불규칙하게(여백의 30%~95%) 두어 둥근 다각형이 아니라 별자리로 읽히게 한다. 폭이 좁아 양옆 여백이 90px 미만이면(NARROW) 위·아래 두 줄로 나뉘고 7→8 선은 끊는다.
+     좌표 (ax, ay)는 '글자 상자 정규화': 0~1이 글자 상자, 음수·1 초과는 상자 크기의 배수만큼 바깥.
+     **별자리 모양은 글자 상자에만 매여 있어 어느 화면에서도 닮은꼴이다.** 화면에 다 안 들어가면 상자 중심 기준으로 전체를 같은 배율 k로 줄인다(가로세로를 따로 누르지 않아 모양 유지).
+     ★ 2026-09-21 이 방식으로 바꿨다. 이전엔 '여백 정규화'라 **창 높이에 따라 모양이 변했다** — 사용자가 같은 라이브 화면 두 장을 놓고 "별자리 위치도 달라"로 잡아냈다.
+       실측 종횡비: 2000x1093 → 1.95(사용자가 고른 모양) / 2000x890 → 2.45(납작, 퇴짜). **아래 좌표는 2000x1093에서의 모양을 글자 상자 배수로 굳힌 값이다.**
+     거리를 일부러 불규칙하게 두어 둥근 다각형이 아니라 별자리로 읽히게 한다. 폭이 좁아 양옆 여백이 90px 미만이면(NARROW) 위·아래 두 줄로 나뉘고 7→8 선은 끊는다.
      별 15 = 크루 14 + 강아지 1(승선 구간과 같은 수). 별은 순수한 기호 — 인터뷰 링크·말풍선은 사용자 지시로 뺐다("그냥 별만으로 충분해"). 다시 넣지 말 것. */
   var SKY_WIDE = [ // [ax, ay, 반지름] — 왼쪽 아래에서 시작해 왼쪽→위→오른쪽→아래로 도는 열린 사슬
-    [-.45, 1.25, 1.6], [-.85, .62, 2.2], [-.40, .18, 1.5],
-    [.05, -.55, 1.9], [.26, -.35, 1.5], [.48, -.62, 2.3], [.71, -.92, 3.6], [.93, -.45, 1.8],
-    [1.35, .10, 2.1], [1.80, .55, 1.6], [1.30, 1.15, 1.5],
-    [.86, 1.55, 2.0], [.60, 1.90, 1.4], [.36, 1.40, 1.9],
-    [.20, 1.75, 1.2]
+    [-.29, 1.148, 1.6], [-.548, .62, 2.2], [-.258, .18, 1.5],
+    [.05, -.31, 1.9], [.26, -.197, 1.5], [.48, -.349, 2.3], [.71, -.518, 3.6], [.93, -.254, 1.8],
+    [1.226, .10, 2.1], [1.516, .55, 1.6], [1.194, 1.089, 1.5],
+    [.86, 1.325, 2.0], [.60, 1.531, 1.4], [.36, 1.236, 1.9],
+    [.20, 1.443, 1.2]
   ];
   var SKY_NARROW = [ // 위 한 줄(0~7) + 아래 한 줄(8~14), 7→8은 잇지 않는다
-    [.04, -.30, 1.6], [.15, -.72, 2.2], [.30, -.45, 1.5], [.42, -.85, 1.9], [.55, -.40, 1.5], [.68, -.68, 2.3], [.80, -.95, 3.6], [.95, -.55, 1.8],
-    [.97, 1.35, 2.1], [.83, 1.75, 1.6], [.66, 1.30, 1.5], [.50, 1.65, 2.0], [.33, 1.28, 1.4], [.16, 1.60, 1.9],
-    [.03, 1.85, 1.2]
+    [.04, -.429, 1.6], [.15, -1.029, 2.2], [.30, -.643, 1.5], [.42, -1.215, 1.9], [.55, -.572, 1.5], [.68, -.972, 2.3], [.80, -1.358, 3.6], [.95, -.786, 1.8],
+    [.97, 1.508, 2.1], [.83, 2.088, 1.6], [.66, 1.435, 1.5], [.50, 1.943, 2.0], [.33, 1.406, 1.4], [.16, 1.871, 1.9],
+    [.03, 2.233, 1.2]
   ];
   var SKY_CAP = 6, SKY_DOG = 14;
   var SKY_ORDER = [6, 5, 7, 4, 8, 3, 9, 2, 10, 1, 11, 0, 12, 13, 14];   // 캡틴에서 양쪽으로
@@ -128,13 +130,22 @@
     var b = { left: box.left - pr.left, top: box.top - pr.top, w: box.right - box.left, h: box.bottom - box.top };
     var navEl = document.querySelector('.nav'), navH = navEl ? navEl.offsetHeight : 72, PAD = 18;
     // 네 방향 여백(화면 가장자리·내비까지) — 좌표 -1~0 / 1~2가 이 안에서 비율로 놓인다
-    var mL = b.left - PAD, mR = W - PAD - (b.left + b.w), mT = b.top - (navH + PAD), mB = H - PAD - (b.top + b.h);
+    var mL = b.left - PAD, mR = W - PAD - (b.left + b.w);
     var narrow = mL < 90 || mR < 90;
     var set = narrow ? SKY_NARROW : SKY_WIDE;
     skyEl.setAttribute('viewBox', '0 0 ' + Math.round(W) + ' ' + Math.round(H));
-    function ax(a) { return a < 0 ? b.left + a * Math.max(0, mL) : a > 1 ? b.left + b.w + (a - 1) * Math.max(0, mR) : b.left + a * b.w; }
-    function ay(a) { return a < 0 ? b.top + a * Math.max(0, mT) : a > 1 ? b.top + b.h + (a - 1) * Math.max(0, mB) : b.top + a * b.h; }
-    var pts = set.map(function (s) { return [ax(s[0]), ay(s[1])]; });
+    var cx = b.left + b.w / 2, cy = b.top + b.h / 2;
+    var raw = set.map(function (s) { return [b.left + s[0] * b.w, b.top + s[1] * b.h]; });
+    var k = 1;                                                            // 화면 밖으로 나가면 전체를 같은 배율로 줄인다
+    raw.forEach(function (p) {
+      var dx = p[0] - cx, dy = p[1] - cy;
+      if (dx < -0.5) k = Math.min(k, (cx - PAD) / -dx);
+      if (dx > 0.5) k = Math.min(k, (W - PAD - cx) / dx);
+      if (dy < -0.5) k = Math.min(k, (cy - navH - PAD) / -dy);
+      if (dy > 0.5) k = Math.min(k, (H - PAD - cy) / dy);
+    });
+    k = Math.max(0, Math.min(1, k));
+    var pts = raw.map(function (p) { return [cx + (p[0] - cx) * k, cy + (p[1] - cy) * k]; });
     pts.forEach(function (p, i) { skyStars[i].pos.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')'); });
     skyLines.forEach(function (l, i) {
       l.setAttribute('x1', pts[i][0].toFixed(1)); l.setAttribute('y1', pts[i][1].toFixed(1));
@@ -203,7 +214,7 @@
     var btn = fin.querySelector('.btn');
     var ctxB = cvB.getContext('2d'), ctxF = cvF.getContext('2d'), ctx = ctxF, W, H, dpr, mob = window.matchMedia('(max-width: 639px)').matches;
     var slow = parseFloat((/[?&]slow=([\d.]+)/.exec(location.search) || [])[1]) || 1;   // 진단: ?slow=4 면 4배 느리게
-    var deckY, deckW, hullH, shipL, lampLen;                               // 갑판 y·배 폭·배 높이·배 왼쪽(뱃머리) x·등 빛 길이 — 캔버스 좌표
+    var deckY, deckW, hullH, shipL, lampLen, SC = 1;   // SC: 갑판 장면 배율 — 배(버튼)가 폭에 따라 커지므로 크루·강아지도 같은 비율로 키운다(기준 hullH 51px)                               // 갑판 y·배 폭·배 높이·배 왼쪽(뱃머리) x·등 빛 길이 — 캔버스 좌표
     function size() {
       dpr = Math.min(devicePixelRatio || 1, 2);
       var bw = btn.getBoundingClientRect().width; W = Math.min(1100, Math.max(innerWidth * .96, bw * 2.8)); H = 460;   // 좁은 화면에서도 뱃머리 앞 빛이 캔버스 끝에 잘리지 않게
@@ -211,6 +222,7 @@
       var keep = btn.style.transform; btn.style.transform = '';             // 흔들리는 중에 재면 그만큼 어긋난다
       var br = btn.getBoundingClientRect(), hr = host.getBoundingClientRect();
       deckY = H / 2 + (br.top - (hr.top + hr.height / 2)); deckW = br.width; hullH = br.height;
+      SC = Math.max(1, Math.min(1.6, hullH / 51));
       shipL = W / 2 + (br.left - (hr.left + hr.width / 2));
       btn.style.transform = keep;
       // 캔버스는 넓혔지만(위) 화면 자체가 좁으면 등 빛의 눈에 보이는 부분이 뷰포트 오른쪽 끝에서 잘린다(QA 2026-09-18, 320~375px 폭 실측) —
@@ -415,7 +427,7 @@
       var age = t - dogBorn; if (age < 0) return;
       var a = Math.min(1, age / 300), rise = (1 - a) * 4, pos = tf(shipL + deckW * DOGX, deckY);
       var wag = Math.sin(t / 150) * 1.4, tiltH = Math.sin(t / 1100) * .07;                     // 꼬리는 늘, 고개는 가끔
-      ctx.save(); ctx.translate(pos[0], pos[1] - rise); ctx.rotate(sh.a);
+      ctx.save(); ctx.translate(pos[0], pos[1] - rise * SC); ctx.rotate(sh.a); ctx.scale(SC, SC);
       ctx.shadowColor = 'rgba(255,190,130,' + (.5 * a).toFixed(3) + ')'; ctx.shadowBlur = 2;
       var g = ctx.createLinearGradient(0, -8, 0, 0); g.addColorStop(0, 'rgba(255,236,214,' + (.95 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,206,166,' + (.95 * a).toFixed(3) + ')');
       ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineWidth = 1.1;
@@ -503,7 +515,7 @@
         var p2 = P[k], age2 = t - (p2.d + p2.dur) - BOARD;
         if (age2 < 0) continue;                                            // 승선 — 배 밑에 스며든 빛이 한 박자 뒤 갑판 위에 사람으로 솟아오른다
         var a = Math.min(1, age2 / 300);
-        var pos = tf(spot(p2), deckY), ph2 = p2.h * (.55 + .45 * a);
+        var pos = tf(spot(p2), deckY), ph2 = p2.h * SC * (.55 + .45 * a);
         var tilt = sh.a + p2.lean * a + (e * .02 + .008) * Math.sin(t / (650 / p2.tempo) + p2.ph);   // 각자 다른 리듬으로 미세하게 몸을 가눈다(시동이 걸리면 조금 더)
         person(pos[0], pos[1] - (1 - a) * 6, ph2, .92 * a, tilt, p2, age2);
         if (age2 < 280) {                                                  // 갑판에 솟는 순간의 짧은 섬광
