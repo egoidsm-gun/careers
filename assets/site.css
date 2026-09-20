@@ -46,7 +46,7 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 .nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav);max-width:none;padding:0 32px}   /* 넷플릭스처럼 로고·버튼이 화면 가장자리 32px에 붙는다(2026-09-20 사용자 지시 — 2026-09-17의 '본문 기둥 정렬'을 뒤집음). 알약은 뷰포트 정중앙 */
 .brk{display:none}
 .logo{display:flex;align-items:center;flex:none}
-.logo img{height:28px;width:auto}   /* 넷플릭스 로고 높이 28 */
+.logo img{height:42px;width:auto}   /* 넷플릭스는 28이지만 사용자 지시로 1.5배(2026-09-20) — 우리 워드마크는 소문자라 같은 높이에서 더 작아 보인다 */
 .menu{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:0 30px;list-style:none;display:flex;align-items:center;gap:20px;height:var(--pill);border-radius:999px;background:rgba(30,30,32,.94);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .menu li{position:relative;height:100%;display:flex;align-items:center}
 .menu li>a{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.04em;color:#cfcfcf;line-height:1;display:flex;align-items:center;height:100%;padding:0 6px;white-space:nowrap;transition:color .15s}   /* 넷플릭스 탭: 16px/700, 항목 여백 6, 간격 20, 알약 안쪽 30 */
@@ -63,7 +63,7 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
   .nav .wrap{max-width:var(--max);padding:0 24px;gap:12px}   /* ≤1179는 예전대로 본문 기둥(24px) */
   .menu{position:static;transform:none;margin:0 auto;padding:0 20px;gap:20px;max-width:100%}
   .menu li>a{font-size:13px;font-weight:600;letter-spacing:.03em;padding:0}
-  .logo img{height:22px}
+  .logo img{height:28px}   /* 데스크톱 42px와 같은 비율(바 높이의 40%) */
   .nav-cta{height:var(--pill);padding:0 14px;font-size:14px;font-weight:600;border-radius:5px}
   .dd{position:fixed;left:16px;right:16px;top:calc(var(--nav) + 4px);transform:none;min-width:0}
   .menu li{position:static}
