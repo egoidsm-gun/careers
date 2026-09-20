@@ -24,6 +24,10 @@ SRC, PAGES, DATA = ROOT / 'src', ROOT / 'src' / 'pages', ROOT / 'src' / 'data'
 OUT = ROOT / '_site'
 SITE = 'https://egoidsm.com/'   # 정식 도메인(2026-09-20 연결). OG·canonical 절대 URL에만 쓰인다 — 페이지 링크는 전부 {{root}} 상대경로라 베이스가 바뀌어도 그대로다
 DOMAIN = 'egoidsm.com'          # _site/CNAME 으로 나간다. Pages 설정(API cname)과 같아야 한다
+# RECRUITING 버튼이 가는 곳 — 사이트 안 recruiting/ 이 아니라 ATS(나인하이어). 공고 카드·상세(assets/site.js POST)와 같은 호스트다.
+# ★ layout.html에는 반드시 {{ats}} 자리표시자로 둘 것 — URL을 직접 박으면 부모 <div class="nav-right">의 내용에 {{ 가 사라져
+#   scan_editable이 그 div를 '편집 가능한 잎'으로 잡아 버리고, 편집 지도가 RECRUITING 대신 <a> 태그 통째를 가리킨다(실측).
+ATS = 'https://egoidsm.ninehire.site'
 BLOG_RSS = 'https://egoidsmblog.com/rss'
 
 NAV_FILE = SRC / 'nav.json'   # 상단 알약·드롭다운 글자 — 편집 모드에서 고칠 수 있게 데이터 파일로 분리
@@ -262,6 +266,7 @@ def main():
                 .replace('{{content}}', body)
                 .replace('{{v}}', version)
                 .replace('{{home}}', root or './')
+                .replace('{{ats}}', ATS)
                 .replace('{{editkey}}', key)
                 .replace('{{root}}', root))
         out = OUT / path / 'index.html'
