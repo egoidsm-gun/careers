@@ -44,9 +44,12 @@ addEventListener('pageshow',function(e){if(e.persisted)unlock()})}}}catch(e){}</
   </div>
 </section>
 
-<!-- 크루 핀(2026-09-18 사용자 "개척선과 승선 사이에 the professional crew 구간") — 개척선과 같은 핀·단어 점등, 이미지 없음. 문구는 편집 모드에서 고칠 수 있다 -->
+<!-- 크루 핀(2026-09-18 사용자 "개척선과 승선 사이에 the professional crew 구간") — 개척선과 같은 핀·단어 점등 + 글자를 둘러싸는 별자리. 문구는 편집 모드에서 고칠 수 있다 -->
 <section class="pin crew center">
   <div class="pin-in">
+    <!-- 크루 별자리 v3(2026-09-20 사용자 "별자리 컨셉은 좋아, 모양이 문제 — 글자 주변을 둘러싸는 형태로") — 별 15개 = 크루 14 + 강아지 1.
+         글자 상자를 기준으로 home.js의 SKY_WIDE/SKY_NARROW가 자리를 잡고 한쪽이 열린 사슬로 잇는다. 편집 대상 아님 -->
+    <svg class="sky" data-noedit></svg>
     <div class="wrap">
       <p class="eyebrow">THE ELITE CREW</p>
       <p class="giant words"></p>
