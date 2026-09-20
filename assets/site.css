@@ -183,12 +183,12 @@ body.editing .crew .wrap,body.editing .crew .wrap > *{pointer-events:auto}
    이 빛이 있어야 멀리 있는 옅은 카드가 '어두운 실루엣'으로 읽힌다(검정 위에서는 그냥 안 보인다).
    섹션 경계선 금지 규칙: 위아래는 mask로 0까지 빼서 sticky 상자의 모서리가 선으로 드러나지 않게 한다. */
 .crew .pin-in::before{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
-  background:radial-gradient(112% 66% at 50% 92%,rgba(255,126,44,.26),rgba(212,80,22,.085) 34%,rgba(96,36,10,.035) 56%,transparent 74%);
+  background:radial-gradient(112% 66% at 50% 92%,rgba(255,126,44,.22),rgba(212,80,22,.085) 34%,rgba(96,36,10,.035) 56%,transparent 74%);
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);
   mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent)}
 .shots{position:absolute;inset:0;z-index:-1;pointer-events:none}
 /* 카드는 전부 화면 한가운데 겹쳐 두고(inset:0 + margin:auto) 움직임은 transform만 — 매 프레임 레이아웃을 건드리지 않는다 */
-.shot{position:absolute;inset:0;margin:auto;--w:calc(var(--wb,30vw) * var(--k,1));width:var(--w);aspect-ratio:var(--ar,3/2);
+.shot{position:absolute;inset:0;margin:auto;--w:calc(var(--wb,26vw) * var(--k,1));width:var(--w);aspect-ratio:var(--ar,3/2);
   display:block;border-radius:calc(var(--w) * .095);overflow:hidden;line-height:0;color:#fff;
   pointer-events:none;opacity:0;transform:scale(.1);backface-visibility:hidden;will-change:transform,opacity}
 .shot img{width:100%;height:100%;object-fit:cover;filter:saturate(.92);transition:filter .35s}
@@ -209,8 +209,8 @@ body.editing .crew .wrap,body.editing .crew .wrap > *{pointer-events:auto}
    폭은 브레이크포인트 기준값 --wb 하나만 바꾸면 일곱 장이 같이 움직인다 */
 .shot.s1{--ar:4/3;--k:1}    .shot.s2{--ar:1/1;--k:.87}  .shot.s3{--ar:5/4;--k:.97}  .shot.s4{--ar:7/4;--k:1.15}
 .shot.s5{--ar:1/1;--k:.87}  .shot.s6{--ar:3/4;--k:.75}  .shot.s7{--ar:16/9;--k:1.16}
-@media (max-width:1023px){.shot{--wb:42vw}}
-@media (max-width:639px){.shot{--wb:58vw}}
+@media (max-width:1023px){.shot{--wb:36vw}}
+@media (max-width:639px){.shot{--wb:50vw}}
 /* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 그 뒤를 지나간다.
    눈썹(--eb)은 홈 공통값이라 건드리지 않는다(구간마다 비율이 다른 건 의도된 것 — CLAUDE.md 눈썹 규칙) */
 .crew .giant{font-size:clamp(38px,8.2vw,124px)}
