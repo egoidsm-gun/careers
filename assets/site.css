@@ -98,17 +98,18 @@ html.aurora body{background:#000}
 .screen{position:relative;z-index:1;min-height:100svh;display:flex;align-items:center;overflow:hidden}
 .screen .wrap{width:100%;padding-top:calc(var(--nav) + 40px);padding-bottom:96px}
 .center .wrap{text-align:center}
-.giant{font-size:clamp(40px,8.6vw,132px);line-height:.98;letter-spacing:-.045em;font-weight:800;margin:0;color:var(--fg)}
+.giant{font-size:clamp(40px,6.6vw,100px);line-height:.98;letter-spacing:-.045em;font-weight:800;margin:0;color:var(--fg)}
 .giant.acc{color:var(--acc)}
 .w{display:inline-block}
 
 /* 히어로: 별 위에 거대 글자, 아래에 일출의 잔광 */
 .hero{isolation:isolate;overflow-x:clip;overflow-y:visible}   /* 잔광은 세로로만 번지고 가로는 화면 폭에서 잘라 iOS 가로 끌림 방지 */
-.hero .giant{font-size:clamp(46px,10.4vw,164px)}
+.hero .giant{font-size:clamp(46px,8vw,120px)}
 /* 눈썹(서브카피) 크기 — 홈의 거대 헤드라인 구간 세 곳(히어로·개척선·승선)은 **하나의 값으로 통일**한다(2026-09-17 사용자 "서브카피 글자 크기를 모두 통일, 비율은 30까지").
-   기준은 히어로: `3.12vw = 10.4vw x 0.30`, 상한 49px = 164px x 0.30 — 히어로 헤드라인과 상·하한이 같은 폭에서 걸려 **모든 폭에서 히어로 대비 30%**가 유지된다.
+   기준은 히어로: `2.4vw = 8vw x 0.30`, 상한 36px = 120px x 0.30 — 히어로 헤드라인과 상·하한이 같은 폭(1500px)에서 걸려 **모든 폭에서 히어로 대비 30%**가 유지된다.
+   ★ 히어로 크기를 바꾸면 이 두 수를 반드시 같이 고칠 것(2026-09-20 데스크톱 글자를 27% 줄이며 10.4vw/164 → 8vw/120, 눈썹도 3.12vw/49 → 2.4vw/36).
    통일값이라 헤드라인이 작은 구간은 비율이 더 커진다(2000px 기준 승선 40% · 개척선 53%). 하위 페이지는 짝 제목이 작아 기본 14px 유지. */
-body.home{--eb:clamp(14px,3.12vw,49px);--ebgap:clamp(18px,2.1vw,33px)}
+body.home{--eb:clamp(14px,2.4vw,36px);--ebgap:clamp(18px,1.6vw,26px)}
 .hero::before{content:"";position:absolute;left:50%;bottom:-60vh;width:170vw;height:140vh;transform:translateX(-50%);z-index:-1;pointer-events:none;background:radial-gradient(ellipse 60% 46% at 50% 57%,rgba(237,109,32,.30),rgba(237,109,32,.07) 48%,transparent 78%)}
 html.js .hero::before{opacity:0;animation:fadein 2s var(--t0) forwards,breathe 7s calc(var(--t0) + 2s) ease-in-out infinite alternate}
 /* 글자 등장에서 scale()을 쓰지 않는다(2026-09-17 사용자 "모바일에서 글자가 미세하게 흔들린다") — 큰 글자를 확대하면 프레임마다 글리프가 다시 래스터화되며 폭이 흔들린다(실측 0.36px).
@@ -158,7 +159,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .pin{position:relative;z-index:1;height:240svh}
 .pin-in{position:sticky;top:0;height:100svh;display:flex;align-items:center;overflow:hidden;isolation:isolate}
 .pin .wrap{width:100%;padding-top:var(--nav)}
-.pin .giant{font-size:clamp(32px,6vw,92px)}
+.pin .giant{font-size:clamp(32px,4.8vw,72px)}
 .pin .giant + .giant{margin-top:.22em}
 .pin .w{opacity:.13;transition:opacity .45s}
 .pin .w.on{opacity:1}
@@ -183,7 +184,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 @media (prefers-reduced-motion:reduce){.sky .cap .halo{animation:none}}
 /* 이 구간만 글자를 키운다 — 레퍼런스처럼 가운데 글자가 화면을 채우고 사진은 가장자리를 스친다.
    눈썹(--eb)은 홈 공통값이라 건드리지 않는다(구간마다 비율이 다른 건 의도된 것 — CLAUDE.md 눈썹 규칙) */
-.crew .giant{font-size:clamp(38px,8.2vw,124px)}
+.crew .giant{font-size:clamp(38px,6.4vw,96px)}
 /* 헤드라인 아래 서브 카피 — 레퍼런스(jobs.netflix.com "Dream team")처럼 두 줄쯤에서 접히도록 폭을 묶는다.
    문구는 내 초안이라 편집 모드로 고칠 수 있다(2026-09-19 사용자 "넷플릭스처럼 아래 서브 카피를") */
 .crew .lead{margin:clamp(20px,2.2vw,34px) auto 0;max-width:min(560px,86vw);font-size:clamp(16px,1.6vw,21px);text-wrap:balance}
@@ -202,7 +203,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .final{height:220svh}
 .final .pin-in{overflow-x:clip;overflow-y:visible}
 /* 개척선 핀과 동일하게 `.pin .wrap{padding-top:var(--nav)}`를 그대로 쓴다 — 상단 바가 화면 위를 덮으므로 그만큼 내려야 눈에 가운데로 보인다 */
-.final .giant{font-size:clamp(42px,8vw,124px)}
+.final .giant{font-size:clamp(42px,6.2vw,94px)}
 /* 글자는 캔버스(.btns 안, 위로 230px까지 뻗음)보다 위 레이어에 — 뒤 캔버스의 주황 잔광이 헤드라인 아래 절반을 물들여 글자가 두 색으로 보였다(사용자 지적) */
 .final .eyebrow,.final .giant,.final .lead{position:relative;z-index:2}
 .final .lead{margin:28px auto 0}
