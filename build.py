@@ -27,7 +27,8 @@ SITE = 'https://egoidsm-gun.github.io/careers/'   # OG·canonical 절대 URL에�
 # 다시 붙일 때: SITE를 https://egoidsm.com/ 로, 아래 DOMAIN·CNAME 줄의 주석을 풀고, layout.html의 noindex를 지운 뒤
 #   PUT /repos/egoidsm-gun/careers/pages -d '{"cname":"egoidsm.com"}'. ★ DNS를 먼저 바꿀 것 — 순서를 어기면 볼 수 있는 주소가 사라진다.
 # DOMAIN = 'egoidsm.com'   # _site/CNAME 으로 나간다. Pages 설정(API cname)과 같아야 한다
-# RECRUITING 버튼이 가는 곳 — 사이트 안 recruiting/ 이 아니라 ATS(나인하이어). 공고 카드·상세(assets/site.js POST)와 같은 호스트다.
+# 채용 링크가 가는 곳 — 사이트 안 recruiting/ 이 아니라 ATS(나인하이어). 공고 카드·상세(assets/site.js POST)와 같은 호스트다.
+# 상단 RECRUITING 버튼(layout.html)뿐 아니라 페이지 본문의 채용 버튼 9개도 {{ats}}를 쓴다({{content}} 치환이 {{ats}}보다 먼저라 본문에서도 동작한다).
 # ★ layout.html에는 반드시 {{ats}} 자리표시자로 둘 것 — URL을 직접 박으면 부모 <div class="nav-right">의 내용에 {{ 가 사라져
 #   scan_editable이 그 div를 '편집 가능한 잎'으로 잡아 버리고, 편집 지도가 RECRUITING 대신 <a> 태그 통째를 가리킨다(실측).
 ATS = 'https://egoidsm.ninehire.site'
