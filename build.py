@@ -23,9 +23,9 @@ ROOT = pathlib.Path(__file__).resolve().parent
 SRC, PAGES, DATA = ROOT / 'src', ROOT / 'src' / 'pages', ROOT / 'src' / 'data'
 OUT = ROOT / '_site'
 SITE = 'https://egoidsm.com/'   # OG·canonical 절대 URL에만 쓰인다(페이지 링크는 전부 {{root}} 상대경로)
-# ★ 이 브랜치를 main에 머지하기 전에 Cloudflare DNS를 먼저 바꿔야 한다 — 순서를 어기면 github.io가 egoidsm.com으로
-#   301되는데 그 주소는 아직 옛 사이트라 새 사이트를 볼 수 있는 주소가 사라진다(2026-09-20에 실제로 겪고 되돌림).
-#   순서·명령은 ~/CEO/careers-도메인-핸드오프.md 참조.
+# 2026-09-21 전환 완료 — Cloudflare DNS(@ A 185.199.108~111.153 · www CNAME egoidsm-gun.github.io, 둘 다 DNS only)
+#   → Pages cname 등록 → 이 파일 머지 → 인증서 발급 후 HTTPS 강제. 경위·복구 값은 ~/CEO/careers-도메인-핸드오프.md.
+#   되돌릴 일이 생기면 DNS를 @ A 76.76.21.21 / www 프록시로 되돌리고 Pages cname을 비운다.
 DOMAIN = 'egoidsm.com'   # _site/CNAME 으로 나간다. Pages 설정(API cname)과 같아야 한다
 # 채용 링크가 가는 곳 — 사이트 안 recruiting/ 이 아니라 ATS(나인하이어). 공고 카드·상세(assets/site.js POST)와 같은 호스트다.
 # 상단 RECRUITING 버튼(layout.html)뿐 아니라 페이지 본문의 채용 버튼 9개도 {{ats}}를 쓴다({{content}} 치환이 {{ats}}보다 먼저라 본문에서도 동작한다).
