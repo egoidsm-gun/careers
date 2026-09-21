@@ -86,7 +86,7 @@
     [.36, .4255, 2.0], [.10, .5317, 1.4], [-.14, .3796, 1.9],
     [-.30, .4864, 1.2]
   ];
-  var SKY_CAP = 6, SKY_DOG = 14;
+  var SKY_CAP = 6, SKY_DOG = 14, SKY_TOL = 0.99;  // SKY_TOL: 글자 회피 배율이 세로 상한을 이만큼까지 넘어도 봐준다(1.0 = 안 봐줌)
   var SKY_ORDER = [6, 5, 7, 4, 8, 3, 9, 2, 10, 1, 11, 0, 12, 13, 14];   // 캡틴에서 양쪽으로
   var skyEl = document.querySelector('.crew .sky'), skyStars = [], skyLines = [], skyRank = [], skyLineRank = [], skyLaidOut = false;
   (function buildSky() {
@@ -146,7 +146,7 @@
     SKY.forEach(function (s) {
       var ax = Math.abs(s[0]), ay = Math.abs(s[1]), mgn = (s[2] + 2) / U;  // 별 반지름 + 2px 여유, 상자 단위(U)로 환산
       var ex = ax > 1e-4 ? (.5 + mgn) / ax : Infinity;
-      var t = Math.min(1, ax / .5), shrink = Math.sqrt(Math.max(0, 1 - t * t));   // 가운데서 멀수록 넘어야 할 높이가 줄어든다
+      var t = Math.min(1, ax / .5), shrink = Math.sqrt(Math.max(0, 1 - .7 * t * t));   // 가운데서 멀수록 넘어야 할 높이가 줄어든다(.7 = 완전한 타원보다 보수적)
       var ey = ay > 1e-4 ? (yEsc * shrink + mgn) / ay : Infinity;
       kMin = Math.max(kMin, Math.min(ex, ey));
     });
@@ -156,6 +156,10 @@
     //    그려지지 않고, 그 별로 향하던 선 두 개만 허공에서 잘려 사슬이 끊어져 보인다. 좌우 넘침은 화면 밖이라 그냥 안 보일 뿐이지만
     //    위아래 넘침은 '끊긴 선'이라는 흔적을 남긴다. 그래서 세로만 하드 캡한다(창 높이가 낮을 때 별이 글자에 가까워지는 쪽을 택한다).
     var k = Math.min(Math.max(Math.min(1, kFit), kMin), kFitY);
+    // ★ kMin이 kFitY를 넘어서면 '글자를 피하면서 화면에도 들어가는' 배율이 아예 없다 — 넓고 낮은 창(2000×~780 이하)에서 그렇다.
+    //    그때 kFitY를 택하면 별이 글자 위에 얹힌다(실측: 별 2·4·8·13이 헤드라인 글씨를 관통). 글자를 가리느니 별자리를 접는다 —
+    //    높이 520px 이하에서 이미 같은 판단을 하고 있다(CSS). 여유 SKY_TOL은 '줄 사이 여백에만 살짝 걸치는' 선까지는 보여주려는 값.
+    skyEl.style.display = (kMin <= kFitY * SKY_TOL) ? '' : 'none';
     var pts = SKY.map(function (s) { return [cx + s[0] * U * k, cy + s[1] * U * k]; });
     pts.forEach(function (p, i) { skyStars[i].pos.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')'); });
     skyLines.forEach(function (l, i) {
