@@ -266,8 +266,11 @@ html.set2.js .final.lit .btns::before{animation:litGlow 1.1s ease forwards}
 .phero .meta{color:var(--mute);font-size:12px;margin-top:20px;font-family:var(--disp);letter-spacing:.1em}
 .phero.img{position:relative;min-height:66svh;display:flex;align-items:flex-end;border:0;isolation:isolate;padding-bottom:64px}
 /* 히어로 하나로 끝나는 페이지(페이버스 준비 중) — 아래에 이어지는 내용이 없으니 바닥 정렬이 아니라 화면 가운데로.
-   위 패딩을 --nav만큼 줘야 고정 내비에 가려지는 만큼을 빼고 '보이는 영역'의 한가운데에 온다. bodyclass에 soon을 넣어 켠다 */
-body.soon .phero.img{min-height:100svh;align-items:center;padding-top:var(--nav);padding-bottom:0}
+   ★ body.sub main{padding-top:var(--nav)}가 이미 .phero.img를 내비 아래로 밀어 두므로, 여기서 또 padding-top:var(--nav)을
+   더하면 내비 높이만큼 이중으로 밀려 중심이 아래로 처진다(QA 에이전트 실측: 375×812에서 50px, 1440×900에서 92px 처짐 —
+   예전 커밋의 "오차 0" 실측은 잘못됐던 것). padding은 0으로 두고 min-height만 내비 높이만큼 줄여 '보이는 영역'과
+   정확히 같은 높이로 만든다. bodyclass에 soon을 넣어 켠다 */
+body.soon .phero.img{min-height:calc(100svh - var(--nav));align-items:center;padding-top:0;padding-bottom:0}
 .phero.img .bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2}
 .phero.img::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(11,11,12,.35),rgba(11,11,12,.2) 40%,var(--bg) 100%)}
 .phero .en{font-family:var(--disp);font-weight:600;font-size:clamp(56px,10vw,150px);line-height:.95;letter-spacing:0;color:var(--fg);display:block}
