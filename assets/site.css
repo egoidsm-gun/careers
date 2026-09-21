@@ -77,7 +77,6 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
   .menu li>a{font-size:clamp(9px,2.85vw,12px);letter-spacing:.02em}
   .nav-cta{padding:0 clamp(7px,2.6vw,12px);font-size:clamp(9px,2.85vw,12px);letter-spacing:.03em}
 }
-}
 
 /* ---------- 홈: 출항 (아이덴트 → 별 → 거대 글자 → 스크롤 핀) ---------- */
 body.sub main{padding-top:var(--nav)}
