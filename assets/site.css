@@ -41,8 +41,10 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 :root{--nav:104px;--pill:60px}   /* 넷플릭스 잡스 실측(1440·1920 동일): 헤더 104 · 알약 60 · 버튼 56 · 로고 28 · 좌우 여백 32 (2026-09-20 사용자 "넷플릭스 크기·위치·비율로") */
 @media (max-width:1179px){:root{--nav:72px;--pill:44px}}
 @media (max-width:639px){:root{--pill:clamp(30px,9.6vw,42px);--nav:calc(var(--pill) + 26px)}}  /* 좁은 폭도 한 줄: 로고·알약·버튼이 폭에 비례해 같이 준다 */
-.nav{position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:100;transition:background .3s,border-color .3s;background:linear-gradient(180deg,rgba(0,0,0,.8),rgba(0,0,0,0));border-bottom:1px solid transparent}
-.nav.solid{background:rgba(11,11,12,.86);backdrop-filter:saturate(160%) blur(18px);-webkit-backdrop-filter:saturate(160%) blur(18px)}   /* ★ 경계선 금지 — 넷플릭스 잡스 바에는 없다(2026-09-21 사용자 지시). border-bottom-color를 되살리지 말 것 */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:100;background:transparent;border-bottom:1px solid transparent}   /* ★ 바 자체는 완전 투명 — 배경색·그라디언트·블러·경계선 전부 금지(2026-09-21 사용자 "넷플릭스는 그냥 아무것도 없잖아").
+      읽히게 만드는 건 알약(.menu)과 RECRUITING 버튼(.nav-cta)의 자기 배경뿐이다. 되살리지 말 것.
+      border-bottom은 투명한 채로 남겨 둔다 — 지우면 바 높이가 1px 달라진다 */
+/* `.nav.solid`(스크롤하면 site.js가 붙인다)에는 이제 아무 스타일도 없다 — 클래스는 훅으로만 남겨 둔다 */
 .nav .wrap{position:relative;display:flex;align-items:center;justify-content:space-between;height:var(--nav);max-width:none;padding:0 32px}   /* 넷플릭스처럼 로고·버튼이 화면 가장자리 32px에 붙는다(2026-09-20 사용자 지시 — 2026-09-17의 '본문 기둥 정렬'을 뒤집음). 알약은 뷰포트 정중앙 */
 .brk{display:none}
 .logo{display:flex;align-items:center;flex:none}
