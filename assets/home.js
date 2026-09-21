@@ -143,9 +143,9 @@
       var ey = Math.abs(s[1]) > 1e-4 ? yEsc / Math.abs(s[1]) : Infinity;
       kMin = Math.max(kMin, Math.min(ex, ey));
     });
-    // kFit(화면에 맞춤)만 1로 캡한다 — kMin(글자 회피)까지 같이 캡하면 세로로 긴 글자 상자(모바일 2~3줄)에서
-    // 캡이 먼저 걸려 별이 글자 위에 얹힌 채 멈춰 버린다(2026-09-21 QA, 320~390px 전부에서 실측 재현). floor는 1을 넘어도 된다 —
-    // 그래야 "화면 밖으로 넘치더라도 글자를 침범하진 않는다"는 원래 설계가 지켜진다.
+    // kFit(화면에 맞춤)만 1로 캡한다 — kMin(글자 회피)까지 같이 캡하면 큰 화면에서도 아니고 하필 세로로 긴 글자 상자(모바일 2~3줄)에서
+    // 캡이 먼저 걸려 별이 글자 위에 얹힌 채 멈춰 버린다(2026-09-21 QA, 320~390px 전부에서 실측 재현). floor는 1을 넘어도 된다 — 그래야
+    // "화면 밖으로 넘치더라도 글자를 침범하진 않는다"는 원래 설계가 지켜진다.
     var k = Math.max(Math.min(1, kFit), kMin);
     var pts = SKY.map(function (s) { return [cx + s[0] * U * k, cy + s[1] * U * k]; });
     pts.forEach(function (p, i) { skyStars[i].pos.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')'); });
@@ -240,7 +240,7 @@
       P.push({ sx: .5 + side * r, sy: .80 + Math.random() * .40,            // 버튼 아래 좌우에서 출발 — 글자 위를 지나지 않는다
                slot: cap ? 1.02 : (i - 1 + .5) / (N - 1) * .84 + (Math.random() - .5) * .5 / N,   // 크루는 선미 7.5%~71%, 캡틴은 84.5%(사이가 비어 눈에 띈다)
                arc: side * (.05 + Math.random() * .09),
-               d: (140 + i * 135 + (cap ? 0 : Math.random() * 90)) * slow, dur: (1080 + Math.random() * 620) * slow,   // 시차·비행 시간 모두 여유 있게(2026-09-19 사용자 "빛이 몰리는 시간과 탑승 시간을 조금 더 길게")
+               d: (140 + i * 96 + (cap ? 0 : Math.random() * 90)) * slow, dur: (720 + Math.random() * 420) * slow,   // 시차 135→96 · 비행 1080+620→720+420 = 전체 약 1초 단축(2026-09-21 사용자 "1초만 줄여줘"). 흩어짐 비율(1.58배)은 그대로 둔다
                w: 1.2 + Math.random() * 1.7,
                /* 개성(사용자 "사람들마다 개성이 느껴지게") — 직업 소지품 대신 사람 자체의 다양성: 키·체격·머리·자세·몸 방향·각자의 리듬 */
                h: cap ? 18 : 12 + Math.random() * 2.5, wf: cap ? .40 : .33 + Math.random() * .06,   // 키 12~14.5 · 체격 .33~.39 — 편차는 작게(사용자 "크기 차이 너무 크지 않게"), 개성은 머리·자세·방향·리듬으로
@@ -261,7 +261,7 @@
       S.push({ sx: .5 + sside * sr, sy: .80 + Math.random() * .40, slot: Math.random(),
                arc: sside * (.05 + Math.random() * .09),
                d: (140 + (i + Math.random()) / NS * (P[N - 1].d / slow - 140)) * slow,
-               dur: (1080 + Math.random() * 620) * slow, w: 1.2 + Math.random() * 1.7 });
+               dur: (720 + Math.random() * 420) * slow, w: 1.2 + Math.random() * 1.7 });
     }
     S.forEach(function (q) { if (q.d + q.dur > last - 260) q.d = Math.max(120 * slow, last - 260 - q.dur); });   // 뱃고동 뒤까지 날아오지 않게
     /* 개성 배정(사용자 "개성적인 사람들끼리 겹치지 않게" → "2~3명 더, 매력적이게") — 특징 10가지를 각각 한 명씩만.
