@@ -185,7 +185,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .crew .giant{font-size:clamp(38px,8.2vw,124px)}
 /* 헤드라인 아래 서브 카피 — 레퍼런스(jobs.netflix.com "Dream team")처럼 두 줄쯤에서 접히도록 폭을 묶는다.
    문구는 내 초안이라 편집 모드로 고칠 수 있다(2026-09-19 사용자 "넷플릭스처럼 아래 서브 카피를") */
-.crew .lead{margin:clamp(20px,2.2vw,34px) auto 0;max-width:min(560px,86vw);font-size:clamp(16px,1.6vw,24px);text-wrap:balance}   /* 상한 21→24: 헤드라인(8.2vw/124)과 같은 폭(≈1500px)에서 상한이 걸려 1000px 위로 비율 19.5%가 고정된다. 21이면 헤드라인만 1512까지 자라 서브 카피가 뒤처졌다(2026-09-21 사용자: 메인은 크고 작아지는데 서브는 그대로) */
+.crew .lead{margin:clamp(20px,2.2vw,34px) auto 0;max-width:min(760px,88vw);font-size:clamp(17px,1.9vw,28px);text-wrap:balance}   /* 2026-09-21 사용자 "너무 작아서 안 보인다" — 24→28px(헤드라인의 19.5%→22.6%). 상한은 여전히 헤드라인과 같은 폭(≈1480)에서 걸린다. 28px면 첫 줄이 560px를 넘어 네 줄이 되므로 max-width도 760으로 */   /* 상한 21→24: 헤드라인(8.2vw/124)과 같은 폭(≈1500px)에서 상한이 걸려 1000px 위로 비율 19.5%가 고정된다. 21이면 헤드라인만 1512까지 자라 서브 카피가 뒤처졌다(2026-09-21 사용자: 메인은 크고 작아지는데 서브는 그대로) */
 /* 짧은 세로 화면(랜드스케이프 폰) — 키운 글자가 네 줄이라 그대로 두면 화면을 넘긴다. 글자를 줄이고 사진은 접는다 */
 @media (max-height:520px){.crew .giant{font-size:clamp(26px,4.4vw,52px)}.crew .sky{display:none}}   /* 랜드스케이프 폰 — 글자만으로도 빠듯해 별자리는 접는다 */
 .ship .shipimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2;opacity:calc(var(--p,0)*.95);transform:scale(calc(1.22 - var(--p,0)*.22));-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent)}
@@ -204,7 +204,7 @@ html.js .mark-in{animation:markOut 1s cubic-bezier(.3,.6,.2,1) var(--tf) forward
 .final .giant{font-size:clamp(42px,8vw,124px)}
 /* 글자는 캔버스(.btns 안, 위로 230px까지 뻗음)보다 위 레이어에 — 뒤 캔버스의 주황 잔광이 헤드라인 아래 절반을 물들여 글자가 두 색으로 보였다(사용자 지적) */
 .final .eyebrow,.final .giant,.final .lead{position:relative;z-index:2}
-.final .lead{margin:28px auto 0;font-size:clamp(17px,1.5vw,23px)}   /* 승선 헤드라인(8vw/124)과 같은 폭(≈1540px)에서 상한 — 비율 18.5% 고정 */
+.final .lead{margin:28px auto 0;font-size:clamp(18px,1.76vw,27px)}   /* 크루 서브와 나란히 키웠다 — 승선 헤드라인(8vw/124)의 21.8%, 상한은 같은 폭(≈1534)에서 */
 .final .btns{justify-content:center}
 html.js .final .eyebrow,html.js .final .w,html.js .final .lead{opacity:0;transform:translateY(.4em)}   /* 버튼은 제외 — 처음부터 박혀 있어야 한다(사용자 지시) */
 .final.in .eyebrow,.final.in .w,.final.in .lead{animation:rise .9s cubic-bezier(.2,.7,.1,1) forwards;animation-delay:calc(var(--i,0)*70ms)}
