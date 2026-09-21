@@ -137,10 +137,14 @@
       if (dy > 0.5) kFit = Math.min(kFit, (H - PAD - cy) / dy);
     });
     // 바닥: 이보다 더 줄이면 별이 글자 상자 안으로 들어온다. 별마다 '상자를 벗어나는 최소 배율'을 구해 그 최댓값을 쓴다
+    // ★ 점(중심)이 아니라 별의 원판(반지름 + 2px 여유)이 상자를 벗어나야 한다 — 중심만 기준으로 하면 경계에 걸리는
+    // 별은 항상 '중심이 상자 모서리에 딱 닿는' 상태가 되고, 반지름만큼(코어가 1.2~3.6px) 원판이 상자 안으로 파고든다
+    // (2026-09-21 QA, 320~390px에서 star index4가 매번 정확히 자기 반지름만큼 겹치는 것으로 실측 재현).
     var yEsc = b.h / (2 * U), kMin = 0;
     SKY.forEach(function (s) {
-      var ex = Math.abs(s[0]) > 1e-4 ? .5 / Math.abs(s[0]) : Infinity;
-      var ey = Math.abs(s[1]) > 1e-4 ? yEsc / Math.abs(s[1]) : Infinity;
+      var mgn = (s[2] + 2) / U;                                            // 별 반지름 + 2px 여유, 상자 단위(U)로 환산
+      var ex = Math.abs(s[0]) > 1e-4 ? (.5 + mgn) / Math.abs(s[0]) : Infinity;
+      var ey = Math.abs(s[1]) > 1e-4 ? (yEsc + mgn) / Math.abs(s[1]) : Infinity;
       kMin = Math.max(kMin, Math.min(ex, ey));
     });
     // kFit(화면에 맞춤)만 1로 캡한다 — kMin(글자 회피)까지 같이 캡하면 큰 화면에서도 아니고 하필 세로로 긴 글자 상자(모바일 2~3줄)에서
