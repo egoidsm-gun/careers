@@ -22,11 +22,11 @@ from html.parser import HTMLParser
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC, PAGES, DATA = ROOT / 'src', ROOT / 'src' / 'pages', ROOT / 'src' / 'data'
 OUT = ROOT / '_site'
-SITE = 'https://egoidsm-gun.github.io/careers/'   # OG·canonical 절대 URL에만 쓰인다(페이지 링크는 전부 {{root}} 상대경로)
-# 정식 도메인 연결은 2026-09-20에 준비만 하고 되돌렸다 — DNS가 Cloudflare에 있는데 계정을 못 찾아서다.
-# 다시 붙일 때: SITE를 https://egoidsm.com/ 로, 아래 DOMAIN·CNAME 줄의 주석을 풀고, layout.html의 noindex를 지운 뒤
-#   PUT /repos/egoidsm-gun/careers/pages -d '{"cname":"egoidsm.com"}'. ★ DNS를 먼저 바꿀 것 — 순서를 어기면 볼 수 있는 주소가 사라진다.
-# DOMAIN = 'egoidsm.com'   # _site/CNAME 으로 나간다. Pages 설정(API cname)과 같아야 한다
+SITE = 'https://egoidsm.com/'   # OG·canonical 절대 URL에만 쓰인다(페이지 링크는 전부 {{root}} 상대경로)
+# ★ 이 브랜치를 main에 머지하기 전에 Cloudflare DNS를 먼저 바꿔야 한다 — 순서를 어기면 github.io가 egoidsm.com으로
+#   301되는데 그 주소는 아직 옛 사이트라 새 사이트를 볼 수 있는 주소가 사라진다(2026-09-20에 실제로 겪고 되돌림).
+#   순서·명령은 ~/CEO/careers-도메인-핸드오프.md 참조.
+DOMAIN = 'egoidsm.com'   # _site/CNAME 으로 나간다. Pages 설정(API cname)과 같아야 한다
 # 채용 링크가 가는 곳 — 사이트 안 recruiting/ 이 아니라 ATS(나인하이어). 공고 카드·상세(assets/site.js POST)와 같은 호스트다.
 # 상단 RECRUITING 버튼(layout.html)뿐 아니라 페이지 본문의 채용 버튼 9개도 {{ats}}를 쓴다({{content}} 치환이 {{ats}}보다 먼저라 본문에서도 동작한다).
 # ★ layout.html에는 반드시 {{ats}} 자리표시자로 둘 것 — URL을 직접 박으면 부모 <div class="nav-right">의 내용에 {{ 가 사라져
@@ -237,7 +237,7 @@ def main():
     shutil.copytree(ROOT / 'assets', OUT / 'assets')
     (OUT / 'assets' / 'edit').mkdir(exist_ok=True)
     (OUT / '.nojekyll').write_text('')
-    # (OUT / 'CNAME').write_text(DOMAIN + '\n')   # 정식 도메인 붙일 때 되살릴 것
+    (OUT / 'CNAME').write_text(DOMAIN + '\n')   # Pages 설정(API cname)과 같은 값이어야 한다
     built = []
     for f in sorted(PAGES.glob('*.html')):
         txt = f.read_text()
