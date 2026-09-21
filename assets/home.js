@@ -129,28 +129,33 @@
     skyEl.setAttribute('viewBox', '0 0 ' + Math.round(W) + ' ' + Math.round(H));
     var cx = b.left + b.w / 2, cy = b.top + b.h / 2, U = b.w;             // 단위는 글자 상자 '폭' 하나 — 모양이 상자 비율에 휘둘리지 않는다
     var kFit = 1;                                                         // 화면에 들어가게 줄이는 배율
+    var kFitY = Infinity;   // 세로 전용 상한 — 좌우로 삐져나가는 건 괜찮지만(폰에서 의도된 동작) 위아래는 절대 안 된다
     SKY.forEach(function (s) {
-      var dx = s[0] * U, dy = s[1] * U;
-      if (dx < -0.5) kFit = Math.min(kFit, (cx - PAD) / -dx);
-      if (dx > 0.5) kFit = Math.min(kFit, (W - PAD - cx) / dx);
-      if (dy < -0.5) kFit = Math.min(kFit, (cy - navH - PAD) / -dy);
-      if (dy > 0.5) kFit = Math.min(kFit, (H - PAD - cy) / dy);
+      var dx = s[0] * U, dy = s[1] * U, m = s[2] + 2;                      // m: 별 원판 반지름 + 여유
+      if (dx < -0.5) kFit = Math.min(kFit, (cx - PAD - m) / -dx);
+      if (dx > 0.5) kFit = Math.min(kFit, (W - PAD - cx - m) / dx);
+      if (dy < -0.5) { var ut = (cy - navH - PAD - m) / -dy; kFit = Math.min(kFit, ut); kFitY = Math.min(kFitY, ut); }
+      if (dy > 0.5) { var ub = (H - PAD - cy - m) / dy; kFit = Math.min(kFit, ub); kFitY = Math.min(kFitY, ub); }
     });
-    // 바닥: 이보다 더 줄이면 별이 글자 상자 안으로 들어온다. 별마다 '상자를 벗어나는 최소 배율'을 구해 그 최댓값을 쓴다
-    // ★ 점(중심)이 아니라 별의 원판(반지름 + 2px 여유)이 상자를 벗어나야 한다 — 중심만 기준으로 하면 경계에 걸리는
-    // 별은 항상 '중심이 상자 모서리에 딱 닿는' 상태가 되고, 반지름만큼(코어가 1.2~3.6px) 원판이 상자 안으로 파고든다
-    // (2026-09-21 QA, 320~390px에서 star index4가 매번 정확히 자기 반지름만큼 겹치는 것으로 실측 재현).
+    // 바닥: 이보다 더 줄이면 별이 글자 안으로 들어온다. 별마다 '글자를 벗어나는 최소 배율'을 구해 그 최댓값을 쓴다.
+    // ★ 점(중심)이 아니라 별의 원판(반지름 + 2px 여유)이 벗어나야 한다 — 중심만 보면 경계에 걸린 별이 반지름만큼 글자를 파고든다.
+    // ★ 글자를 직사각형이 아니라 '상자에 내접한 타원'으로 본다(2026-09-21) — 글줄은 가운데 정렬이라 상자 네 귀퉁이는 실제로 비어 있고,
+    //    직사각형으로 재면 가운데에서 살짝 벗어난 별(예: 4번, ux -.24)까지 상자 '높이 전부'를 넘으라고 요구해 배율이 과하게 커진다.
+    //    그 과한 배율이 아래 kFitY를 이겨 버리면 맨 아래 별(12번)이 핀 밖으로 밀려나 잘리고, 선 두 개가 허공에서 끊겨 보인다.
     var yEsc = b.h / (2 * U), kMin = 0;
     SKY.forEach(function (s) {
-      var mgn = (s[2] + 2) / U;                                            // 별 반지름 + 2px 여유, 상자 단위(U)로 환산
-      var ex = Math.abs(s[0]) > 1e-4 ? (.5 + mgn) / Math.abs(s[0]) : Infinity;
-      var ey = Math.abs(s[1]) > 1e-4 ? (yEsc + mgn) / Math.abs(s[1]) : Infinity;
+      var ax = Math.abs(s[0]), ay = Math.abs(s[1]), mgn = (s[2] + 2) / U;  // 별 반지름 + 2px 여유, 상자 단위(U)로 환산
+      var ex = ax > 1e-4 ? (.5 + mgn) / ax : Infinity;
+      var t = Math.min(1, ax / .5), shrink = Math.sqrt(Math.max(0, 1 - t * t));   // 가운데서 멀수록 넘어야 할 높이가 줄어든다
+      var ey = ay > 1e-4 ? (yEsc * shrink + mgn) / ay : Infinity;
       kMin = Math.max(kMin, Math.min(ex, ey));
     });
-    // kFit(화면에 맞춤)만 1로 캡한다 — kMin(글자 회피)까지 같이 캡하면 큰 화면에서도 아니고 하필 세로로 긴 글자 상자(모바일 2~3줄)에서
-    // 캡이 먼저 걸려 별이 글자 위에 얹힌 채 멈춰 버린다(2026-09-21 QA, 320~390px 전부에서 실측 재현). floor는 1을 넘어도 된다 — 그래야
-    // "화면 밖으로 넘치더라도 글자를 침범하진 않는다"는 원래 설계가 지켜진다.
-    var k = Math.max(Math.min(1, kFit), kMin);
+    // kFit(화면에 맞춤)만 1로 캡한다 — kMin(글자 회피)까지 같이 캡하면 세로로 긴 글자 상자(모바일 2~3줄)에서
+    // 캡이 먼저 걸려 별이 글자 위에 얹힌 채 멈춘다(2026-09-21 QA, 320~390px 실측). floor는 1을 넘어도 된다 — 좌우로 넘쳐 잘리는 건 의도.
+    // ★ 단 kFitY는 못 넘는다(2026-09-21 사용자 신고 "별이 안 이어져 있어") — `.pin-in`이 overflow:hidden이라 위아래로 넘친 별은
+    //    그려지지 않고, 그 별로 향하던 선 두 개만 허공에서 잘려 사슬이 끊어져 보인다. 좌우 넘침은 화면 밖이라 그냥 안 보일 뿐이지만
+    //    위아래 넘침은 '끊긴 선'이라는 흔적을 남긴다. 그래서 세로만 하드 캡한다(창 높이가 낮을 때 별이 글자에 가까워지는 쪽을 택한다).
+    var k = Math.min(Math.max(Math.min(1, kFit), kMin), kFitY);
     var pts = SKY.map(function (s) { return [cx + s[0] * U * k, cy + s[1] * U * k]; });
     pts.forEach(function (p, i) { skyStars[i].pos.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')'); });
     skyLines.forEach(function (l, i) {
