@@ -143,7 +143,10 @@
       var ey = Math.abs(s[1]) > 1e-4 ? yEsc / Math.abs(s[1]) : Infinity;
       kMin = Math.max(kMin, Math.min(ex, ey));
     });
-    var k = Math.min(1, Math.max(kFit, kMin));                            // 화면 밖으로 넘치더라도(잘림) 글자를 침범하진 않는다
+    // kFit(화면에 맞춤)만 1로 캡한다 — kMin(글자 회피)까지 같이 캡하면 세로로 긴 글자 상자(모바일 2~3줄)에서
+    // 캡이 먼저 걸려 별이 글자 위에 얹힌 채 멈춰 버린다(2026-09-21 QA, 320~390px 전부에서 실측 재현). floor는 1을 넘어도 된다 —
+    // 그래야 "화면 밖으로 넘치더라도 글자를 침범하진 않는다"는 원래 설계가 지켜진다.
+    var k = Math.max(Math.min(1, kFit), kMin);
     var pts = SKY.map(function (s) { return [cx + s[0] * U * k, cy + s[1] * U * k]; });
     pts.forEach(function (p, i) { skyStars[i].pos.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')'); });
     skyLines.forEach(function (l, i) {
