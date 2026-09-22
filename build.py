@@ -239,6 +239,7 @@ def main():
     (OUT / '.nojekyll').write_text('')
     (OUT / 'CNAME').write_text(DOMAIN + '\n')   # Pages 설정(API cname)과 같은 값이어야 한다
     built = []
+    urls = []      # 사이트맵에 넣을 정식 주소 — 페이지 메타의 path를 그대로 쓰므로 canonical과 항상 같다
     for f in sorted(PAGES.glob('*.html')):
         txt = f.read_text()
         m = re.match(r'\s*<!--\s*(\{.*?\})\s*-->', txt, re.S)
@@ -276,8 +277,26 @@ def main():
         out = OUT / path / 'index.html'
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(page)
+        urls.append(SITE + path)
         built.append(str(out.relative_to(ROOT)))
-    print(f'빌드 완료 {len(built)}개 · v{version}')
+
+    # 검색엔진용 sitemap.xml · robots.txt — 빌드한 페이지에서 바로 뽑으므로 페이지를 더하거나 지우면 저절로 따라온다.
+    # 리디렉션되는 옛 주소(/home·/recruit·/story·/cabinet·/2·/privacy_policy·브랜드 단축 주소 — Cloudflare가 처리)와
+    # 외부 ATS(나인하이어) 주소는 여기 들어가지 않는다. 사이트 안에서 만드는 주소만 담는다.
+    # lastmod는 일부러 넣지 않는다 — CI가 얕은 클론(fetch-depth 1)이라 파일별 수정일을 알 수 없고, 빌드 시각을 넣으면 거짓말이 된다.
+    urls.sort(key=lambda u: (u.count('/'), u))      # 홈 → 1단 → 브랜드 하위 순
+    OUT.joinpath('sitemap.xml').write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + ''.join('  <url><loc>%s</loc></url>\n' % esc(u) for u in urls)
+        + '</urlset>\n')
+    OUT.joinpath('robots.txt').write_text(
+        'User-agent: *\n'
+        'Allow: /\n'
+        '\n'
+        'Sitemap: %ssitemap.xml\n' % SITE)
+
+    print(f'빌드 완료 {len(built)}개 · v{version} · sitemap {len(urls)}개')
     for b in built:
         print(' -', b)
 
