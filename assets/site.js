@@ -28,20 +28,27 @@
 
   // 터치 기기: 드롭다운 있는 탭은 첫 탭에 펼치고, 두 번째 탭에 이동
   var touch = window.matchMedia('(hover: none)').matches;
+  function closeDd(li) { li.classList.remove('open'); var tg = li.querySelector('.dd-trigger'); tg && tg.setAttribute('aria-expanded', 'false'); }
   document.querySelectorAll('.menu li.has-dd > a').forEach(function (a) {
     a.addEventListener('click', function (e) {
       var li = a.parentElement, isBtn = a.classList.contains('dd-trigger');
       if (isBtn || (touch && !li.classList.contains('open'))) {
         e.preventDefault();
         var willOpen = !li.classList.contains('open');
-        document.querySelectorAll('.menu li.open').forEach(function (x) { x.classList.remove('open'); var tg = x.querySelector('.dd-trigger'); tg && tg.setAttribute('aria-expanded', 'false'); });
+        document.querySelectorAll('.menu li.open').forEach(closeDd);
         if (willOpen) li.classList.add('open');
         if (isBtn) a.setAttribute('aria-expanded', String(willOpen));
       }
     });
   });
   document.addEventListener('click', function (e) {
-    if (!e.target.closest('.menu li')) document.querySelectorAll('.menu li.open').forEach(function (x) { x.classList.remove('open'); });
+    if (!e.target.closest('.menu li')) document.querySelectorAll('.menu li.open').forEach(closeDd);
+  });
+  // 클릭으로 연 드롭다운(.open)은 마우스가 탭을 떠나거나 포커스가 빠지면 닫는다 — 안 그러면 CONTENTS를 누른 뒤
+  // BRAND에 마우스를 올렸을 때 두 드롭다운이 겹쳐 떴다(2026-09-26 사용자 신고). 터치는 바깥을 누르면 닫히니 마우스만.
+  document.querySelectorAll('.menu li.has-dd').forEach(function (li) {
+    li.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') closeDd(li); });
+    li.addEventListener('focusout', function (e) { if (!li.contains(e.relatedTarget)) closeDd(li); });
   });
 
   /* ---------- 컬처덱 목차 하이라이트 ---------- */

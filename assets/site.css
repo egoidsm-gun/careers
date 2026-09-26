@@ -60,7 +60,8 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
 .menu li>a:hover,.menu li.on>a,.menu li.open>.dd-trigger{color:#fff}
 .dd{position:absolute;top:calc(100% + 10px);left:50%;transform:translate(-50%,8px);min-width:220px;background:#1c1c1e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:8px;opacity:0;visibility:hidden;transition:.18s;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .dd::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
-.menu li:hover .dd,.menu li:focus-within .dd,.menu li.open .dd{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.menu li:hover .dd,.menu li.open .dd,body.editing .menu li:focus-within .dd{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.menu li:has(:focus-visible) .dd{opacity:1;visibility:visible;transform:translate(-50%,0)}   /* 포커스로 열어 두는 건 키보드 포커스만 — 마우스 클릭 포커스(:focus-within)로 열어 두면 다른 탭 드롭다운과 겹쳐 남았다(2026-09-26). :has()는 따로 둔다: 지원 안 하는 브라우저에서 선택자 목록째 무효가 되면 hover까지 죽는다 */
 .dd a{display:block;padding:11px 14px;border-radius:10px;font-size:15px;font-weight:600;color:#e8e5de;white-space:nowrap}
 .dd a:hover{background:rgba(255,255,255,.07);color:var(--acc)}
 .nav-right{display:flex;align-items:center;gap:10px;flex:none}
@@ -74,8 +75,9 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.02em;line-height:1.15}
   .nav-cta{height:var(--pill);padding:0 14px;font-size:14px;font-weight:600;border-radius:5px}
   .dd{position:fixed;left:16px;right:16px;top:calc(var(--nav) + 4px);transform:none;min-width:0}
   .menu li{position:static}
-  .menu li:hover .dd,.menu li:focus-within .dd,.menu li.open .dd{transform:none}
-  .dd::before{display:none}
+  .menu li:hover .dd,.menu li.open .dd,body.editing .menu li:focus-within .dd{transform:none}
+  .menu li:has(:focus-visible) .dd{transform:none}
+  .dd::before{top:calc((var(--pill) - var(--nav)) / 2 - 4px);height:calc((var(--nav) - var(--pill)) / 2 + 4px)}   /* 알약 아래~패널 위의 틈(바 높이−알약)/2+4px를 정확히 메우는 다리 — 없으면 마우스로 천천히 내려갈 때 패널이 닫혔다(2026-09-26) */
 }
 @media (max-width:639px){
   .nav .wrap{padding:0 24px;gap:clamp(6px,2vw,12px)}   /* 본문 기둥과 동일 — 320px에서도 한 줄 유지됨을 실측 확인 */
