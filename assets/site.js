@@ -194,6 +194,7 @@
     }
     function tick(now) {
       var real = (now - last) / 1000, dt = Math.min(.05, real); last = now;   // dt는 감쇠 안정용으로 자르고, 재생 타이머는 실제 시간으로 센다
+      if (playing && editing()) setPlay(false);   // 편집 모드로 들어오면 멈춘다 — 고치는 도중에 이름이 넘어가면 안 된다
       if (playing && !drag) { elapsed += Math.min(.25, real); if (elapsed >= DUR) { elapsed = 0; target = Math.round(target) + 1; } }
       if (!drag) pos = TAU ? pos + (target - pos) * (1 - Math.exp(-dt / TAU)) : target;
       if (!drag && Math.abs(target - pos) < .0005) pos = target;
@@ -267,5 +268,7 @@
       }, 140);
     }, { passive: false });
     render(); progress();
+    // 열자마자 재생(2026-09-27 사용자 "자동재생으로 시작") — 편집 모드와 '동작 줄이기' 설정에서는 멈춘 채로 시작한다
+    if (location.hash !== '#edit' && !matchMedia('(prefers-reduced-motion: reduce)').matches) setPlay(true);
   })();
 })();
