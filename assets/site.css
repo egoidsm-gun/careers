@@ -385,8 +385,16 @@ a.row:hover .t{color:var(--acc)}
    거리는 전부 --cs(커버 크기)에 비례하므로 폭이 바뀌어도 같은 모양이다. 자리값(--tx·--tz·--ry·--br·--op·--z)은 site.js가 넘길 때마다 쓴다.
    무대에 transform-style:preserve-3d를 주지 말 것 — 무대가 깊이 0 평면이 되어 −200px 뒤의 옆 커버 클릭을 전부 가로챈다(실측). 겹침은 z-index로 충분하다.
    아래 nth-child는 스크립트가 뜨기 전 첫 화면(굴뚝강아지가 가운데) — 없으면 여섯 장이 한가운데 겹쳐 번쩍 보인다. */
-.sec.cf-sec{padding-top:48px}
-.cflow{--cs:clamp(240px,calc(100svh - 536px),400px);position:relative;outline:none}   /* 커버는 최대 400(레퍼런스), 창이 낮으면 줄여 제목~브랜드 이름이 한 화면에 들어오게(히어로 끝 373 + 여백 48 + 커버 + 이름 91 + 24) */
+/* 한 화면 플레이리스트(2026-09-27 사용자 "PC에서 크게 · 레이아웃·폰트·글 전체 조화"): 제목~커버~이름~조작부를 가운데 한 축에 세우고
+   화면 높이 안에 들어오게 커버 크기를 정한다. --cs = min(폭 기준, 100svh − 나머지 높이).
+   나머지 높이(데스크톱 470) = 내비 104 + 위 24 + 제목 묶음 76 + 커버 위 40 + 이름 86 + 조작부 98 + 아래 32 + 여유 10.
+   제목·이름·조작부 크기를 바꾸면 이 상수도 같이 볼 것(≤1179는 400, ≤639는 350). */
+.pl{min-height:calc(100svh - var(--nav));display:flex;align-items:center;padding:24px 0 32px;text-align:center}
+.pl>.wrap{width:100%}
+.pl-head .eyebrow{margin:0 0 12px}
+.pl-head h1{margin:0;font-size:clamp(28px,2.6vw,44px);line-height:1.15;font-weight:800;letter-spacing:-.03em}
+.pl .cflow{margin-top:clamp(24px,3.2svh,40px)}
+.cflow{--cs:clamp(280px,min(28vw,calc(100svh - 470px)),560px);position:relative;outline:none}
 .cf-stage{position:relative;height:var(--cs);perspective:calc(var(--cs) * 2.5);perspective-origin:50% 50%;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
 .cflow.dragging .cf-stage{cursor:grabbing}
 body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
@@ -412,13 +420,14 @@ body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
 .cf-item:nth-child(4){--tx:-450;--tz:-200;--ry:50;--br:.5;--z:970}
 .cf-item:nth-child(5){--tx:-350;--tz:-200;--ry:50;--br:.5;--z:980}
 .cf-item:nth-child(6){--tx:-250;--tz:-200;--ry:50;--br:.5;--z:990}
-.cf-caps{position:relative;height:56px;margin-top:35px;text-align:center}
+.cf-caps{position:relative;height:58px;margin-top:28px;text-align:center}
 .cf-cap{position:absolute;left:0;right:0;top:0;margin:0}
 .cf-cap:not(:first-child){opacity:0}
-.cf-cap b{display:block;font-size:24px;line-height:32px;font-weight:700;letter-spacing:-.025em;color:var(--fg)}
-.cf-cap span{display:block;margin-top:4px;font-size:14px;line-height:20px;font-weight:500;letter-spacing:.025em;color:rgba(244,242,237,.6)}
-@media (max-width:1179px){.cflow{--cs:clamp(240px,calc(100svh - 490px),340px)}}
-@media (max-width:639px){.cflow{--cs:clamp(200px,min(62vw,calc(100svh - 400px)),260px)}.cf-caps{margin-top:26px}.cf-cap b{font-size:21px;line-height:28px}}
+.cf-cap b{display:block;font-size:clamp(22px,1.7vw,28px);line-height:32px;font-weight:700;letter-spacing:-.025em;color:var(--fg)}
+.cf-cap span{display:block;margin-top:4px;font-size:15px;line-height:22px;font-weight:500;letter-spacing:.01em;color:rgba(244,242,237,.6)}
+@media (max-width:1179px){.cflow{--cs:clamp(240px,min(56vw,calc(100svh - 400px)),400px)}}
+@media (max-width:639px){.pl{padding:16px 0 24px}.pl-head .eyebrow{margin-bottom:10px}.pl-head h1{font-size:26px}.pl .cflow{margin-top:20px}
+  .cflow{--cs:clamp(200px,min(66vw,calc(100svh - 350px)),300px)}.cf-caps{height:52px;margin-top:22px}.cf-cap b{font-size:21px;line-height:28px}.cf-cap span{font-size:13px;line-height:20px}}
 .timeline{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .timeline li{display:grid;grid-template-columns:110px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line)}
 .timeline b{font-family:var(--disp);font-weight:600;font-size:24px;color:var(--acc);letter-spacing:.02em;line-height:1}
