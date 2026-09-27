@@ -164,7 +164,7 @@
     var stage = cf.querySelector('.cf-stage'), items = [].slice.call(cf.querySelectorAll('.cf-item')), caps = [].slice.call(cf.querySelectorAll('.cf-cap'));
     var N = items.length, LO = -N / 2 - .5;
     var TAU = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : .16;   // 넘김 = 지수 감쇠, τ≈0.16s (실측: 0.3초에 85%, 0.85초에 정착)
-    var pos = 0, target = 0, raf = 0, last = 0, drag = null, moved = false, wheelT = 0;
+    var pos = 0, target = 0, raf = 0, last = 0, drag = null, moved = false, wheelT = 0, wheelFrom = null;
     var fill = cf.querySelector('.pl-fill'), noEl = cf.querySelector('.pl-no'), totEl = cf.querySelector('.pl-total'), playBtn = cf.querySelector('.pl-play');
     var DUR = 4, playing = false, elapsed = 0;   // 재생: 브랜드 하나 = 4초짜리 곡. 손으로 넘기면 그 곡부터 다시(음악 앱처럼 재생은 계속)
     function editing() { return document.body.classList.contains('editing'); }
@@ -254,8 +254,15 @@
     stage.addEventListener('wheel', function (e) {
       var dx = e.deltaX * (e.deltaMode === 1 ? 16 : 1);
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || editing()) return;   // 세로 휠은 페이지 스크롤 그대로
+      if (wheelFrom === null) wheelFrom = Math.round(target);   // 이번 손짓이 시작된 칸
       e.preventDefault(); target += dx / (unit() * 1.5); elapsed = 0; kick();
-      clearTimeout(wheelT); wheelT = setTimeout(function () { target = Math.round(target); kick(); }, 120);
+      // 멈추면 '가까운 칸'이 아니라 '움직인 방향의 다음 칸'으로 — 가로 휠 마우스·Shift+휠은 한 딸깍(한 칸의 10~25%)씩 띄엄띄엄 와서
+      // 가까운 칸으로 반올림하면 매번 제자리로 튕겼다(실측: 이벤트 간격 ~0.19초). 트랙패드처럼 크게 밀면 그만큼 간다.
+      clearTimeout(wheelT); wheelT = setTimeout(function () {
+        var d = target - wheelFrom;
+        target = Math.abs(d) < .06 ? wheelFrom : d > 0 ? Math.max(Math.round(target), wheelFrom + 1) : Math.min(Math.round(target), wheelFrom - 1);
+        wheelFrom = null; kick();
+      }, 140);
     }, { passive: false });
     render(); progress();
   })();
