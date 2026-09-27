@@ -156,4 +156,90 @@
       }
     });
   }
+  /* ---------- 브랜드 허브: 커버플로 ----------
+     자리 공식·수치는 site.css 커버플로 주석과 같다(레퍼런스 coverflow.ashishgogula.in 실측). pos는 연속값이라 드래그 중에도 손을 그대로 따라온다.
+     여섯 장은 끝없이 돈다 — 보이는 창은 가운데 기준 [-3.5, 2.5)(왼쪽 셋·오른쪽 둘)이고, 이음새 반 칸에서 흐려졌다가 반대편에서 나타난다. */
+  var cf = document.querySelector('.cflow');
+  if (cf) (function () {
+    var stage = cf.querySelector('.cf-stage'), items = [].slice.call(cf.querySelectorAll('.cf-item')), caps = [].slice.call(cf.querySelectorAll('.cf-cap'));
+    var N = items.length, LO = -N / 2 - .5;
+    var TAU = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : .16;   // 넘김 = 지수 감쇠, τ≈0.16s (실측: 0.3초에 85%, 0.85초에 정착)
+    var pos = 0, target = 0, raf = 0, last = 0, drag = null, moved = false, wheelT = 0;
+    function editing() { return document.body.classList.contains('editing'); }
+    function unit() { return items[0].offsetWidth * 250 / 400; }   // 한 칸 = 가운데→첫 이웃 거리(px)
+    function wrap(d) { return ((d - LO) % N + N) % N + LO; }
+    function cur() { return ((Math.round(target) % N) + N) % N; }
+    function render() {
+      for (var i = 0; i < N; i++) {
+        var d = wrap(i - pos), a = Math.abs(d), sg = d < 0 ? -1 : 1, t = Math.min(a, 1), st = items[i].style;
+        st.setProperty('--tx', (sg * (a < 1 ? 250 * a : 250 + (a - 1) * 100)).toFixed(2));
+        st.setProperty('--tz', (-200 * t).toFixed(2));
+        st.setProperty('--ry', (-sg * 50 * t).toFixed(3));
+        st.setProperty('--br', (1 - .5 * t).toFixed(3));
+        st.setProperty('--op', Math.max(0, Math.min(1, (d - LO) / .5, (LO + N - d) / .5)).toFixed(3));
+        st.setProperty('--z', String(Math.round(1000 - a * 10)));
+        var co = Math.max(0, 1 - a * 1.6);
+        caps[i].style.opacity = co.toFixed(3);
+        caps[i].setAttribute('aria-hidden', co > .5 ? 'false' : 'true');
+      }
+    }
+    function tick(now) {
+      var dt = Math.min(.05, (now - last) / 1000); last = now;
+      if (!drag) pos = TAU ? pos + (target - pos) * (1 - Math.exp(-dt / TAU)) : target;
+      if (!drag && Math.abs(target - pos) < .0005) pos = target;
+      render();
+      if (drag || pos !== target) { raf = requestAnimationFrame(tick); return; }
+      raf = 0;
+      if (Math.abs(pos) > 60) { pos = target = wrap(pos); }   // 계속 돌려도 숫자가 커지지 않게
+    }
+    function kick() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } }
+    function go(i) { var b = Math.round(target), dd = ((i - b) % N + N) % N; if (dd > N / 2) dd -= N; target = b + dd; kick(); }
+
+    items.forEach(function (el, i) {
+      el.addEventListener('click', function (e) {
+        if (moved) { e.preventDefault(); return; }                     // 드래그를 마치며 뗀 손은 클릭이 아니다
+        if (i !== cur() || editing()) { e.preventDefault(); go(i); }   // 옆 커버는 가운데로 불러오기만, 가운데 커버는 그 브랜드로
+      });
+      el.addEventListener('focus', function () { if (el.matches(':focus-visible')) go(i); });   // Tab으로 들어오면 그 커버를 가운데로
+    });
+    cf.addEventListener('keydown', function (e) {
+      var n = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!n) return;
+      e.preventDefault(); target = Math.round(target) + n; kick();
+      if (cf.contains(document.activeElement)) items[cur()].focus({ preventScroll: true });   // Enter가 가운데 커버를 열도록
+    });
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0 || editing()) return;
+      drag = { id: e.pointerId, x: e.clientX, y: e.clientY, p: 0, axis: '', lx: e.clientX, lt: e.timeStamp, v: 0 };
+      moved = false;
+    });
+    stage.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (!drag.axis) {
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        if (Math.abs(dx) <= Math.abs(dy)) { drag = null; return; }   // 세로로 움직이면 페이지 스크롤에 양보
+        drag.axis = 'x'; drag.p = pos + dx / unit(); moved = true;
+        stage.setPointerCapture(e.pointerId); cf.classList.add('dragging');
+      }
+      var dt = e.timeStamp - drag.lt;
+      if (dt > 0) { drag.v = (e.clientX - drag.lx) / dt; drag.lx = e.clientX; drag.lt = e.timeStamp; }
+      pos = target = drag.p - dx / unit(); kick();
+    });
+    function release(e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (drag.axis) { target = Math.round(pos - drag.v * 200 / unit()); kick(); }   // 던진 속도만큼 한두 칸 더
+      drag = null; cf.classList.remove('dragging');
+      setTimeout(function () { moved = false; }, 0);
+    }
+    stage.addEventListener('pointerup', release);
+    stage.addEventListener('pointercancel', release);
+    stage.addEventListener('wheel', function (e) {
+      var dx = e.deltaX * (e.deltaMode === 1 ? 16 : 1);
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || editing()) return;   // 세로 휠은 페이지 스크롤 그대로
+      e.preventDefault(); target += dx / (unit() * 1.5); kick();
+      clearTimeout(wheelT); wheelT = setTimeout(function () { target = Math.round(target); kick(); }, 120);
+    }, { passive: false });
+    render();
+  })();
 })();
