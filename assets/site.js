@@ -165,10 +165,17 @@
     var N = items.length, LO = -N / 2 - .5;
     var TAU = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : .16;   // 넘김 = 지수 감쇠, τ≈0.16s (실측: 0.3초에 85%, 0.85초에 정착)
     var pos = 0, target = 0, raf = 0, last = 0, drag = null, moved = false, wheelT = 0;
+    var fill = cf.querySelector('.pl-fill'), noEl = cf.querySelector('.pl-no'), totEl = cf.querySelector('.pl-total'), playBtn = cf.querySelector('.pl-play');
+    var DUR = 4, playing = false, elapsed = 0;   // 재생: 브랜드 하나 = 4초짜리 곡. 손으로 넘기면 그 곡부터 다시(음악 앱처럼 재생은 계속)
     function editing() { return document.body.classList.contains('editing'); }
     function unit() { return items[0].offsetWidth * 250 / 400; }   // 한 칸 = 가운데→첫 이웃 거리(px)
     function wrap(d) { return ((d - LO) % N + N) % N + LO; }
     function cur() { return ((Math.round(target) % N) + N) % N; }
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function progress() {
+      if (fill) fill.style.setProperty('--pp', Math.min(1, elapsed / DUR).toFixed(4));
+      if (noEl) noEl.textContent = pad(cur() + 1);
+    }
     function render() {
       for (var i = 0; i < N; i++) {
         var d = wrap(i - pos), a = Math.abs(d), sg = d < 0 ? -1 : 1, t = Math.min(a, 1), st = items[i].style;
@@ -184,16 +191,26 @@
       }
     }
     function tick(now) {
-      var dt = Math.min(.05, (now - last) / 1000); last = now;
+      var real = (now - last) / 1000, dt = Math.min(.05, real); last = now;   // dt는 감쇠 안정용으로 자르고, 재생 타이머는 실제 시간으로 센다
+      if (playing && !drag) { elapsed += Math.min(.25, real); if (elapsed >= DUR) { elapsed = 0; target = Math.round(target) + 1; } }
       if (!drag) pos = TAU ? pos + (target - pos) * (1 - Math.exp(-dt / TAU)) : target;
       if (!drag && Math.abs(target - pos) < .0005) pos = target;
-      render();
-      if (drag || pos !== target) { raf = requestAnimationFrame(tick); return; }
+      render(); progress();
+      if (drag || pos !== target || playing) { raf = requestAnimationFrame(tick); return; }
       raf = 0;
       if (Math.abs(pos) > 60) { pos = target = wrap(pos); }   // 계속 돌려도 숫자가 커지지 않게
     }
     function kick() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } }
-    function go(i) { var b = Math.round(target), dd = ((i - b) % N + N) % N; if (dd > N / 2) dd -= N; target = b + dd; kick(); }
+    function go(i) { var b = Math.round(target), dd = ((i - b) % N + N) % N; if (dd > N / 2) dd -= N; target = b + dd; elapsed = 0; kick(); }
+    function skip(n) { target = Math.round(target) + n; elapsed = 0; kick(); }
+    function setPlay(on) {
+      playing = on; cf.classList.toggle('playing', on);
+      if (playBtn) { playBtn.setAttribute('aria-pressed', String(on)); playBtn.setAttribute('aria-label', on ? '일시정지' : '재생'); }
+      kick();
+    }
+    if (playBtn) playBtn.addEventListener('click', function () { setPlay(!playing); });
+    [['.pl-prev', -1], ['.pl-next', 1]].forEach(function (b) { var el = cf.querySelector(b[0]); if (el) el.addEventListener('click', function () { skip(b[1]); }); });
+    if (totEl) totEl.textContent = pad(N);
 
     items.forEach(function (el, i) {
       el.addEventListener('click', function (e) {
@@ -205,8 +222,8 @@
     cf.addEventListener('keydown', function (e) {
       var n = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
       if (!n) return;
-      e.preventDefault(); target = Math.round(target) + n; kick();
-      if (cf.contains(document.activeElement)) items[cur()].focus({ preventScroll: true });   // Enter가 가운데 커버를 열도록
+      e.preventDefault(); skip(n);
+      if (items.indexOf(document.activeElement) > -1) items[cur()].focus({ preventScroll: true });   // 커버에 초점이 있었으면 새 가운데로(Enter가 그 브랜드를 열도록)
     });
     stage.addEventListener('pointerdown', function (e) {
       if (e.button !== 0 || editing()) return;
@@ -224,11 +241,11 @@
       }
       var dt = e.timeStamp - drag.lt;
       if (dt > 0) { drag.v = (e.clientX - drag.lx) / dt; drag.lx = e.clientX; drag.lt = e.timeStamp; }
-      pos = target = drag.p - dx / unit(); kick();
+      pos = target = drag.p - dx / unit(); elapsed = 0; kick();
     });
     function release(e) {
       if (!drag || e.pointerId !== drag.id) return;
-      if (drag.axis) { target = Math.round(pos - drag.v * 200 / unit()); kick(); }   // 던진 속도만큼 한두 칸 더
+      if (drag.axis) { target = Math.round(pos - drag.v * 200 / unit()); elapsed = 0; kick(); }   // 던진 속도만큼 한두 칸 더
       drag = null; cf.classList.remove('dragging');
       setTimeout(function () { moved = false; }, 0);
     }
@@ -237,9 +254,9 @@
     stage.addEventListener('wheel', function (e) {
       var dx = e.deltaX * (e.deltaMode === 1 ? 16 : 1);
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || editing()) return;   // 세로 휠은 페이지 스크롤 그대로
-      e.preventDefault(); target += dx / (unit() * 1.5); kick();
+      e.preventDefault(); target += dx / (unit() * 1.5); elapsed = 0; kick();
       clearTimeout(wheelT); wheelT = setTimeout(function () { target = Math.round(target); kick(); }, 120);
     }, { passive: false });
-    render();
+    render(); progress();
   })();
 })();

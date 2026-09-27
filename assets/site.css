@@ -389,12 +389,12 @@ a.row:hover .t{color:var(--acc)}
    화면 높이 안에 들어오게 커버 크기를 정한다. --cs = min(폭 기준, 100svh − 나머지 높이).
    나머지 높이(데스크톱 470) = 내비 104 + 위 24 + 제목 묶음 76 + 커버 위 40 + 이름 86 + 조작부 98 + 아래 32 + 여유 10.
    제목·이름·조작부 크기를 바꾸면 이 상수도 같이 볼 것(≤1179는 400, ≤639는 350). */
-.pl{min-height:calc(100svh - var(--nav));display:flex;align-items:center;padding:24px 0 32px;text-align:center}
+.pl{--cs:clamp(280px,min(28vw,calc(100svh - 470px)),560px);min-height:calc(100svh - var(--nav));display:flex;align-items:center;padding:24px 0 32px;text-align:center}
 .pl>.wrap{width:100%}
 .pl-head .eyebrow{margin:0 0 12px}
-.pl-head h1{margin:0;font-size:clamp(28px,2.6vw,44px);line-height:1.15;font-weight:800;letter-spacing:-.03em}
+.pl-head h1{margin:0;font-size:clamp(24px,calc(var(--cs) * .085),48px);line-height:1.15;font-weight:800;letter-spacing:-.03em}   /* 제목은 커버에 비례(560→48 · 400→34) */
 .pl .cflow{margin-top:clamp(24px,3.2svh,40px)}
-.cflow{--cs:clamp(280px,min(28vw,calc(100svh - 470px)),560px);position:relative;outline:none}
+.cflow{position:relative;outline:none}   /* --cs(커버 크기)는 .pl에서 받는다 — 제목도 같은 값을 쓴다 */
 .cf-stage{position:relative;height:var(--cs);perspective:calc(var(--cs) * 2.5);perspective-origin:50% 50%;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
 .cflow.dragging .cf-stage{cursor:grabbing}
 body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
@@ -425,9 +425,27 @@ body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
 .cf-cap:not(:first-child){opacity:0}
 .cf-cap b{display:block;font-size:clamp(22px,1.7vw,28px);line-height:32px;font-weight:700;letter-spacing:-.025em;color:var(--fg)}
 .cf-cap span{display:block;margin-top:4px;font-size:15px;line-height:22px;font-weight:500;letter-spacing:.01em;color:rgba(244,242,237,.6)}
-@media (max-width:1179px){.cflow{--cs:clamp(240px,min(56vw,calc(100svh - 400px)),400px)}}
-@media (max-width:639px){.pl{padding:16px 0 24px}.pl-head .eyebrow{margin-bottom:10px}.pl-head h1{font-size:26px}.pl .cflow{margin-top:20px}
-  .cflow{--cs:clamp(200px,min(66vw,calc(100svh - 350px)),300px)}.cf-caps{height:52px;margin-top:22px}.cf-cap b{font-size:21px;line-height:28px}.cf-cap span{font-size:13px;line-height:20px}}
+/* 플레이어: 트랙 표시(현재 번호 ━ 전체) + 이전·재생·다음. 재생하면 4초마다 다음 브랜드로(진행 막대가 찬다) */
+.pl-bar{display:flex;align-items:center;gap:12px;width:var(--cs);height:16px;margin:18px auto 0;font-family:var(--disp);font-size:12px;font-weight:500;letter-spacing:.08em;line-height:1;color:rgba(244,242,237,.5);font-variant-numeric:tabular-nums}
+.pl-no,.pl-total{flex:none;width:22px}
+.pl-no{text-align:left}.pl-total{text-align:right}
+.pl-track{position:relative;flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
+.pl-fill{position:absolute;inset:0;background:#fff;border-radius:inherit;transform-origin:0 50%;transform:scaleX(var(--pp,0))}
+.pl-ctl{display:flex;align-items:center;justify-content:center;gap:28px;height:52px;margin-top:12px}
+.pl-btn{appearance:none;-webkit-appearance:none;border:0;margin:0;padding:0;background:none;display:grid;place-items:center;border-radius:50%;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s ease,background-color .15s,color .15s}
+.pl-btn svg{display:block;width:22px;height:22px;fill:currentColor}
+.pl-prev,.pl-next{width:40px;height:40px;color:rgba(244,242,237,.78)}
+.pl-prev:hover,.pl-next:hover{color:#fff;background:rgba(255,255,255,.08)}
+.pl-play{width:52px;height:52px;background:#fff;color:#0b0b0c}
+.pl-play:hover{transform:scale(1.06)}
+.pl-play:active{transform:scale(.96)}
+.pl-play .i-pause,.cflow.playing .pl-play .i-play{display:none}
+.cflow.playing .pl-play .i-pause{display:block}
+.pl-btn:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+@media (max-width:1179px){.pl{--cs:clamp(240px,min(56vw,calc(100svh - 400px)),400px)}}
+@media (max-width:639px){.pl{padding:16px 0 24px}.pl-head .eyebrow{margin-bottom:10px}.pl .cflow{margin-top:20px}
+  .pl{--cs:clamp(200px,min(66vw,calc(100svh - 350px)),300px)}.cf-caps{height:52px;margin-top:22px}.cf-cap b{font-size:21px;line-height:28px}.cf-cap span{font-size:13px;line-height:20px}
+  .pl-bar{margin-top:14px}.pl-ctl{height:48px;gap:24px}.pl-play{width:48px;height:48px}}
 .timeline{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .timeline li{display:grid;grid-template-columns:110px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line)}
 .timeline b{font-family:var(--disp);font-weight:600;font-size:24px;color:var(--acc);letter-spacing:.02em;line-height:1}
