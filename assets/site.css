@@ -392,18 +392,17 @@ a.row:hover .t{color:var(--acc)}
 body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
 .cf-item{position:absolute;left:50%;top:0;width:var(--cs);height:var(--cs);margin-left:calc(var(--cs) / -2);border-radius:12px;overflow:hidden;container-type:inline-size;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;
   transform:translateX(calc(var(--tx,0) * var(--cs) / 400)) translateZ(calc(var(--tz,0) * var(--cs) / 400)) rotateY(calc(var(--ry,0) * 1deg));
-  filter:brightness(var(--br,1));opacity:var(--op,1);z-index:var(--z,1000);will-change:transform;backface-visibility:hidden;
-  background:
+  filter:brightness(var(--br,1));opacity:var(--op,1);z-index:var(--z,1000);will-change:transform;backface-visibility:hidden;background:#161618;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
+.cf-item.type{background:
     linear-gradient(rgba(255,255,255,.03),rgba(255,255,255,.03)),
     radial-gradient(ellipse 52% 52% at 25% 25%,color-mix(in srgb,var(--m2) 42%,transparent),transparent),
     radial-gradient(ellipse 60% 60% at 75% 75%,color-mix(in srgb,var(--m1) 42%,transparent),transparent),
     radial-gradient(ellipse 45% 45% at 75% 12%,color-mix(in srgb,var(--m3) 35%,transparent),transparent),
     radial-gradient(ellipse 52% 52% at 12% 88%,color-mix(in srgb,var(--m3) 28%,transparent),transparent),
-    linear-gradient(135deg,var(--a),var(--b));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 25px 50px -12px rgba(0,0,0,.25)}
-.cf-item::before{content:"";position:absolute;inset:2.5%;border-radius:5%;border:1px solid rgba(255,255,255,.2);pointer-events:none}   /* 안쪽 테두리 */
-.cf-item::after{content:"";position:absolute;left:80%;top:80%;width:15%;height:15%;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle closest-side,rgba(255,255,255,.28) 50%,rgba(255,255,255,.1) 50% 100%,transparent 100%)}   /* 레코드 구멍 */
+    linear-gradient(135deg,var(--a),var(--b))}
+.cf-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.cf-item::before{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);z-index:1;pointer-events:none}   /* 사진 위 1px 테두리 */
 .cf-no{position:absolute;left:7.5%;top:9%;font-family:var(--disp);font-weight:500;font-size:3cqw;letter-spacing:.14em;line-height:1;opacity:.6}
 .cf-title{position:absolute;left:7.5%;right:7.5%;top:15%;font-family:var(--disp);font-weight:600;font-size:12cqw;line-height:1;letter-spacing:.01em}
 .cf-item:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
