@@ -387,14 +387,15 @@ a.row:hover .t{color:var(--acc)}
    아래 nth-child는 스크립트가 뜨기 전 첫 화면(굴뚝강아지가 가운데) — 없으면 여섯 장이 한가운데 겹쳐 번쩍 보인다. */
 /* 한 화면 플레이리스트(2026-09-27 사용자 "PC에서 크게 · 레이아웃·폰트·글 전체 조화"): 제목~커버~이름~조작부를 가운데 한 축에 세우고
    화면 높이 안에 들어오게 커버 크기를 정한다. --cs = min(폭 기준, 100svh − 나머지 높이).
-   나머지 높이(데스크톱 470) = 내비 104 + 위 24 + 제목 묶음 76 + 커버 위 40 + 이름 86 + 조작부 98 + 아래 32 + 여유 10.
-   제목·이름·조작부 크기를 바꾸면 이 상수도 같이 볼 것(≤1179는 400, ≤639는 350). */
-.pl{--cs:clamp(280px,min(28vw,calc(100svh - 470px - var(--edbar,0px))),560px);min-height:calc(100svh - var(--nav));display:flex;align-items:center;padding:24px 0 32px;text-align:center}
+   커버 = (화면 높이 − 고정 높이) ÷ 1.262 — 제목(커버×.08×1.15)과 제목 아래 여백(커버×.17)이 커버에 비례해서 나눠 준다.
+   고정 높이(데스크톱 365) = 내비 104 + 위 16 + 눈썹 13+14 + 이름 86 + 막대 34 + 버튼 64 + 아래 24 + 여유 10 (≤1179는 331, ≤639는 327에 ÷1.15).
+   제목·이름·조작부 크기나 여백을 바꾸면 이 상수도 같이 볼 것. */
+.pl{--cs:clamp(280px,min(28vw,calc((100svh - 365px - var(--edbar,0px)) / 1.262)),560px);min-height:calc(100svh - var(--nav));display:flex;align-items:center;padding:16px 0 24px;text-align:center}
 .pl>.wrap{width:100%}
-body.editing .pl{--edbar:84px;padding-bottom:calc(32px + var(--edbar))}   /* 편집 모드: 화면 아래 고정 편집 막대(바닥 20px+높이 52px)가 조작부를 덮지 않게 그만큼 비우고 커버를 줄인다 */
-.pl-head .eyebrow{margin:0 0 12px}
-.pl-head h1{margin:0;font-size:clamp(24px,calc(var(--cs) * .085),48px);line-height:1.15;font-weight:800;letter-spacing:-.03em}   /* 제목은 커버에 비례(560→48 · 400→34) */
-.pl .cflow{margin-top:clamp(24px,3.2svh,40px)}
+body.editing .pl{--edbar:84px;padding-bottom:calc(24px + var(--edbar))}   /* 편집 모드: 화면 아래 고정 편집 막대(바닥 20px+높이 52px)가 조작부를 덮지 않게 그만큼 비우고 커버를 줄인다 */
+.pl-head .eyebrow{margin:0 0 14px}
+.pl-head h1{margin:0;font-size:clamp(24px,calc(var(--cs) * .08),46px);line-height:1.15;font-weight:800;letter-spacing:-.03em}   /* 제목은 커버에 비례(560→45 · 420→34) */
+.pl .cflow{margin-top:calc(var(--cs) * .17)}   /* 제목 묶음과 플레이리스트 사이 — 커버에 비례해 넉넉히(420→71 · 560→95). 2026-09-28 사용자 "제목이 너무 가까워 어색" */
 .cflow{position:relative;outline:none}   /* --cs(커버 크기)는 .pl에서 받는다 — 제목도 같은 값을 쓴다 */
 .cf-stage{position:relative;height:var(--cs);perspective:calc(var(--cs) * 2.5);perspective-origin:50% 50%;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
 .cflow.dragging .cf-stage{cursor:grabbing}
@@ -437,9 +438,9 @@ body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
 .pl-play .i-pause,.cflow.playing .pl-play .i-play{display:none}
 .cflow.playing .pl-play .i-pause{display:block}
 .pl-btn:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
-@media (max-width:1179px){.pl{--cs:clamp(240px,min(56vw,calc(100svh - 400px - var(--edbar,0px))),400px)}}
-@media (max-width:639px){.pl{padding:16px 0 24px}.pl-head .eyebrow{margin-bottom:10px}.pl .cflow{margin-top:20px}
-  .pl{--cs:clamp(200px,min(66vw,calc(100svh - 350px - var(--edbar,0px))),300px)}.cf-caps{height:52px;margin-top:22px}.cf-cap b{font-size:21px;line-height:28px}.cf-cap span{font-size:13px;line-height:20px}
+@media (max-width:1179px){.pl{--cs:clamp(240px,min(56vw,calc((100svh - 331px - var(--edbar,0px)) / 1.262)),400px)}}
+@media (max-width:639px){.pl{padding:16px 0 24px}.pl-head .eyebrow{margin-bottom:10px}.pl .cflow{margin-top:calc(var(--cs) * .15)}
+  .pl{--cs:clamp(200px,min(66vw,calc((100svh - 327px - var(--edbar,0px)) / 1.15)),300px)}.cf-caps{height:52px;margin-top:22px}.cf-cap b{font-size:21px;line-height:28px}.cf-cap span{font-size:13px;line-height:20px}
   .pl-bar{margin-top:14px}.pl-ctl{height:48px;gap:24px}.pl-play{width:48px;height:48px}}
 .timeline{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .timeline li{display:grid;grid-template-columns:110px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line)}
