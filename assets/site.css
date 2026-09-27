@@ -273,15 +273,19 @@ html.set2.js .final.lit .btns::before{animation:litGlow 1.1s ease forwards}
 .phero{padding:80px 0 56px;border-bottom:1px solid var(--line)}
 .phero h1{font-size:clamp(36px,5.8vw,76px);line-height:1;letter-spacing:-.04em;font-weight:800;margin:0 0 24px}
 .phero .meta{color:var(--mute);font-size:12px;margin-top:20px;font-family:var(--disp);letter-spacing:.1em}
-.phero.img{position:relative;min-height:66svh;display:flex;align-items:flex-end;border:0;isolation:isolate;padding-bottom:64px}
+.phero.img{position:relative;display:flex;align-items:flex-end;border:0;padding:clamp(40px,7svh,88px) 0 64px}   /* 브랜드 페이지 히어로 = 앨범 페이지: 왼쪽 표지(허브와 같은 브랜드 색 + 로고) + 오른쪽 제목. 사진 배경은 2026-09-28 사용자 "촌스러워, 로고로 채워줘"로 걷어냄 */
+.phero.img .wrap{width:100%;display:flex;align-items:flex-end;gap:clamp(24px,3.4vw,56px)}
+.pcover{flex:none;position:relative;width:clamp(180px,min(26vw,40svh),380px);aspect-ratio:1;border-radius:12px;background:radial-gradient(120% 90% at 28% 18%,rgba(255,255,255,.12),transparent 58%),var(--bg);box-shadow:0 25px 50px -12px rgba(0,0,0,.5)}
+.pcover::before{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.pcover img{position:absolute;left:50%;top:50%;width:var(--lw,62%);height:auto;transform:translate(-50%,-50%);-webkit-user-drag:none}
+.ptxt{min-width:0}
+.ptxt h1{margin-bottom:0}
 /* 히어로 하나로 끝나는 페이지(페이버스 준비 중) — 아래에 이어지는 내용이 없으니 바닥 정렬이 아니라 화면 가운데로.
    ★ body.sub main{padding-top:var(--nav)}가 이미 .phero.img를 내비 아래로 밀어 두므로, 여기서 또 padding-top:var(--nav)을
    더하면 내비 높이만큼 이중으로 밀려 중심이 아래로 처진다(QA 에이전트 실측: 375×812에서 50px, 1440×900에서 92px 처짐 —
    예전 커밋의 "오차 0" 실측은 잘못됐던 것). padding은 0으로 두고 min-height만 내비 높이만큼 줄여 '보이는 영역'과
    정확히 같은 높이로 만든다. bodyclass에 soon을 넣어 켠다 */
 body.soon .phero.img{min-height:calc(100svh - var(--nav));align-items:center;padding-top:0;padding-bottom:0}
-.phero.img .bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2}
-.phero.img::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(11,11,12,.35),rgba(11,11,12,.2) 40%,var(--bg) 100%)}
 .phero .en{font-family:var(--disp);font-weight:600;font-size:clamp(56px,10vw,150px);line-height:.95;letter-spacing:0;color:var(--fg);display:block}
 .phero .kr{display:block;font-size:clamp(22px,3vw,36px);font-weight:700;letter-spacing:-.02em;margin-top:10px}
 .sec{padding:88px 0}
@@ -438,6 +442,7 @@ body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
 .cflow.playing .pl-play .i-pause{display:block}
 .pl-btn:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
 @media (max-width:1179px){.pl{--cs:clamp(240px,min(56vw,calc((100svh - 331px - var(--edbar,0px)) / 1.262)),400px)}}
+@media (max-width:639px){.phero.img .wrap{flex-direction:column;align-items:flex-start;gap:28px}.pcover{width:min(62vw,260px)}}
 @media (max-width:639px){.pl{padding:16px 0 24px}.pl-head .eyebrow{margin-bottom:10px}.pl .cflow{margin-top:calc(var(--cs) * .15)}
   .pl{--cs:clamp(200px,min(66vw,calc((100svh - 327px - var(--edbar,0px)) / 1.15)),300px)}.cf-caps{height:52px;margin-top:22px}.cf-cap b{font-size:21px;line-height:28px}.cf-cap span{font-size:13px;line-height:20px}
   .pl-bar{margin-top:14px}.pl-ctl{height:48px;gap:24px}.pl-play{width:48px;height:48px}}
