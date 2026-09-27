@@ -404,11 +404,10 @@ body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
   transform:translateX(calc(var(--tx,0) * var(--cs) / 400)) translateZ(calc(var(--tz,0) * var(--cs) / 400)) rotateY(calc(var(--ry,0) * 1deg));
   filter:brightness(var(--br,1));opacity:var(--op,1);z-index:var(--z,1000);will-change:transform;backface-visibility:hidden;background:#161618;
   box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
-.cf-item.type,.cf-item.logo{background:radial-gradient(120% 90% at 28% 18%,rgba(255,255,255,.12),transparent 58%),var(--bg)}   /* 표지 = 브랜드 컬러 바탕 + 흰 로고(2026-09-28 사용자 "이미지는 빼고 로고만") */
+.cf-item.logo{background:radial-gradient(120% 90% at 28% 18%,rgba(255,255,255,.12),transparent 58%),var(--bg)}   /* 표지 = 브랜드 공식 조합(바탕색 + 로고, 2026-09-28 사용자 "이미지는 빼고 로고만") — 굴강은 공식몰처럼 흰 바탕에 #222 */
 .cf-item.logo img{inset:auto;left:50%;top:50%;width:var(--lw,62%);height:auto;transform:translate(-50%,-50%);object-fit:contain}
 .cf-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
 .cf-item::before{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);z-index:1;pointer-events:none}   /* 사진 위 1px 테두리 */
-.cf-title{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);font-family:var(--disp);font-weight:600;font-size:14cqw;line-height:1;letter-spacing:.04em;text-align:center}   /* 로고 파일을 아직 못 받은 브랜드: 이름을 로고 자리에 */
 .cf-item:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
 .cf-item:nth-child(1){--tx:0;--tz:0;--ry:0;--br:1;--z:1000}
 .cf-item:nth-child(2){--tx:250;--tz:-200;--ry:-50;--br:.5;--z:990}
