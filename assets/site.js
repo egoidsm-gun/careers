@@ -187,6 +187,8 @@
         st.setProperty('--z', String(Math.round(1000 - a * 10)));
         var co = Math.max(0, 1 - a * 1.6);
         caps[i].style.opacity = co.toFixed(3);
+        caps[i].style.visibility = co > 0 ? 'visible' : 'hidden';   // 여섯 장이 같은 자리에 겹쳐 있다 — 안 보이는 건 숨기고('' 금지: CSS 첫 화면 규칙으로 되돌아가 숨는다)
+        caps[i].style.pointerEvents = co > .5 ? '' : 'none';       // 보이는 한 장만 눌리게(편집 모드에서 맨 위 투명한 캡션이 클릭을 가로챘다)
         caps[i].setAttribute('aria-hidden', co > .5 ? 'false' : 'true');
       }
     }
@@ -221,7 +223,7 @@
     });
     cf.addEventListener('keydown', function (e) {
       var n = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-      if (!n) return;
+      if (!n || e.target.isContentEditable) return;   // 편집 중인 글자에서는 ←→가 커서를 움직여야 한다
       e.preventDefault(); skip(n);
       if (items.indexOf(document.activeElement) > -1) items[cur()].focus({ preventScroll: true });   // 커버에 초점이 있었으면 새 가운데로(Enter가 그 브랜드를 열도록)
     });
