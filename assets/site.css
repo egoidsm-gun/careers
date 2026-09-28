@@ -523,36 +523,17 @@ body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
 .legal ul{padding-left:20px}
 
 /* ---------- 푸터 ---------- */
-/* 2026-09-28 사용자 "푸터가 심심하다, 채워봐, 불필요한 건 넣지 말고" — 새로 더한 건 근무지뿐. 태그라인을 마무리 문장으로 키우고,
-   넓은 화면에서 왼쪽 한 줄에 몰려 있던 걸 위(문장 | 근무지·연락처) · 아래(법적 정보 | 대표 서명) 두 줄로 편다 */
-.foot{position:relative;z-index:1;border-top:1px solid var(--line);padding:56px 0 44px;color:var(--mute);font-size:14px;margin-top:40px}
-.foot .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:44px 64px}
-.flogo{display:block;height:22px;width:auto;margin-bottom:20px}
-.fline{margin:0;color:var(--fg);font-size:clamp(24px,2.3vw,38px);font-weight:800;line-height:1.28;letter-spacing:-.03em}
-.f2{display:flex;gap:56px}
-.fcol p{margin:0;color:var(--fg2);line-height:1.6}
-.fcol .flab{margin:0 0 8px;font-family:var(--disp);font-size:11px;font-weight:500;letter-spacing:.16em;line-height:1.4;color:var(--acc)}
-.fcol a{color:var(--fg2);line-height:1.6}
-.fcol a:hover,.f3 a:hover{color:var(--fg)}
-.fbot{grid-column:1/-1;border-top:1px solid var(--line);padding-top:24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px 40px}
-.f3{display:flex;flex-wrap:wrap;gap:8px 24px}
-/* 대표 서명 크레딧(2026-09-18, 사용자 요청) — 법적 정보 줄 오른쪽 끝에 조용히. 서명 PNG는 흰색 단색 알파 */
-.sig{flex:none;opacity:.5}
+.foot{position:relative;z-index:1;border-top:1px solid var(--line);padding:48px 0 48px;color:var(--mute);font-size:14px;margin-top:40px}
+.foot .wrap{display:flex;flex-direction:column;gap:28px}
+.flogo{height:18px;width:auto;margin-bottom:16px}
+.f1 p{margin:0;color:var(--fg2);line-height:1.6}
+.f1 .disp{color:var(--mute);letter-spacing:.1em;font-size:11px}
+/* 대표 서명 크레딧(2026-09-18, 사용자 요청) — 푸터 워드마크 블록 아래 조용히. 서명 PNG는 흰색 단색 알파 */
+.sig{margin-top:20px;opacity:.5}
 .sig span{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:5px}
 .sig .sign{display:block;width:112px;height:auto}
-@media (max-width:899px){
-  .foot .wrap{grid-template-columns:minmax(0,1fr);gap:32px}
-  .f2{gap:40px;flex-wrap:wrap}
-  .fbot{flex-direction:column;align-items:flex-start}
-}
-@media (max-height:520px){   /* 가로 폰 — 푸터가 길면 문서 끝에서 승선 버튼이 내비 밑으로 숨는다(QA 2026-09-18). 원래 높이(214px) 안에 들어오게 두 칸으로 납작하게 */
-  .foot .wrap{grid-template-columns:minmax(0,1fr) auto;gap:14px 28px}
-  .flogo{height:18px;margin-bottom:8px}
-  .fline{font-size:18px}
-  .f2{flex-direction:column;gap:6px}
-  .fcol .flab{margin-bottom:0}
-  .fbot{flex-direction:row;padding-top:12px}
-}
+.f3{border-top:1px solid var(--line);padding-top:24px;display:flex;flex-wrap:wrap;gap:8px 24px}
+.f3 a:hover{color:var(--fg)}
 
 /* ---------- 인쇄(컬처덱 PDF 저장) ---------- */
 @media print{
