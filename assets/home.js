@@ -182,6 +182,44 @@
     if (reduced) skyUpdate(1);   // 모션 축소 — 완성된 별자리를 그대로
   }
 
+  /* ---------- 승선 버튼이 문서 끝(최대 스크롤)에서 고정 내비 밑에 잠기지 않게(QA 2026-09-28) ----------
+     좁은 폭에서는 푸터 법적 정보 줄이 여러 줄로 접혀 푸터가 길어진다(실측 f3 높이 1024px 48.8px → 390px 144.2px).
+     핀이 다 풀렸을 때 버튼 위치는 "지금 버튼이 pin-in 안에서 있는 자리 − 푸터가 차지하는 높이"로 정해지므로,
+     푸터가 길어진 만큼 버튼이 위로 밀려 올라와 고정 내비 밑에 깔린다(390×844 실측: 버튼의 90%가 가려지고
+     클릭이 내비 BRAND 메뉴로 넘어감 — 안 먹는 버튼). max-height:520px 케이스(이미 CSS로 padding-top 고정값 처리됨)와
+     원인·처방은 같지만(wrap의 padding-top을 늘려 버튼을 내린다) 이쪽은 폭·높이 조합이 다양해 실측으로 계산해야 한다.
+     ★ 콘텐츠를 내리는 padding-top에는 상한이 있다 — pin-in은 overflow:hidden이라, wrap이 pin-in보다 커지면
+     버튼이 통째로 잘려 사라진다(320×568 실측: 필요한 만큼 다 내렸더니 wrap 730px > pin-in 568px로 버튼이 클리핑되어
+     그 자리에 푸터가 대신 그려졌다 — 원래 버그보다 나쁜 상태). 그래서 남는 여유(slack)만큼만 내리고, 그래도
+     모자라면 max-height:520px에서 이미 쓰는 처방(푸터를 좁히고, 그래도 부족하면 서명을 숨김)을 폭 제한 없이 함께 쓴다. */
+  function guardFinalButton() {
+    var nav = document.querySelector('#nav'), pinIn = document.querySelector('.final .pin-in'),
+        wrap = pinIn && pinIn.querySelector('.wrap'), btn = wrap && wrap.querySelector('.btn'),
+        foot = document.querySelector('.foot'), sig = foot && foot.querySelector('.sig');
+    if (!nav || !pinIn || !wrap || !btn || !foot) return;
+    if (matchMedia('(max-height:520px)').matches) return;   // 그 케이스는 핀 자체를 꺼서 이미 따로 처리된다(CSS)
+    // 이전 보정을 지우고 기본값부터 다시 잰다
+    wrap.style.paddingTop = ''; foot.style.padding = ''; foot.style.marginTop = ''; if (sig) sig.style.display = '';
+    function need() {                                         // 핀이 다 풀린 문서 끝에서 버튼 top(뷰포트 기준)이 내비 밑에서 얼마나 모자란지(+20 여유)
+      var navH = nav.getBoundingClientRect().height;
+      var footH = foot.getBoundingClientRect().height + (parseFloat(getComputedStyle(foot).marginTop) || 0);
+      var rel = btn.getBoundingClientRect().top - pinIn.getBoundingClientRect().top;   // 버튼이 pin-in 안에서 있는 자리(스크롤과 무관한 내부 관계)
+      return (navH + 20) - (rel - footH);
+    }
+    var n = need();
+    if (n <= 0) return;
+    var slack = Math.max(0, pinIn.getBoundingClientRect().height - wrap.getBoundingClientRect().height - 12);
+    var delta = Math.min(slack, Math.ceil(n * 2));
+    if (delta > 0) wrap.style.paddingTop = 'calc(var(--nav) + ' + delta + 'px)';
+    if (need() <= 0) return;                                  // 콘텐츠를 내리는 것만으로 충분하면 푸터는 그대로 둔다
+    foot.style.padding = '20px 0'; foot.style.marginTop = '16px';
+    if (need() > 0 && sig) sig.style.display = 'none';
+  }
+  guardFinalButton();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(guardFinalButton);   // 서체가 늦게 오면 푸터 줄바꿈이 바뀐다
+  setTimeout(guardFinalButton, 500);   // #edit는 edit.js가 비동기로 늦게 끼어들어(편집 막대·토큰 확인) 그 사이 값이 달라질 수 있다 — 한 번 더 잰다
+  var gfbRT; window.addEventListener('resize', function () { clearTimeout(gfbRT); gfbRT = setTimeout(guardFinalButton, 120); });
+
   /* ---------- 스크롤 핀: 진행도로 단어를 켜고, 배를 띄운다 ---------- */
   var pins = Array.prototype.slice.call(document.querySelectorAll('.pin'));
   function progress(sec) {
