@@ -398,8 +398,10 @@ a.cd-cell:hover h3{color:var(--acc)}
    커버 = (화면 높이 − 고정 높이) ÷ 1.262 — 제목(커버×.08×1.15)과 제목 아래 여백(커버×.17)이 커버에 비례해서 나눠 준다.
    고정 높이(데스크톱 365) = 내비 104 + 위 16 + 눈썹 13+14 + 이름 86 + 막대 34 + 버튼 64 + 아래 24 + 여유 10 (≤1179는 331, ≤639는 327에 ÷1.15).
    제목·이름·조작부 크기나 여백을 바꾸면 이 상수도 같이 볼 것. */
-.pl{--cs:clamp(280px,min(28vw,calc((100svh - 365px - var(--edbar,0px)) / 1.262)),560px);min-height:calc(100svh - var(--nav));display:flex;align-items:center;padding:16px 0 24px;text-align:center}
+.pl{--cs:clamp(240px,min(28vw,calc((100svh - 365px - var(--edbar,0px) - var(--wiph,0px)) / 1.262)),560px);min-height:calc(100svh - var(--nav) - var(--wiph,0px));display:flex;align-items:center;padding:16px 0 24px;text-align:center}
 .pl>.wrap{width:100%}
+.wip + .pl{--wiph:100px}   /* 공사중 팻말(2026-10-13)이 위에 있으면 그 높이(실측 100 · 폰 113)만큼 빼야 조작부까지 한 화면에 든다. 팻말을 지우면 이 줄도 지울 것 */
+@media (max-width:639px){.wip + .pl{--wiph:113px}}
 body.editing .pl{--edbar:84px;padding-bottom:calc(24px + var(--edbar))}   /* 편집 모드: 화면 아래 고정 편집 막대(바닥 20px+높이 52px)가 조작부를 덮지 않게 그만큼 비우고 커버를 줄인다 */
 .pl-head .eyebrow{margin:0 0 14px}
 .pl-head h1{margin:0;font-size:clamp(24px,calc(var(--cs) * .08),46px);line-height:1.15;font-weight:800;letter-spacing:-.03em}   /* 제목은 커버에 비례(560→45 · 420→34) */
@@ -445,9 +447,9 @@ body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
 .pl-play .i-pause,.cflow.playing .pl-play .i-play{display:none}
 .cflow.playing .pl-play .i-pause{display:block}
 .pl-btn:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
-@media (max-width:1179px){.pl{--cs:clamp(240px,min(56vw,calc((100svh - 331px - var(--edbar,0px)) / 1.262)),400px)}}
+@media (max-width:1179px){.pl{--cs:clamp(240px,min(56vw,calc((100svh - 331px - var(--edbar,0px) - var(--wiph,0px)) / 1.262)),400px)}}
 @media (max-width:639px){.pl{padding:16px 0 24px}.pl-head .eyebrow{margin-bottom:10px}.pl .cflow{margin-top:calc(var(--cs) * .15)}
-  .pl{--cs:clamp(200px,min(66vw,calc((100svh - 327px - var(--edbar,0px)) / 1.15)),300px)}.cf-caps{height:52px;margin-top:22px}.cf-cap b{font-size:21px;line-height:28px}.cf-cap span{font-size:13px;line-height:20px}
+  .pl{--cs:clamp(200px,min(66vw,calc((100svh - 327px - var(--edbar,0px) - var(--wiph,0px)) / 1.15)),300px)}.cf-caps{height:52px;margin-top:22px}.cf-cap b{font-size:21px;line-height:28px}.cf-cap span{font-size:13px;line-height:20px}
   .pl-bar{margin-top:14px}.pl-ctl{height:48px;gap:24px}.pl-play{width:48px;height:48px}}
 .timeline{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .timeline li{display:grid;grid-template-columns:110px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line)}
