@@ -283,7 +283,7 @@ html.set2.js .final.lit .btns::before{animation:litGlow 1.1s ease forwards}
    더하면 내비 높이만큼 이중으로 밀려 중심이 아래로 처진다(QA 에이전트 실측: 375×812에서 50px, 1440×900에서 92px 처짐 —
    예전 커밋의 "오차 0" 실측은 잘못됐던 것). padding은 0으로 두고 min-height만 내비 높이만큼 줄여 '보이는 영역'과
    정확히 같은 높이로 만든다. bodyclass에 soon을 넣어 켠다 */
-body.soon .phero.img{min-height:calc(100svh - var(--nav));align-items:center;padding-top:0;padding-bottom:0}
+body.soon .phero.img{min-height:calc(100svh - var(--nav) - var(--wiph,0px));align-items:center;padding-top:0;padding-bottom:0}
 .phero .en{font-family:var(--disp);font-weight:600;font-size:clamp(56px,10vw,150px);line-height:.95;letter-spacing:0;color:var(--fg);display:block}
 .phero .kr{display:block;font-size:clamp(22px,3vw,36px);font-weight:700;letter-spacing:-.02em;margin-top:10px;text-wrap:balance}
 .sec{padding:88px 0}
@@ -400,8 +400,8 @@ a.cd-cell:hover h3{color:var(--acc)}
    제목·이름·조작부 크기나 여백을 바꾸면 이 상수도 같이 볼 것. */
 .pl{--cs:clamp(240px,min(28vw,calc((100svh - 365px - var(--edbar,0px) - var(--wiph,0px)) / 1.262)),560px);min-height:calc(100svh - var(--nav) - var(--wiph,0px));display:flex;align-items:center;padding:16px 0 24px;text-align:center}
 .pl>.wrap{width:100%}
-.wip + .pl{--wiph:100px}   /* 공사중 팻말(2026-10-13)이 위에 있으면 그 높이(실측 100 · 폰 113)만큼 빼야 조작부까지 한 화면에 든다. 팻말을 지우면 이 줄도 지울 것 */
-@media (max-width:639px){.wip + .pl{--wiph:113px}}
+.wip + *{--wiph:100px}   /* 공사중 팻말(2026-10-13) 바로 뒤 요소가 팻말 높이(실측 100 · 폰 113)를 받는다 — 한 화면짜리(브랜드 허브 .pl · 페이버스 준비 중 히어로)가 그만큼 빼야 화면 안에 든다 */
+@media (max-width:639px){.wip + *{--wiph:113px}}
 body.editing .pl{--edbar:84px;padding-bottom:calc(24px + var(--edbar))}   /* 편집 모드: 화면 아래 고정 편집 막대(바닥 20px+높이 52px)가 조작부를 덮지 않게 그만큼 비우고 커버를 줄인다 */
 .pl-head .eyebrow{margin:0 0 14px}
 .pl-head h1{margin:0;font-size:clamp(24px,calc(var(--cs) * .08),46px);line-height:1.15;font-weight:800;letter-spacing:-.03em}   /* 제목은 커버에 비례(560→45 · 420→34) */
