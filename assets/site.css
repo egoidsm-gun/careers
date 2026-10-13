@@ -328,6 +328,13 @@ a.row:hover .t{color:var(--acc)}
    도입 선언문 H3 2.33vw(33.6@1440·46.7@2000), 본문 .93vw(13.4@1440·18.7@2000) 행간 1.7,
    장 제목 100px 고정(폰 63px·가운데 정렬), 2열 격자(제목 2.5vw = 36@1440·50@2000, 열 간격 8%),
    인용문 35px/900 행간 1.7. 한글이라 본문 하한 16.5px·선언문 하한 26px은 넷플릭스보다 크게 잡았다. */
+/* 공사중 팻말(2026-10-13, 사용자 "지원자들이 보면 좀 그래, 맨 윗부분에 공사중 팻말") — 내비 바로 아래 한 줄. 오렌지·검정 공사 테이프 줄 + 한 문장. 페이지가 완성되면 통째로 지운다 */
+.wip{border-bottom:1px solid var(--line)}
+.wip::before{content:"";display:block;height:8px;background:repeating-linear-gradient(-45deg,var(--acc) 0 14px,#121214 14px 28px)}
+.wip p{margin:0;padding:13px 24px;text-align:center;font-size:14px;line-height:1.5;color:var(--fg2)}
+.wip b{display:inline-block;font-family:var(--disp);font-weight:600;letter-spacing:.14em;color:var(--acc);margin-right:12px}
+@media (max-width:639px){.wip p{font-size:13px;padding:12px 20px}.wip b{display:block;margin:0 0 2px}}
+@media print{.wip{display:none}}
 .cd-hero{position:relative;min-height:calc(72svh - var(--nav));display:flex;align-items:center;text-align:center;padding:56px 0 88px}
 .cd-hero .wrap{width:100%}
 .cd-title{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:clamp(60px,16vw,100px);line-height:.92;letter-spacing:0;margin:0 0 26px}
