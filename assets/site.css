@@ -346,8 +346,9 @@ a.row:hover .t{color:var(--acc)}
 .cd li{margin:.3em 0}
 .cd li::marker{color:var(--acc)}
 .cd .eyebrow{margin-bottom:14px}
-.cd-state{font-size:clamp(26px,2.33vw,47px);font-weight:800;color:var(--fg);letter-spacing:-.025em;line-height:1.3;margin:0 0 .9em}
-.cd-sub{font-size:clamp(24px,1.95vw,36px);font-weight:800;color:var(--fg);letter-spacing:-.02em;line-height:1.2;margin:2.2em 0 .6em}
+/* 아래 다섯은 <p>라서 .cd 를 붙여야 .cd p(문단 여백)를 이긴다 — 안 붙이면 설계한 여백이 전부 1.25em으로 덮인다 */
+.cd .cd-state{font-size:clamp(26px,2.33vw,47px);font-weight:800;color:var(--fg);letter-spacing:-.025em;line-height:1.3;margin:0 0 .9em}
+.cd .cd-sub{font-size:clamp(24px,1.95vw,36px);font-weight:800;color:var(--fg);letter-spacing:-.02em;line-height:1.2;margin:2.2em 0 .6em}
 .cd-sub small{font-family:var(--disp);font-size:.4em;color:var(--mute);letter-spacing:.12em;margin-left:.5em;font-weight:500;vertical-align:.3em}
 .cd section{margin-top:clamp(72px,7vw,136px)}
 .cd h2{font-size:clamp(44px,7vw,100px);font-weight:800;line-height:1;letter-spacing:-.04em;color:var(--fg);margin:0 0 .68em;scroll-margin-top:calc(var(--nav) + 40px)}
@@ -365,10 +366,10 @@ a.cd-cell:hover h3{color:var(--acc)}
 .cd-cell ul{margin:0;padding-left:1.1em;font-size:.94em;line-height:1.6}
 .cd-cell li{margin:.3em 0}
 .cd-cell .def{color:var(--fg);font-weight:600}
-.cd-group{font-family:var(--disp);letter-spacing:.14em;color:var(--mute);font-size:12px;line-height:1;margin:2.4em 0 -1em}
-.cd-shout{font-size:clamp(44px,8vw,110px);font-weight:800;letter-spacing:-.045em;line-height:.98;color:var(--fg);margin:.2em 0 .35em}
+.cd .cd-group{font-family:var(--disp);letter-spacing:.14em;color:var(--mute);font-size:12px;line-height:1;margin:2.4em 0 -1em}
+.cd .cd-shout{font-size:clamp(44px,8vw,110px);font-weight:800;letter-spacing:-.045em;line-height:.98;color:var(--fg);margin:.2em 0 .35em}
 .cd-shout span{color:var(--acc)}
-.cd-quote{font-size:clamp(26px,2.43vw,35px);font-weight:800;line-height:1.7;letter-spacing:-.02em;color:var(--fg);margin:1.6em 0 1.8em}
+.cd .cd-quote{font-size:clamp(26px,2.43vw,35px);font-weight:800;line-height:1.7;letter-spacing:-.02em;color:var(--fg);margin:1.6em 0 1.8em}
 .cd-quote small{display:block;font-family:var(--disp);font-size:13px;font-weight:500;color:var(--mute);letter-spacing:.12em;line-height:1.5;margin-top:.8em}
 .cd .btns{margin-top:0}
 @media (max-width:760px){.cd-grid.g3{grid-template-columns:1fr;gap:28px}}
