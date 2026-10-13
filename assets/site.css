@@ -345,8 +345,8 @@ a.row:hover .t{color:var(--acc)}
 .pre p:last-child{margin:0}
 .quote{font-size:clamp(20px,2.4vw,28px);font-weight:700;letter-spacing:-.02em;line-height:1.45;border-left:3px solid var(--acc);padding-left:24px;margin:44px 0;color:var(--fg)}
 .quote small{display:block;font-size:14px;color:var(--mute);font-weight:500;margin-top:12px;letter-spacing:0}
-.shout{font-size:clamp(44px,8vw,110px);font-weight:800;letter-spacing:-.045em;line-height:.98;margin:72px 0 16px}
-.shout span{color:var(--acc)}
+.memo .shout{font-size:clamp(44px,8vw,110px);font-weight:800;letter-spacing:-.045em;line-height:.98;margin:36px 0 32px;color:var(--fg)}   /* .memo 안이라야 이긴다 — .shout만 쓰면 .memo p(17.5px)에 눌려 2026-09-12 첫 배포부터 본문 크기로 쪼그라들어 있었다 */
+.memo .shout span{color:var(--acc)}
 .vals{display:grid;gap:14px;margin:8px 0 28px}
 .val{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 28px}
 .val .n{font-family:var(--disp);color:var(--acc);font-size:14px;letter-spacing:.14em;line-height:1}
