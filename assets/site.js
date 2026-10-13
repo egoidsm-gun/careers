@@ -52,17 +52,26 @@
   });
 
   /* ---------- 컬처덱 목차 하이라이트 ---------- */
+  // 화면 위 30% 선을 지난 마지막 장을 켠다(문서 끝이면 마지막 장). 장 제목이 좁은 띠를 지날 때만 바꾸던 예전 방식은
+  // 빠르게 넘기거나 위로 올라가면 엉뚱한 장에 멈춰 있었다(2026-10-13).
   var toc = document.querySelector('.toc');
-  if (toc && 'IntersectionObserver' in window) {
-    var links = Array.prototype.slice.call(toc.querySelectorAll('a[href^="#"]'));
-    var map = {};
-    links.forEach(function (l) { var t = document.getElementById(l.getAttribute('href').slice(1)); if (t) map[t.id] = l; });
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (en) {
-        if (en.isIntersecting) { links.forEach(function (l) { l.classList.remove('on'); }); map[en.target.id].classList.add('on'); }
-      });
-    }, { rootMargin: '-20% 0px -70% 0px' });
-    Object.keys(map).forEach(function (id) { io.observe(document.getElementById(id)); });
+  if (toc) {
+    var heads = [];
+    Array.prototype.forEach.call(toc.querySelectorAll('a[href^="#"]'), function (l) {
+      var t = document.getElementById(l.getAttribute('href').slice(1));
+      if (t) heads.push([t, l]);
+    });
+    var tocOn = null, tocQueued = false;
+    var spy = function () {
+      tocQueued = false;
+      var line = innerHeight * .3, cur = null;
+      heads.forEach(function (h) { if (h[0].getBoundingClientRect().top <= line) cur = h[1]; });
+      if (heads.length && innerHeight + scrollY >= document.documentElement.scrollHeight - 2) cur = heads[heads.length - 1][1];
+      if (cur !== tocOn) { if (tocOn) tocOn.classList.remove('on'); if (cur) cur.classList.add('on'); tocOn = cur; }
+    };
+    addEventListener('scroll', function () { if (!tocQueued) { tocQueued = true; requestAnimationFrame(spy); } }, { passive: true });
+    addEventListener('resize', spy);
+    spy();
   }
   document.querySelectorAll('[data-print]').forEach(function (b) { b.addEventListener('click', function () { window.print(); }); });
 

@@ -361,7 +361,7 @@ a.row:hover .t{color:var(--acc)}
 .pol b{display:block;font-size:17px;margin-bottom:8px}
 .pol ul{font-size:15.5px;margin:0;padding-left:18px}
 @media (max-width:700px){.pols{grid-template-columns:1fr}}
-.tenets{list-style:none;padding:0;margin:0 0 24px;border-top:1px solid var(--line)}
+.memo .tenets{list-style:none;padding:0;margin:0 0 24px;border-top:1px solid var(--line)}   /* .memo ul(padding-left 20px)에 눌려 라벨 칸이 다른 표보다 20px 안쪽으로 밀려 있던 것 */
 .tenets li{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);margin:0;font-size:17px}
 .tenets li span{color:var(--mute);font-size:14px;padding-top:4px}
 .tenets li b{color:var(--fg);font-weight:600}
@@ -537,6 +537,7 @@ body.editing .cf-stage{user-select:auto;-webkit-user-select:auto;cursor:auto}
 
 /* ---------- 인쇄(컬처덱 PDF 저장) ---------- */
 @media print{
+  :root{--fg:#111;--fg2:#222;--mute:#555;--line:#ddd;--line2:#ccc}   /* 색을 변수째 바꿔야 var(--fg)로 칠한 글자(정의·기조·인용 등 30곳)가 흰 종이에서 안 사라진다 */
   body{background:#fff;color:#111}
   .nav,.foot,.toc,.btn,.scrollhint{display:none!important}
   body.sub main{padding-top:0}
