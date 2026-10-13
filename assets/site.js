@@ -8,6 +8,13 @@
     return (s && s.src || '').replace(/assets\/site\.js.*$/, '');
   })();
   window.__EGO_BASE = BASE;
+  var VER = (function () {   // 이 파일의 ?v= 캐시버스터를 부속 스크립트에도 그대로 — 배포마다 같이 갱신된다
+    var s = document.querySelector('script[src*="assets/site.js"]'); var m = (s && s.src || '').match(/[?&]v=([^&]+)/); return m ? m[1] : Date.now();
+  })();
+  window.__EGO_VER = VER;
+  if (document.querySelector('.cd')) {   // 컬처덱 페이지에서만 슬라이드 보기(assets/deck.js)
+    var dk = document.createElement('script'); dk.src = BASE + 'assets/deck.js?v=' + VER; dk.defer = true; document.head.appendChild(dk);
+  }
   function loadEditor() {
     if (window.__edLoaded) { location.reload(); return; }  // 나갔다가 다시 켤 때는 새로 불러온다
     window.__edLoaded = true;

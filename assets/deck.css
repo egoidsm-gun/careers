@@ -1,0 +1,60 @@
+/* 컬처덱 슬라이드 보기 — deck.js가 .cd 페이지에서만 불러온다. 글자 크기는 긴 글 페이지보다 한 단계 크게(한 장에 한 생각). */
+html.slides{overflow:hidden}
+html:not(.slides) .sl{display:none}
+html.slides .cd-hero,html.slides .cd,html.slides .foot{display:none}
+.cd-hero .btn + .btn{margin-left:10px}
+@media (max-width:639px){.cd-hero .btn{display:flex;width:max-content;margin:0 auto 10px}.cd-hero .btn + .btn{margin-left:auto}}
+
+.sl{position:relative;overflow:hidden;background:var(--bg);touch-action:pan-y}   /* 가로 밀기는 우리가 받고, 세로는 장 안 스크롤로 */
+.sl-track{position:absolute;inset:0}
+.sl-slide{position:absolute;inset:0;display:flex;overflow:auto;padding:clamp(20px,3vh,40px) clamp(24px,12.8vw,50px) 84px;opacity:0;transform:translateX(5vw);transition:opacity .45s ease,transform .45s ease;pointer-events:none;color:var(--fg2);font-size:clamp(17px,1.15vw,21px);line-height:1.65}
+.sl-slide.before{transform:translateX(-5vw)}
+.sl-slide.on{opacity:1;transform:none;pointer-events:auto}
+.sl-in{margin:auto;width:min(100%,1040px)}
+.sl-slide.cover .sl-in{text-align:center}
+.sl .eyebrow{margin-bottom:16px}
+.sl-sub{font-size:clamp(24px,2vw,38px);font-weight:800;color:var(--fg);letter-spacing:-.02em;line-height:1.2;margin:0 0 .7em}
+.sl-sub small{font-family:var(--disp);font-size:.4em;color:var(--mute);letter-spacing:.12em;margin-left:.5em;font-weight:500;vertical-align:.3em}
+.sl-slide p{margin:0 0 1em}
+.sl-slide b{color:var(--fg)}
+.sl-slide.text .sl-body p{font-size:clamp(20px,1.7vw,32px);line-height:1.6;color:var(--fg);font-weight:500;letter-spacing:-.01em;max-width:30em}
+.sl-slide .cd-state{font-size:clamp(28px,3vw,58px);margin:0}
+.sl-slide.title h2{font-size:clamp(44px,7.5vw,120px);font-weight:800;line-height:1;letter-spacing:-.04em;color:var(--fg);margin:0}
+.sl-slide.title .eyebrow{font-size:16px}
+.sl-cover .cd-title{font-size:clamp(60px,9vw,150px);margin:0 0 22px;color:var(--fg)}
+.sl-cover .cd-meta{margin:0}
+.sl-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,3vw,56px) 7%}
+.sl-grid.g3{grid-template-columns:repeat(3,1fr)}
+.sl-grid .cd-cell h3{font-size:clamp(30px,2.4vw,46px)}
+.sl-grid.g3 .cd-cell h3{font-size:clamp(22px,1.7vw,32px)}
+.sl-grid .cd-cell p,.sl-grid .cd-cell ul{font-size:1em}
+.sl-grid .cd-cell li{margin:.35em 0}
+.sl-slide.grid .sl-body > p{font-size:1.1em;max-width:34em}
+.sl-slide.shout .cd-shout{font-size:clamp(48px,9vw,150px);margin:0}
+.sl-slide.quote .cd-quote{font-size:clamp(24px,2.7vw,46px);line-height:1.5;margin:0 0 .6em}
+.sl-slide .btns{margin-top:20px}
+.sl-slide.list .sl-body ul{font-size:clamp(18px,1.4vw,26px);color:var(--fg);margin:0;padding-left:1.1em}
+.sl-slide.list li{margin:.5em 0}
+.sl-slide.list li::marker{color:var(--acc)}
+
+.sl-bar{position:absolute;left:0;top:0;right:0;height:3px;background:rgba(255,255,255,.1);z-index:2}
+.sl-bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}
+.sl-foot{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;align-items:center;gap:20px;padding:22px clamp(24px,12.8vw,50px) 18px;font-family:var(--disp);font-weight:500;letter-spacing:.14em;font-size:13px;color:var(--mute);background:linear-gradient(transparent,var(--bg) 55%);pointer-events:none}
+.sl-foot > *{pointer-events:auto}
+.sl-count{min-width:64px;font-variant-numeric:tabular-nums}
+.sl-exit{color:var(--mute)}
+.sl-exit:hover{color:var(--fg)}
+.sl-nav{margin-left:auto;display:flex;gap:8px}
+.sl-nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--fg);font:inherit;font-size:26px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 0 4px;transition:.15s}
+.sl-nav button:hover{border-color:var(--fg);background:rgba(255,255,255,.06)}
+.sl-nav button:disabled{opacity:.25;cursor:default;border-color:var(--line2);background:transparent}
+@media (max-width:639px){
+  .sl-grid,.sl-grid.g3{grid-template-columns:1fr;gap:26px}
+  .sl-slide{padding-bottom:92px}
+  .sl-slide.title .sl-in,.sl-slide.title .eyebrow{text-align:center}
+  .sl-foot{gap:14px}
+  .sl-slide.quote .cd-quote{font-size:22px}
+  .sl-grid.g3 .cd-cell p{font-size:.95em}
+}
+@media (prefers-reduced-motion:reduce){.sl-slide{transition:none}}
+@media print{html.slides .cd-hero,html.slides .cd{display:block}.sl{display:none!important}}   /* 슬라이드 보기에서 인쇄해도 덱 전문이 나오게 */
