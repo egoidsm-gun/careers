@@ -1,6 +1,6 @@
 /* 컬처덱 슬라이드 보기 — 원본 덱을 한 장씩 넘긴다 (2026-10-13, 사용자 "컬처덱 다운로드와 슬라이드 보기에 컬처덱 ppt 원본을 넣어주면 돼")
    원본: 대표 키노트 '올핸즈미팅_260526.key'의 컬처덱 부분을 공개본으로 뽑은 이미지(assets/culture/v1.0/NN.jpg, 1920×1080).
-   목록 · 대체 글은 assets/culture/slides.json, 다운로드는 같은 공개본의 PDF.
+   목록 · 대체 글은 assets/culture/slides.json. 다운로드 버튼은 사용자 지시로 뺐다(2026-10-13 "컬처덱 다운로드 버튼은 없애줘").
    켜기: 히어로의 '슬라이드로 보기'(#slides) / #slide-12 처럼 번호로 진입. 나가기: '글로 보기' · Esc. 편집 모드(#edit)에서는 돌지 않는다. */
 (function () {
   'use strict';
@@ -90,9 +90,9 @@
   });
   Promise.all([cssReady, fetch(DIR + 'slides.json?v=' + VER).then(function (r) { return r.json(); })]).then(function (r) {
     deck = r[1]; if (!deck.slides || !deck.slides.length) return;
-    var dl = hero.querySelector('.btn');
-    if (dl) { var open = document.createElement('a'); open.className = 'btn ghost'; open.href = '#slides'; open.textContent = '슬라이드로 보기'; dl.parentNode.insertBefore(open, dl.nextSibling); }
+    var meta = hero.querySelector('.cd-meta');   // 히어로의 하나뿐인 버튼 — 메타 줄 바로 아래
+    if (meta) { var open = document.createElement('a'); open.className = 'btn'; open.href = '#slides'; open.textContent = '슬라이드로 보기'; meta.parentNode.insertBefore(open, meta.nextSibling); }
     window.addEventListener('hashchange', fromHash);
     fromHash();
-  }).catch(function () {});   // 목록을 못 받으면 버튼을 달지 않는다 — 글 보기와 다운로드는 그대로
+  }).catch(function () {});   // 목록을 못 받으면 버튼을 달지 않는다 — 글 보기는 그대로
 })();
