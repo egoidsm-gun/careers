@@ -725,19 +725,33 @@
     }
 
     var start = performance.now(), offset = (html.classList.contains('ident-seen') || still) ? 4.2 : 0;   // 재방문·정지: 잔광부터
-    var running = !document.hidden;
+    var running = !document.hidden, lastAmb = -1;
     function draw(now) {
       if (!running) return;
-      var t = at !== null ? at : offset + (now - start) / 1000;
+      var t = at !== null ? at : offset + (still ? 0 : (now - start) / 1000);   // 정지 화면은 시각도 고정 — 스크롤 때문에 다시 그려도 같은 빛이고 밝기만 달라진다
       var sc = Math.min(1, window.scrollY / (innerHeight * .32)), amb = Math.pow(1 - sc, 1.6);   // 스크롤하면 빛 전체가 빠르게 잦아들어 화면 1/3을 내려가기 전(SCROLL 표시가 수평선 위로 올라오는 지점)에 완전히 사라진다
+      if (still && amb === lastAmb) return;                    // 정지 화면: 이미 그린 밝기면 다시 그리지 않는다(다 잦아든 뒤에도 스크롤마다 검은 프레임을 그리지 않게)
+      lastAmb = amb;
       render(t, amb);
-      if (still) return;                                       // 정지 화면은 한 프레임만
+      if (still) return;                                       // 정지 화면은 한 프레임만 — 스크롤·창 크기가 바뀔 때만 아래 redraw가 다시 부른다
       if (amb <= 0 && t > 6) { running = false; return; }      // 홈 아래로 내려가면 쉰다
       requestAnimationFrame(draw);
     }
     requestAnimationFrame(draw);
     window.addEventListener('scroll', function () { if (!running && !still && !document.hidden && window.scrollY < innerHeight) { running = true; requestAnimationFrame(draw); } }, { passive: true });
-    document.addEventListener('visibilitychange', function () { running = !document.hidden && !still; if (running) requestAnimationFrame(draw); });
+    /* 정지 화면(모션 축소·편집 모드)도 스크롤하면 빛이 잦아들어야 한다(2026-10-13 QA) — 한 프레임만 그리고 끝내면 수평선이 화면에 붙박여
+       개척선·크루·승선 구간 글자를 가로질렀다(승선 서브 카피를 가로지르는 선). 평소와 같은 감쇠 규칙으로 같은 프레임을 다시 그린다(스크롤 이벤트마다 한 번, rAF로 묶음).
+       창 크기가 바뀌면 size()가 캔버스를 비우므로 그때도. 탭이 숨은 채 열렸다가 보이게 될 때도 한 번 그린다. 평소 모드는 redraw가 즉시 빠져나가 영향 없음. */
+    var stillQ = false;
+    function redraw() {
+      if (!still || stillQ || document.hidden) return; stillQ = true;
+      requestAnimationFrame(function () { stillQ = false; running = true; draw(performance.now()); });
+    }
+    if (still) {
+      window.addEventListener('scroll', redraw, { passive: true });
+      window.addEventListener('resize', function () { lastAmb = -1; redraw(); });
+    }
+    document.addEventListener('visibilitychange', function () { running = !document.hidden && !still; if (running) requestAnimationFrame(draw); else redraw(); });
   })();
 
   /* 주의: 아래 별 캔버스 코드는 ?stars=0·모션 축소·편집 모드에서 바깥 IIFE를 통째로 return한다 — 그 뒤에 두는 코드는 그 경우 실행되지 않는다. 새 모듈은 이 위에 둘 것 */
